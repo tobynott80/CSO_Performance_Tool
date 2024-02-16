@@ -30,6 +30,9 @@ jobs:
     # CircleCI will report the results back to your VCS provider.
     steps:
       - checkout
+      - add_ssh_keys:
+          - fingerprints:
+              - "SHA256:OdHfose18SHFgYVbHEqMlBNCVlr2SdxdeSdrvUBTgaE"
       - python/install-packages:
           pkg-manager: pip
           # app-dir: ~/project/package-directory/  # If your requirements.txt isn't in the root directory.
