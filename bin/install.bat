@@ -1,4 +1,5 @@
 @echo off
+REM This script checks python 3 is installed and downloads, installs dependencies and runs the server
 
 REM Check for Python version 3.6 or newer
 python --version 2>&1 | findstr /R "Python 3\.[6-9] Python 3\.[1-9][0-9]" > nul
