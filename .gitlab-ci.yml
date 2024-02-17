@@ -38,7 +38,9 @@ create_gitlab_release:
 
 create_github_release:
   stage: deploy
-  image: curlimages/curl:latest
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache curl jq
   script:
     - echo "Packaging release..."
     - tar -czvf ${PROJECT_NAME}.tar.gz ./
