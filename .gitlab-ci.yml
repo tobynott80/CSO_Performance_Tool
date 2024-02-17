@@ -41,7 +41,6 @@ create_github_release:
   image: curlimages/curl:latest
   script:
     - echo "Packaging release..."
-    # Replace the following line with commands to package your project (e.g., zip, tar)
     - tar -czvf ${PROJECT_NAME}.tar.gz ./
     - echo "Creating release on GitHub..."
     - >
@@ -56,8 +55,10 @@ create_github_release:
         \"draft\": false,
         \"prerelease\": false
       }"
-    - RELEASE_ID=$(curl -s -H "Authorization: token $GITHUB_Key" "https://api.github.com/repos/$GITHUB_REPOSITORY/releases/tags/$CI_COMMIT_TAG" | jq -r .id)
-    - 'curl -H "Authorization: token $GITHUB_Key" -H "Content-Type: application/octet-stream" --data-binary @source-code-${PROJECT_NAME}.tar.gz "https://uploads.github.com/repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID/assets?name=source-code-$CI_COMMIT_SHORT_SHA.tar.gz"'
+    - >
+      RELEASE_ID=$(curl -s -H "Authorization: token $GITHUB_Key" "https://api.github.com/repos/$GITHUB_REPOSITORY/releases/tags/$CI_COMMIT_TAG" | jq -r .id)
+    - >
+      curl -H "Authorization: token $GITHUB_Key" -H "Content-Type: application/octet-stream" --data-binary @${PROJECT_NAME}.tar.gz "https://uploads.github.com/repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID/assets?name=${PROJECT_NAME}-$CI_COMMIT_SHORT_SHA.tar.gz"
     - echo "Release created successfully."
   only:
     - main
