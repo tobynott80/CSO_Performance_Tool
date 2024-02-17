@@ -58,9 +58,16 @@ create_github_release:
         \"prerelease\": false
       }"
     - >
-      RELEASE_ID=$(curl -s -H "Authorization: token $GITHUB_Key" "https://api.github.com/repos/$GITHUB_REPOSITORY/releases/tags/$CI_COMMIT_TAG" | jq -r .id)
+      RELEASE_ID=$(curl -s -H "Authorization: token $GITHUB_Key" "https://api.github.com/repos/tobynott80/ArupReleases/releases" | jq '[.[] | {id, published_at}] | sort_by(.published_at) | reverse | .[0].id')
     - >
-      curl -H "Authorization: token $GITHUB_Key" -H "Content-Type: application/octet-stream" --data-binary @${PROJECT_NAME}.tar.gz "https://uploads.github.com/repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID/assets?name=${PROJECT_NAME}-$CI_COMMIT_SHORT_SHA.tar.gz"
+      curl -L \
+      -X POST \
+      -H "Accept: application/vnd.github+json" \
+      -H "Authorization: token $GITHUB_Key" \
+      -H "X-GitHub-Api-Version: 2022-11-28" \
+      -H "Content-Type: application/octet-stream" \
+      "https://uploads.github.com/repos/tobynott80/ArupReleases/releases/$RELEASE_ID/assets?name=application.zip" \
+      --data-binary "@${PROJECT_NAME}.tar.gz"
     - echo "Release created successfully."
   only:
     - main
