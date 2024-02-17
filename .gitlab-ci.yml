@@ -41,7 +41,7 @@ create_github_release:
   image: alpine:latest
   before_script:
     - apk add --no-cache curl jq zip
-script:
+  script:
     - echo "Packaging release..."
     - zip -r application.zip ./
     - echo "Creating release on GitHub..."
