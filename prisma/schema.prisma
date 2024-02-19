@@ -1,11 +1,11 @@
-datasource db {
-  provider = "sqlite"
-  url      = "file:database.db"
-}
-
 generator client {
   provider  = "prisma-client-py"
   interface = "sync"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:database.db"
 }
 
 // Location Table
@@ -22,7 +22,7 @@ model Runs {
   name        String
   date        DateTime
   runsTests   RunTests[]
-  importSpills ImportSpill[]
+  importSpills ImportSpills[]
   importRainfall ImportRainfall[]
   location    Location        @relation(fields: [locationID], references: [id])
 }
@@ -74,7 +74,6 @@ model ProcessedResult {
   summary              Summary    @relation(fields: [summaryId], references: [id])
   timeSeries           TimeSeries  @relation(fields: [timeSeriesId], references: [id])
   spillEvent           SpillEvent  @relation(fields: [spillEventId], references: [id])
-  @@id([summaryId, timeSeriesId, spillEventId])
 }
 
 model Summary {
@@ -96,7 +95,7 @@ model TimeSeries {
   depth                Float
   rollingDepth         Float
   classification       String
-  processedResults     ProcessedResults[]
+  processedResults     ProcessedResult[]
 }
 
 model SpillEvent {
@@ -111,7 +110,7 @@ model SpillEvent {
   test1                String
   test2                String
   classification       String
-  processedResults     ProcessedResults[]
+  processedResults     ProcessedResult[]
 }
 
 
