@@ -3,7 +3,7 @@
 [![pipeline status](https://git.cardiff.ac.uk/c2062405/arupwaterquality/badges/main/pipeline.svg)](https://git.cardiff.ac.uk/c2062405/arupwaterquality/-/commits/main)
 [![Latest Release](https://git.cardiff.ac.uk/c2062405/arupwaterquality/-/badges/release.svg)](https://git.cardiff.ac.uk/c2062405/arupwaterquality/-/releases)
 
-This tool provides a front end to easily run and track GN066 tests. We are using a locally hosted [Flask](https://flask.palletsprojects.com/en/3.0.x/) server.
+This tool provides a front end to easily run and track GN066 tests. We are using a locally hosted [Flask](https://flask.palletsprojects.com/en/3.0.x/) server and SQLite.
 
 ## Automatic Install
 
