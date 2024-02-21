@@ -19,5 +19,5 @@ REM Create db file and push schema to db
 prisma db push
 
 REM Notify use to use ./run.bat to run the web app in the future
-msg * "Dependencies have been installed and the database has been setup. Please use ./run.sh to start the program" 
+msg * "Dependencies have been installed and the database has been setup. Please use ./run.bat to start the program" 
 pause
