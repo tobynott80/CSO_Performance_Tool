@@ -8,3 +8,7 @@ if errorlevel 1 (
     pause
     exit /b 1
 )
+
+REM Install requirements
+pip install -r requirements.txt
+
