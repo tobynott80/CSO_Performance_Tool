@@ -12,3 +12,11 @@ if errorlevel 1 (
 REM Install requirements
 pip install -r requirements.txt
 
+REM Generate prisma executable 
+prisma generate
+
+REM Create db file and push schema to db
+prisma db push
+
+REM Notify use to use ./run.bat to run the web app in the future
+msg * "Dependencies have been installed and the database has been setup. Please use ./run.sh to start the program" 
