@@ -1,5 +1,6 @@
 from flask import render_template
 from app import app
+from prisma.models import Location
 
 @app.route('/forest_green')
 def tasks():
@@ -7,7 +8,8 @@ def tasks():
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    locations = Location.prisma().find_many()
+    return render_template("index.html", locations=locations)
 
 @app.route("/add_run")
 def add_run():
