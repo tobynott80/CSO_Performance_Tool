@@ -162,3 +162,4 @@ cython_debug/
 # Prisma DB
 .db
 .db-journal
+/prisma/*.db
