@@ -1,5 +1,11 @@
 @echo off
+REM DEPRECATED: Use setup and run instead.
 REM This script checks python 3 is installed and downloads, installs dependencies and runs the server
+
+REM Deprecation message
+echo This script has been deprecated, please use setup.bat and run.bat
+pause
+exit /b 1
 
 REM Check for Python version 3.6 or newer
 python --version 2>&1 | findstr /R "Python 3\.[6-9] Python 3\.[1-9][0-9]" > nul
