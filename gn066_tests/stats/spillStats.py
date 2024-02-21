@@ -2,8 +2,8 @@ import pandas as pd
 import config as c
 import datetime as dt
 results_ts = '15T'
-import gn066_tests.tests.test1 as test1
-import gn066_tests.tests.test2 as test2
+import tests.test1 as test1
+import tests.test2 as test2
 
 test1
 test2

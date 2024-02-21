@@ -6,7 +6,6 @@ import numpy as np
 import config as config
 
 
-
 # Define the period you want to display for the timeline. Math is done for all 10 years
 timeline_start = dt.datetime(2020,1,1,0,0,0)
 timeline_end = dt.datetime(2020,12,31,0,0,0)
@@ -99,9 +98,9 @@ def timeline_visual (runs, df, timeline_start, timeline_end):
                         
                         break
 
-    print (test_1_bars)
-    print (test_2_bars)
-    print (spill_bars)
+    # print (test_1_bars)
+    # print (test_2_bars)
+    # print (spill_bars)
     bars = test_2_bars + test_1_bars + combined_bars + spill_bars 
 
     # On to graphing
@@ -114,9 +113,9 @@ def timeline_visual (runs, df, timeline_start, timeline_end):
         colormapping.update({runs[i][2] : cycle[i+4]})
         y_labels.append(runs[i][2])
 
-    print (cats)
-    print (colormapping)
-    print (y_labels)
+    # print (cats)
+    # print (colormapping)
+    # print (y_labels)
 
     verts = []
     colors = []

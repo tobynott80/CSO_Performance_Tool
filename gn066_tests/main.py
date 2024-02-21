@@ -2,12 +2,12 @@
 #utf-8
 
 #imports
-import gn066_tests.csv.csvWriter as csvWriter 
-import gn066_tests.stats.timeStats as ts
-import gn066_tests.stats.spillStats as ss
+import csvHandler.csvReader as csvReader
+import csvHandler.csvWriter as csvWriter
+import stats.timeStats as ts
+import stats.spillStats as ss
 import visualisation as vis
 import analysis as analysis
-import gn066_tests.csv.csvReader as csvReader
 import config as config
 import pandas as pd
 import datetime as dt
@@ -24,23 +24,21 @@ exists = config.exists
 runs.append(spills_baseline)
 
 #Read csv and reformats
-csvReader
+df_rain_dtindex = csvReader.init()
+csvReader.readCSV(df_rain_dtindex)
 
 #Performs sewage be spilling malarky
-analysis
-df, spills_df = analysis.sewage_be_spillin(runs, csvReader.df_rain_dtindex, heavy_rain)        
+df, spills_df = analysis.sewage_be_spillin(runs, df_rain_dtindex, heavy_rain)
 
 #Creates visualisation
-vis
 vis.timeline_visual(runs, df, vis.timeline_start, vis.timeline_end)
 
 #Creates time stats and spill stats
-ts
-ts.perc_data = ts.time_stats(df)
-print (ts.perc_data)
+perc_data = ts.time_stats(df)
+# print (perc_data)
 
 # To run only Test 1:
-all_spill_classification, spill_count_data = ss.spill_stats(spills_df, df, [2])
+all_spill_classification, spill_count_data = ss.spill_stats(spills_df, df, [1])
 
 # Or, to run only Test 2:
 # all_spill_classification, spill_count_data = ss.spill_stats(spills_df, df, [2])
@@ -50,8 +48,8 @@ all_spill_classification, spill_count_data = ss.spill_stats(spills_df, df, [2])
 
 
 # Combine perc and count stats and add an interpretation name heading
-summary = pd.merge(ts.perc_data, spill_count_data, on = 'Year')
+summary = pd.merge(perc_data, spill_count_data, on = 'Year')
 print (summary)
 
 # Write to file
-csvWriter
+csvWriter.writeCSV(df, summary, all_spill_classification)
