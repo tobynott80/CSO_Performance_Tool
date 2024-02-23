@@ -87,7 +87,7 @@ def table():
                     <td class="size-px whitespace-nowrap">
                     <button type="button" class="block" data-hs-overlay="#hs-ai-invoice-modal">
                         <span class="block px-6 py-2">
-                        <span class="text-sm text-gray-600 dark:text-gray-400">{{ location.runs if location.runs is not none else '0' }}</span>
+                        <span class="text-sm text-gray-600 dark:text-gray-400">{{ location.id }}</span>
                         </span>
                     </button>
                     </td>
@@ -106,14 +106,14 @@ def table():
                     <td class="size-px whitespace-nowrap">
                     <button type="button" class="block" data-hs-overlay="#hs-ai-invoice-modal">
                         <span class="block px-6 py-2">
-                        <span class="text-sm text-gray-600 dark:text-gray-400">{{ location.id }}</span>
+                        <span class="text-sm text-gray-600 dark:text-gray-400">{{ location.runs if location.runs is not none else '0' }}</span>
                         </span>
                     </button>
                     </td>
                     <td class="size-px whitespace-nowrap">
                     <button type="button" class="block" data-hs-overlay="#hs-ai-invoice-modal">
                         <span class="block px-6 py-2">
-                        <span class="text-sm text-gray-600 dark:text-gray-400">{{ location.createdAt.strftime('%d %B, %Y, %H:%M:%S') }}</span>
+                        <span class="text-sm text-gray-600 dark:text-gray-400">{{ location.createdAt.strftime('%d %B %Y | %H:%M:%S') }}</span>
                         </span>
                     </button>
                     </td>
