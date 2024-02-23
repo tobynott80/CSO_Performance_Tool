@@ -79,57 +79,6 @@
                         </div>
                     </div>
                 </div>
-
-                <script>
-                  var modal = document.getElementById('popup');
-                  // Get the close button
-                  var close = document.getElementById('close');
-                  // Get the input field
-                  var input = document.getElementById('info');
-
-                  // When the user clicks on the close button, close the modal
-                  close.onclick = function() {
-                      modal.classList.add('hidden');
-                  }
-
-                  function openPopup() {  
-                      input.value = '';
-                      modal.classList.remove('hidden');
-                  }
-
-                  document.getElementById('infoForm').addEventListener('submit', function(event) {
-                    event.preventDefault();
-
-                    var name = document.getElementById('info').value;
-
-                    fetch('http://127.0.0.1:8080/location', {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                      },
-                      body: JSON.stringify({ name: name }), // Send JSON object with name
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                      console.log('Success:', data);
-                      refreshTable();
-                    })
-                    .catch((error) => {
-                      console.error('Error:', error);
-                    });
-
-                    modal.classList.add('hidden');
-                  });
-
-                  function refreshTable() {
-                    fetch('http://127.0.0.1:8080/location/table')
-                    .then(response => response.text())
-                    .then(data => {
-                        // Replace the table's HTML with the new HTML
-                        document.getElementById('dynamic_table').innerHTML = data;
-                    });
-                  }
-                </script>
               </div>
               </div>
               <!-- End Header -->
@@ -222,8 +171,7 @@
                     <td class="size-px whitespace-nowrap">
                       <button type="button" class="block" data-hs-overlay="#hs-ai-invoice-modal">
                         <span class="block px-6 py-2">
-                          <span class="text-sm text-gray-600 dark:text-gray-400">28 Dec, 12:12</span>
-                        </span>
+                          <span class="text-sm text-gray-600 dark:text-gray-400">{{ location.createdAt.strftime('%d %B, %Y, %H:%M:%S') }}</span>                        </span>
                       </button>
                     </td>
                     <td class="size-px whitespace-nowrap">
@@ -253,6 +201,55 @@
   </div>
   <!-- End Content -->
   <!-- ========== END MAIN CONTENT ========== -->
+  <script>
+    var modal = document.getElementById('popup');
+    // Get the close button
+    var close = document.getElementById('close');
+    // Get the input field
+    var input = document.getElementById('info');
+    // When the user clicks on the close button, close the modal
+    close.onclick = function() {
+        modal.classList.add('hidden');
+    }
+
+    function openPopup() {  
+        input.value = '';
+        modal.classList.remove('hidden');
+    }
+
+    document.getElementById('infoForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+
+      var name = document.getElementById('info').value;
+
+      fetch('http://127.0.0.1:8080/location', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name: name }), // Send JSON object with name
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Success:', data);
+        refreshTable();
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+      });
+
+      modal.classList.add('hidden');
+    });
+
+    function refreshTable() {
+      fetch('http://127.0.0.1:8080/location/table')
+      .then(response => response.text())
+      .then(data => {
+          // Replace the table's HTML with the new HTML
+          document.getElementById('dynamic_table').innerHTML = data;
+      });
+    }
+  </script>
 </body>
 </html>
 
