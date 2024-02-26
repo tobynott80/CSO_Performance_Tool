@@ -12,6 +12,7 @@ datasource db {
 model Location {
   id    Int    @id @default(autoincrement())
   name  String
+  createdAt DateTime @default(now())
   runs  Runs[]
 }
 

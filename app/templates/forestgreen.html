@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+  {% include 'head.html' %}
+
+
+  <body class="bg-gray-50 dark:bg-slate-900">
+    <!-- ========== HEADER ========== -->
+    {% include 'header.html' %}
+    <!-- ========== MAIN CONTENT ========== -->  
+    {% include 'sidebar.html' %}
+
+  
+    <!-- Content -->
+    <!-- Table Section -->
+    <div class="max-w-[90rem] px-4 py-4 sm:px-6 lg:px-8 lg:ps-64 mx-auto">
+      <!-- Card -->
+      <div class="flex flex-col">
+        <div class="-m-1.5 overflow-x-auto">
+          <div class="p-1.5 min-w-full inline-block align-middle">
+            <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden dark:bg-slate-900 dark:border-gray-700">
+              <!-- Header -->
+              <div class="px-6 py-4 grid gap-3 md:flex md:justify-between md:items-center border-b border-gray-200 dark:border-gray-700">
+                <div>
+                  <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">
+                    Forest Green
+                  </h2>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">
+                    Add Runs, edit and more.
+                  </p>
+                </div>
+              
+                <div>
+                  <div class="inline-flex gap-x-2">
+                    <a class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg bg-red-500 text-white shadow-sm hover:bg-red-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-white dark:hover:bg-gray-800 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600" href="#">
+                      Delete
+                    </a>
+                  
+                    <a onclick="window.location.href = '/add_run' ; " class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600" href="#">
+                      <svg class="flex-shrink-0 size-3" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M2.63452 7.50001L13.6345 7.5M8.13452 13V2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      </svg>
+                      New Run
+                    </a>
+                  </div>
+                </div>
+              </div>
+              <!-- End Header -->
+            
+              <!-- Table -->
+              <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead class="bg-gray-50 dark:bg-slate-800">
+                  <tr>
+                    <th scope="col" class="ps-6 py-3 text-start">
+                      
+                    </th>
+                  
+                    <th scope="col" class="ps-6 lg:ps-3 xl:ps-0 pe-6 py-3 text-start">
+                      <div class="flex items-center gap-x-2">
+                        <span class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-gray-200">
+                          Name
+                        </span>
+                      </div>
+                    </th>
+                  
+                    <th scope="col" class="px-6 py-3 text-start">
+                      <div class="flex items-center gap-x-2">
+                        <span class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-gray-200">
+                          Progress
+                        </span>
+                      </div>
+                    </th>
+                  
+                    <th scope="col" class="px-6 py-3 text-start">
+                      <div class="flex items-center gap-x-2">
+                        <span class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-gray-200">
+                          Date
+                        </span>
+                      </div>
+                    </th>
+                 
+                    <th scope="col" class="px-6 py-3 text-end"></th>
+                  </tr>
+                </thead>
+              
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                  <tr>
+                    <td class="size-px whitespace-nowrap">
+                      <div class="ps-6 py-3">
+                        <label for="hs-at-with-checkboxes-1" class="flex">
+                          <input type="checkbox" class="shrink-0 border-gray-300 rounded text-blue-600 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800" id="hs-at-with-checkboxes-1">
+                          <span class="sr-only">Checkbox</span>
+                        </label>
+                      </div>
+                    </td>
+
+                    <td class="size-px whitespace-nowrap">
+                      <div class="ps-6 lg:ps-3 xl:ps-0 pe-6 py-3">
+                        <div class="flex items-center gap-x-3">
+                          <div class="grow">
+                            <span class="block text-sm font-semibold text-gray-800 dark:text-gray-200">Run 4</span>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td class="size-px whitespace-nowrap">
+                      <div class="px-6 py-3">
+                        <div class="flex items-center gap-x-3">
+                          <!-- Step Progress -->
+                          <div class="w-full flex items-center gap-x-1">
+                            <div class="w-full h-2.5 flex flex-col justify-center overflow-hidden bg-red-600 text-xs text-white text-center whitespace-nowrap transition duration-500" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                            <div class="w-full h-2.5 flex flex-col justify-center overflow-hidden bg-red-100 text-xs text-white text-center whitespace-nowrap transition duration-500 dark:bg-red-500/30" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                            <div class="w-full h-2.5 flex flex-col justify-center overflow-hidden bg-red-100 text-xs text-white text-center whitespace-nowrap transition duration-500 dark:bg-red-500/30" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                            <div class="w-full h-2.5 flex flex-col justify-center overflow-hidden bg-red-100 text-xs text-white text-center whitespace-nowrap transition duration-500 dark:bg-red-500/30" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                            <div>
+                              <div class="w-10 text-end">
+                                <span class="text-sm text-red-500">25%</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td class="size-px whitespace-nowrap">
+                      <div class="px-6 py-3">
+                        <span class="text-sm text-gray-500">24 Dec, 23:32</span>
+                      </div>
+                    </td>
+
+                    <td class="size-px whitespace-nowrap">
+                      <div class="px-6 py-1.5">
+                        <a class="inline-flex items-center gap-x-1 text-sm text-blue-600 decoration-2 hover:underline font-medium dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600" href="#">
+                          Download
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                
+                  <tr>
+                    <td class="size-px whitespace-nowrap">
+                      <div class="ps-6 py-3">
+                        <label for="hs-at-with-checkboxes-1" class="flex">
+                          <input type="checkbox" class="shrink-0 border-gray-300 rounded text-blue-600 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800" id="hs-at-with-checkboxes-1">
+                          <span class="sr-only">Checkbox</span>
+                        </label>
+                      </div>
+                    </td>
+
+                    <td class="size-px whitespace-nowrap">
+                      <div class="ps-6 lg:ps-3 xl:ps-0 pe-6 py-3">
+                        <div class="flex items-center gap-x-3">
+                          <div class="grow">
+                            <span class="block text-sm font-semibold text-gray-800 dark:text-gray-200">Run 3</span>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td class="size-px whitespace-nowrap">
+                      <div class="px-6 py-3">
+                        <div class="flex items-center gap-x-3">
+                          <!-- Step Progress -->
+                          <div class="w-full flex items-center gap-x-1">
+                            <div class="w-full h-2.5 flex flex-col justify-center overflow-hidden bg-red-600 text-xs text-white text-center whitespace-nowrap transition duration-500" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                            <div class="w-full h-2.5 flex flex-col justify-center overflow-hidden bg-red-600 text-xs text-white text-center whitespace-nowrap transition duration-500 dark:bg-red-500/30" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                            <div class="w-full h-2.5 flex flex-col justify-center overflow-hidden bg-red-100 text-xs text-white text-center whitespace-nowrap transition duration-500 dark:bg-red-500/30" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                            <div class="w-full h-2.5 flex flex-col justify-center overflow-hidden bg-red-100 text-xs text-white text-center whitespace-nowrap transition duration-500 dark:bg-red-500/30" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                            <div class="w-full h-2.5 flex flex-col justify-center overflow-hidden bg-red-100 text-xs text-white text-center whitespace-nowrap transition duration-500 dark:bg-red-500/30" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                            <div class="w-full h-2.5 flex flex-col justify-center overflow-hidden bg-red-100 text-xs text-white text-center whitespace-nowrap transition duration-500 dark:bg-red-500/30" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                            <div>
+                              <div class="w-10 text-end">
+                                <span class="text-sm text-red-500">33%</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td class="size-px whitespace-nowrap">
+                      <div class="px-6 py-3">
+                        <span class="text-sm text-gray-500">28 Dec, 12:12</span>
+                      </div>
+                    </td>
+
+                    <td class="size-px whitespace-nowrap">
+                      <div class="px-6 py-1.5">
+                        <a class="inline-flex items-center gap-x-1 text-sm text-blue-600 decoration-2 hover:underline font-medium dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600" href="#">
+                          Download
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                
+                  <tr>
+                    <td class="size-px whitespace-nowrap">
+                      <div class="ps-6 py-3">
+                        <label for="hs-at-with-checkboxes-1" class="flex">
+                          <input type="checkbox" class="shrink-0 border-gray-300 rounded text-blue-600 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800" id="hs-at-with-checkboxes-1">
+                          <span class="sr-only">Checkbox</span>
+                        </label>
+                      </div>
+                    </td>
+
+                    <td class="size-px whitespace-nowrap">
+                      <div class="ps-6 lg:ps-3 xl:ps-0 pe-6 py-3">
+                        <div class="flex items-center gap-x-3">
+                          <div class="grow">
+                            <span class="block text-sm font-semibold text-gray-800 dark:text-gray-200">Run 2</span>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td class="size-px whitespace-nowrap">
+                      <div class="px-6 py-3">
+                        <div class="flex items-center gap-x-3">
+                          <!-- Step Progress -->
+                          <div class="w-full flex items-center gap-x-1">
+                            <div class="w-full h-2.5 flex flex-col justify-center overflow-hidden bg-yellow-400 text-xs text-white text-center whitespace-nowrap transition duration-500" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                            <div class="w-full h-2.5 flex flex-col justify-center overflow-hidden bg-yellow-400 text-xs text-white text-center whitespace-nowrap transition duration-500 dark:bg-red-500/30" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                            <div class="w-full h-2.5 flex flex-col justify-center overflow-hidden bg-yellow-400 text-xs text-white text-center whitespace-nowrap transition duration-500 dark:bg-red-500/30" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                            <div class="w-full h-2.5 flex flex-col justify-center overflow-hidden bg-yellow-400 text-xs text-white text-center whitespace-nowrap transition duration-500 dark:bg-red-500/30" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                            <div class="w-full h-2.5 flex flex-col justify-center overflow-hidden bg-yellow-100 text-xs text-white text-center whitespace-nowrap transition duration-500 dark:bg-red-500/30" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                            <div>
+                              <div class="w-10 text-end">
+                                <span class="text-sm text-red-500">80%</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td class="size-px whitespace-nowrap">
+                      <div class="px-6 py-3">
+                        <span class="text-sm text-gray-500">01 Nov, 08:31</span>
+                      </div>
+                    </td>
+
+                    <td class="size-px whitespace-nowrap">
+                      <div class="px-6 py-1.5">
+                        <a class="inline-flex items-center gap-x-1 text-sm text-blue-600 decoration-2 hover:underline font-medium dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600" href="#">
+                          Download
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                
+                  <tr>
+                    <td class="size-px whitespace-nowrap">
+                      <div class="ps-6 py-3">
+                        <label for="hs-at-with-checkboxes-1" class="flex">
+                          <input type="checkbox" class="shrink-0 border-gray-300 rounded text-blue-600 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-600 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800" id="hs-at-with-checkboxes-1">
+                          <span class="sr-only">Checkbox</span>
+                        </label>
+                      </div>
+                    </td>
+
+                    <td class="size-px whitespace-nowrap">
+                      <div class="ps-6 lg:ps-3 xl:ps-0 pe-6 py-3">
+                        <div class="flex items-center gap-x-3">
+                          <div class="grow">
+                            <span class="block text-sm font-semibold text-gray-800 dark:text-gray-200">Run 1</span>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td class="size-px whitespace-nowrap">
+                      <div class="px-6 py-3">
+                        <div class="flex items-center gap-x-3">
+                          <!-- Step Progress -->
+                          <div class="w-full flex items-center gap-x-1">
+                            <div class="w-full h-2.5 flex flex-col justify-center overflow-hidden bg-green-600 text-xs text-white text-center whitespace-nowrap transition duration-500" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                            <div class="w-full h-2.5 flex flex-col justify-center overflow-hidden bg-green-600 text-xs text-white text-center whitespace-nowrap transition duration-500 dark:bg-red-500/30" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                            <div>
+                              <div class="w-10 text-end">
+                                <span class="text-sm text-red-500">100%</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+
+                    <td class="size-px whitespace-nowrap">
+                      <div class="px-6 py-3">
+                        <span class="text-sm text-gray-500">01 Oct, 14:07</span>
+                      </div>
+                    </td>
+
+                    <td class="size-px whitespace-nowrap">
+                      <div class="px-6 py-1.5">
+                        <a class="inline-flex items-center gap-x-1 text-sm text-blue-600 decoration-2 hover:underline font-medium dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600" href="#">
+                          Download
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <!-- End Table -->
+            
+              <!-- Footer -->
+              <div class="px-6 py-4 grid gap-3 md:flex md:justify-between md:items-center border-t border-gray-200 dark:border-gray-700">
+                <div>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">
+                    <span class="font-semibold text-gray-800 dark:text-gray-200">4</span> Runs
+                  </p>
+                </div>
+              </div>
+              <!-- End Footer -->
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- End Card -->
+    </div>
+<!-- End Table Section -->
+  </body>
+
+<!-- Preline UI Library Script -->
+<script src="https://cdn.jsdelivr.net/npm/preline@2.0.3/dist/preline.min.js"></script>
+
+</html>
