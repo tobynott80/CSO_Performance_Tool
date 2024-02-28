@@ -26,11 +26,3 @@ def location():
             }
         )
         return dict(location)
-
-
-@location_blueprint.route("/table", methods=["GET"])
-def table():
-    if request.method == "GET":
-        locations = Location.prisma().find_many()
-        table_html = render_template("locations.html", locations=locations)
-    return table_html
