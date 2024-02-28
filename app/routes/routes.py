@@ -2,9 +2,9 @@ from flask import render_template
 from app import app
 from prisma.models import Location
 
-@app.route('/forest_green')
+@app.route('/locations_page')
 def tasks():
-    return render_template('forestgreen.html')
+    return render_template('locations_page.html')
 
 @app.route("/documentation")
 def documentation_page():

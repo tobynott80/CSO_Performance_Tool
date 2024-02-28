@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+  {% include 'head.html' %}
+
+
+  <body class="bg-gray-50 dark:bg-slate-900">
+    <!-- ========== HEADER ========== -->
+    {% include 'header.html' %}
+    <!-- ========== MAIN CONTENT ========== -->  
+    {% include 'sidebar.html' %}
+
+  
+    <!-- Content -->
+    <div class="max-w-[90rem] px-1 py-1 sm:px-6 lg:px-0 lg:ps-64 mx-auto">
+      <!-- Table Section -->
+      <div class="max-w-[85rem] px-4 sm:px-6 lg:px-8 lg:py-10 mx-auto">
+        <!-- Card -->
+        <div class="flex flex-col">
+          <div class="-m-1.5 overflow-x-auto">
+            <div class="p-1.5 min-w-full inline-block align-middle">
+              <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden dark:bg-slate-900 dark:border-gray-700">
+                <!-- Header -->
+                <div class="px-6 py-4 grid gap-3 md:flex md:justify-between md:items-center border-b border-gray-200 dark:border-gray-700">
+                <div>
+                  <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">
+                    Location
+                  </h2>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">
+                    Add Runs, edit and more.
+                  </p>
+                </div>
+              
+                <div>
+                  <div class="inline-flex gap-x-2">
+                    <a class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg bg-red-500 text-white shadow-sm hover:bg-red-600 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-white dark:hover:bg-gray-800 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600" href="#">
+                      Delete
+                    </a>
+                  
+                    <a onclick="window.location.href = '/add_run' ; " class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600" href="#">
+                      <svg class="flex-shrink-0 size-3" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M2.63452 7.50001L13.6345 7.5M8.13452 13V2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                      </svg>
+                      New Run
+                    </a>
+                  </div>
+                </div>
+                </div>
+                <!-- End Header -->
+              
+                <!-- Table -->
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <!-- Table Heading -->
+                  <thead class="bg-gray-50 dark:bg-slate-800">
+                    <tr>
+                      <th scope="col" class="ps-6 lg:ps-6 xl:px-6 pe-6 py-3 text-start">
+                        <div class="flex items-center gap-x-2 justify-center">
+                          <span class="text-center text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-gray-200">
+                            Name
+                          </span>
+                        </div>
+                      </th>
+                    
+                      <th scope="col" class="px-6 py-3 text-start">
+                        <div class="flex items-center gap-x-2 justify-center">
+                          <span class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-gray-200">
+                            Progress
+                          </span>
+                        </div>
+                      </th>
+                    
+                      <th scope="col" class="px-6 py-3 text-start">
+                        <div class="flex items-center gap-x-2 justify-center">
+                          <span class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-gray-200">
+                            Date
+                          </span>
+                        </div>
+                      </th>
+
+                      <th scope="col" class="px-6 py-3 text-start">
+                        <div class="flex items-center gap-x-2 justify-center">
+                          <span class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-gray-200">
+                            Time
+                          </span>
+                        </div>
+                      </th>
+
+                      <th scope="col" class="px-6 py-3 text-start">
+                        <div class="flex items-center gap-x-2 justify-center">
+                          <span class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-gray-200">
+                            Results
+                          </span>
+                        </div>
+                      </th>
+
+                      <th scope="col" class="px-6 py-3 text-start">
+                        <div class="flex items-center gap-x-2 justify-center">
+                          <span class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-gray-200">
+                            Download
+                          </span>
+                        </div>
+                      </th>
+
+                      <th scope="col" class="px-6 py-3 text-start">
+                        <div class="flex items-center gap-x-2 justify-center">
+                          <span class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-gray-200">
+                            Remove
+                          </span>
+                        </div>
+                      </th>
+                    
+                      <th scope="col" class="px-6 py-3 text-end"></th>
+                    </tr>
+                  </thead>
+                
+                  <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                    <tr class="cursor-pointer bg-white hover:bg-gray-200 dark:bg-slate-900 dark:hover:bg-slate-800">
+                      <td class="size-px whitespace-nowrap">
+                        <button type="button" class="block w-full" data-hs-overlay="#hs-ai-invoice-modal">
+                          <span class="block px-6 py-2 ">
+                            <span class="font-mono text-sm text-blue-600 dark:text-blue-500 ">Location_name_var</span>
+                          </span>
+                        </button>
+                      </td>
+
+                      <td class="size-px whitespace-nowrap py-2">
+                        <div class="relative size-10 w-full">
+                          <svg class="size-full" width="36" height="36" viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Background Circle -->
+                            <circle cx="18" cy="18" r="16" fill="none" class="stroke-current text-gray-200 dark:text-gray-700" stroke-width="4"></circle>
+                            <!-- Progress Circle inside a group with rotation -->
+                            <g class="origin-center -rotate-90 transform">
+                              <circle cx="18" cy="18" r="16" fill="none" class="stroke-current text-blue-600 dark:text-blue-500" stroke-width="4" stroke-dasharray="100" stroke-dashoffset="28"></circle>
+                            </g>
+                          </svg>
+                          <!-- Percentage Text -->
+                          <div class="absolute top-1/2 start-1/2 transform -translate-y-1/2 -translate-x-1/2">
+                            <span class="text-center text-sm text-gray-800 dark:text-white">72%</span>
+                          </div>
+                        </div>
+                        <!-- End Circular Progress -->
+                      </td>
+                    </tr>
+
+                  </tbody>
+                </table>
+                <!-- End Table -->
+              
+                <!-- Footer -->
+                <div class="px-6 py-4 grid gap-3 md:flex md:justify-between md:items-center border-t border-gray-200 dark:border-gray-700">
+                <div>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">
+                    <span class="font-semibold text-gray-800 dark:text-gray-200">4</span> Runs
+                  </p>
+                </div>
+                </div>
+                <!-- End Footer -->
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- End Card -->
+      </div>
+    </div>
+    <!-- End Table Section -->
+  </body>
+
+<!-- Preline UI Library Script -->
+<script src="https://cdn.jsdelivr.net/npm/preline@2.0.3/dist/preline.min.js"></script>
+
+</html>
