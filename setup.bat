@@ -9,14 +9,17 @@ if errorlevel 1 (
     exit /b 1
 )
 
+REM Install python virtual environment
+pip install --user pipenv
+
 REM Install requirements
-pip install -r requirements.txt
+pipenv install -r requirements.txt
 
 REM Generate prisma executable 
-prisma generate
+pipenv run prisma generate
 
 REM Create db file and push schema to db
-prisma db push
+pipenv run prisma db push
 
 REM Notify use to use ./run.bat to run the web app in the future
 msg * "Dependencies have been installed and the database has been setup. Please use ./run.bat to start the program" 
