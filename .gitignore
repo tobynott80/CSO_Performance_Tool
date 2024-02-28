@@ -32,9 +32,10 @@ MANIFEST
 *.manifest
 *.spec
 
-# Installer logs
+# PIP Files
 pip-log.txt
 pip-delete-this-directory.txt
+*.lock
 
 # Unit test / coverage reports
 htmlcov/

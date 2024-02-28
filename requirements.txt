@@ -1,3 +1,0 @@
-Flask==3.0.2
-Waitress==3.0.0
-Prisma==0.12.0
