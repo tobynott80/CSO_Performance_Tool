@@ -1,4 +1,4 @@
-from flask import redirect, render_template
+from flask import redirect, request, render_template
 from app import app
 from prisma.models import Location
 
@@ -19,13 +19,13 @@ def index():
     return render_template("index.html", locations=locations)
 
 
-@app.route("/location/<locid>")
+@app.route("/<locid>")
 def showRuns(locid):
     # Fetch the location, make sure correct then return the page
     return render_template("forestgreen.html")
 
 
-@app.get("/location/<locid>/run/create")
+@app.get("/<locid>/create")
 def createRun(locid):
     if (not locid.isnumeric()):
         # Redirect if no number
@@ -36,6 +36,5 @@ def createRun(locid):
     if (loc == None):
         # Redirect if not a valid location ID
         return redirect("/")
-    print(loc)
-    # Fetch the location, make sure correct then return the create run page
-    return render_template("runs/create.html", loc=loc)
+    step = int(request.args.get('step')) if request.args.get('step') else 1
+    return render_template(f"runs/{'create_one' if step == 1 else 'create_two'}.html", loc=loc)

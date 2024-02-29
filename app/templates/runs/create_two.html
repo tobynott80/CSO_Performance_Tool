@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+  {% include 'head.html' %}
+
+  <body class="bg-gray-50 dark:bg-slate-900">
+    <!-- ========== HEADER ========== -->
+    {% include 'header.html' %} {% include 'sidebar.html' %}
+    <!-- End Sidebar -->
+
+    <!-- Content -->
+    <div class="max-w-[90rem] px-4 py-4 sm:px-6 lg:px-8 lg:ps-64 mx-auto">
+      <!-- Table Section -->
+      <div class="max-w-[85rem] px-4 sm:px-6 lg:px-8 lg:py-14 mx-auto">
+        <!-- Card -->
+        <div class="flex flex-col">
+          <div class="-m-1.5 overflow-x-auto">
+            <div class="p-1.5 min-w-full inline-block align-middle">
+              <div
+                class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden dark:bg-slate-900 dark:border-gray-700"
+              >
+                <!-- Header -->
+                <div
+                  class="px-6 py-4 border-b border-gray-200 dark:border-gray-700"
+                >
+                  <h2
+                    class="text-xl font-semibold text-gray-800 dark:text-gray-200"
+                  >
+                    Create New Run
+                  </h2>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">
+                    Create a new run in
+                    <span class="font-bold">{{ loc.name }}</span>
+                  </p>
+                </div>
+                <!-- End Header -->
+
+                <!-- Body -->
+                <div class="w-full min-h-[400px] px-6 py-4">
+                  <div class="grid grid-cols-2">
+                    <div class="grid-span-1 space-y-6">
+                      <div>
+                        <label
+                          for="run_name"
+                          class="block text-sm font-medium mb-2 dark:text-white"
+                          >Run Name</label
+                        >
+                        <input
+                          type="text"
+                          id="run_name"
+                          class="py-3 px-4 block w-4/6 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:focus:ring-gray-600"
+                          placeholder="Run Name"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          for="run_desc"
+                          class="block text-sm font-medium mb-2 dark:text-white"
+                          >Run Description</label
+                        >
+                        <textarea
+                          type="textarea"
+                          id="run_desc"
+                          class="py-3 px-4 block w-4/6 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:focus:ring-gray-600"
+                          placeholder="Run Description"
+                        ></textarea>
+                      </div>
+                    </div>
+                    <div class="grid-span-1 space-y-2">
+                      <div>
+                        <label
+                          for="date"
+                          class="block text-sm font-medium mb-2 dark:text-white"
+                          >Date</label
+                        >
+                        <input
+                          type="text"
+                          id="date"
+                          class="py-3 px-4 block w-4/6 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:focus:ring-gray-600"
+                          placeholder="Run Name"
+                          disabled="true"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    class="text-xl font-semibold text-gray-800 dark:text-gray-200 mt-8"
+                  >
+                    Select Tests
+                  </div>
+
+                  <hr
+                    class="h-px mt-2 mb-6 bg-gray-200 border-0 dark:bg-gray-700"
+                  />
+
+                  <div class="flex flex-wrap items-center">
+                    <div class="flex-1">
+                      <input
+                        type="checkbox"
+                        class="shrink-0 mt-0.5 border-gray-200 rounded text-blue-600 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
+                        id="test-1"
+                      />
+                      <label
+                        for="test-1"
+                        class="text-sm ms-3 dark:text-gray-200"
+                        >Dry Day Discharges Test</label
+                      >
+                    </div>
+
+                    <div class="flex-1">
+                      <input
+                        type="checkbox"
+                        class="shrink-0 mt-0.5 border-gray-200 rounded text-blue-600 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
+                        id="test-2"
+                      />
+                      <label
+                        for="test-2"
+                        class="text-sm ms-3 dark:text-gray-200"
+                        >Rainfall Discharges Test</label
+                      >
+                    </div>
+                  </div>
+
+                  <div class="mt-5 flex justify-center">
+                    <button
+                      type="button"
+                      class="py-2 px-3 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+                    >
+                      <svg
+                        class="flex-shrink-0 size-4"
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path d="M5 12h14" />
+                        <path d="M12 5v14" />
+                      </svg>
+                      Create a new run
+                    </button>
+                  </div>
+                </div>
+                <!-- End Body -->
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- End Card -->
+      </div>
+      <!-- End Table Section -->
+    </div>
+    <!-- ========== END MAIN CONTENT ========== -->
+  </body>
+
+  <!-- Preline UI Library Script -->
+  <script src="https://cdn.jsdelivr.net/npm/preline@2.0.3/dist/preline.min.js"></script>
+  <script>
+    const now = new Date();
+    const formatted = now.toLocaleString();
+    document.querySelector("#date").value = formatted;
+  </script>
+</html>
