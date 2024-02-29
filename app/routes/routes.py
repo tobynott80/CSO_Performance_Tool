@@ -17,4 +17,10 @@ def add_run():
 
 @app.route("/documentation")
 def documentation_page():
-    return render_template("documentation.html")
+    return render_template("/documentation.html")
+
+@app.route("/docs/getting_started")
+def example_one():
+    return render_template("/docs/getting_started.html")
+
+
