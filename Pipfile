@@ -4,9 +4,9 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-flask = "==3.0.2"
 waitress = "==3.0.0"
 prisma = "==0.12.0"
+flask = {extras = ["async"], version = "3.0.2"}
 
 [dev-packages]
 

@@ -4,9 +4,9 @@ from app.routes.api.location import location_blueprint
 from app.routes.api.run import run_blueprint
 
 # Import any DB stuff here when needed
-db = Prisma()
-db.connect()
-register(db)
+# db = Prisma()
+# db.connect()
+# register(db)
 
 app = Flask(__name__)
 
