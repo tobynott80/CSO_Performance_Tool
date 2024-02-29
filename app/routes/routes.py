@@ -15,7 +15,6 @@ def index():
 def add_run():
     return render_template("add_run.html")
 
-<<<<<<< app/routes/routes.py
 @app.route("/docs")
 def documentation_page():
     return render_template("/docs.html")
