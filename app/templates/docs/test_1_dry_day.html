@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+  <!-- Head Section -->
+  {% include 'head.html' %}
+
+  <body class="bg-gray-50 dark:bg-slate-900">
+    <!-- Header -->
+    {% include 'header.html' %}
+
+    <!-- Sidebar -->
+    {% include 'sidebar.html' %}
+
+    <!-- Main Content -->
+    <main class="min-h-screen lg:pl-64">
+      <div class="max-w-4xl mx-auto px-4 py-8">
+        <h1
+          class="text-3xl font-bold text-gray-900 dark:text-slate-100"
+          style="margin-bottom: 2rem"
+        >
+          Test 1 - Dry Day Discharges
+        </h1>
+        <hr />
+        <br />
+
+        <h2 class="text-xl font-bold text-gray-900 dark:text-slate-100">
+          What is a Dry Day Discharge?
+        </h2>
+        <br />
+        <img
+          src="/static/images/test_one_photo.png"
+          alt="Dry Day Discharge information"
+          class="mx-auto"
+          style="max-width: 100%; height: auto"
+        />
+        <br />
+        <ul-a>
+          <li class="text-gray-600 dark:text-slate-400 mx-10">
+            Any discharge that occurs or continues on a “dry day”, allowing “one
+            dry day” after rainfall ends. Where a “dry day is a calendar day
+            with less than 0.25mm total rainfall depth”
+          </li>
+        </ul-a>
+        <br />
+        <hr />
+        <br />
+        <h2 class="text-xl font-bold text-gray-900 dark:text-slate-100">
+          How does the application identify Dry Day Discharges?
+        </h2>
+        <br />
+        <ul-a>
+          <li class="text-gray-600 dark:text-slate-400 mx-10">
+            Divide the year into calendar days and sum the total rainfall depth
+            for each day
+          </li>
+          <li class="text-gray-600 dark:text-slate-400 mx-10">
+            Classify them as ‘Wet Day’, ‘Previous Day Wet’, ‘Dry Day’
+          </li>
+          <li class="text-gray-600 dark:text-slate-400 mx-10">
+            Export the spill stats report from the model run to analyse. If any
+            part of the spill event is during a day classified as ‘Dry Day’,
+            that spill is a dry day discharge and the CSO is unsatisfactory.
+          </li>
+        </ul-a>
+
+        <br />
+        <hr />
+      </div>
+    </main>
+  </body>
+</html>

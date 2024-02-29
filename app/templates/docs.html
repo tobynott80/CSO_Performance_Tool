@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  {% include 'head.html' %}
+
+  <body class="bg-gray-50 dark:bg-slate-900">
+    <!-- ========== HEADER ========== -->
+    {% include 'header.html' %}
+
+    <!-- ========== SIDEBAR ========== -->
+    {% include 'sidebar.html' %}
+
+    <!-- ========== MAIN CONTENT AND LINKS ========== -->
+    <main class="min-h-screen lg:pl-64 flex">
+      <!-- Main content container -->
+      <div class="flex-1 max-w-2xl mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-slate-100">
+          SO Classification Tool Documentation
+        </h1>
+        <p class="mt-4 text-gray-600 dark:text-slate-400">
+          The Storm Overflow Classification Tool is designed to assist in the
+          evaluation and classification of storm overflows based on specific
+          hydraulic criteria. This tool focuses on comparing the consent pass
+          forward flow, Formula A, and actual model predictions to determine the
+          classification status of storm overflows as either satisfactory,
+          substandard, or unsatisfactory. This documentation provides guidance
+          on how to use the tool effectively.
+        </p>
+      </div>
+
+      <!-- Links container -->
+      <div class="max-w-xs mx-auto px-4 py-8">
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-slate-100">
+          Contents
+        </h2>
+        <!-- Add your links here -->
+        <ul class="mt-4">
+          <li>
+            <a
+              href="/docs/getting_started"
+              class="text-blue-500 hover:text-blue-600"
+              >Getting Started</a
+            >
+          </li>
+          <li>
+            <a
+              href="/docs/test_1_dry_day"
+              class="text-blue-500 hover:text-blue-600"
+              >Dry Day Discharges</a
+            >
+          </li>
+          <li>
+            <a
+              href="/docs/test_2_rainfall_discharge"
+              class="text-blue-500 hover:text-blue-600"
+              >Moderate Rainfall Discharges</a
+            >
+          </li>
+          <!-- Add more links as needed -->
+        </ul>
+      </div>
+    </main>
+  </body>
+</html>
