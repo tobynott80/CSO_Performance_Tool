@@ -37,4 +37,4 @@ def createRun(locid):
         # Redirect if not a valid location ID
         return redirect("/")
     step = int(request.args.get('step')) if request.args.get('step') else 1
-    return render_template(f"runs/{'create_one' if step == 1 else 'create_two'}.html", loc=loc)
+    return render_template(f"runs/{'create_one' if step == 1 else 'create_two'}.html", loc=loc, step=step)
