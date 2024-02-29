@@ -8,6 +8,11 @@ def tasks():
     return render_template("forestgreen.html")
 
 
+@app.route("/documentation")
+def documentation_page():
+    return render_template("documentation.html")
+
+
 @app.route("/")
 def index():
     locations = Location.prisma().find_many()
@@ -22,3 +27,15 @@ def add_run():
 @app.route("/settings")
 def setting_page():
     return render_template("settings.html")
+
+
+@app.route("/location/<locid>")
+def showRuns(locid):
+    # Fetch the location, make sure correct then return the page
+    return render_template("forestgreen.html")
+
+
+@app.route("/location/<locid>/run/create")
+def createRun(locid):
+    # Fetch the location, make sure correct then return the create run page
+    return render_template("runs/create.html")

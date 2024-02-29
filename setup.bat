@@ -12,8 +12,8 @@ if errorlevel 1 (
 REM Install python virtual environment
 pip install --user pipenv
 
-REM Install requirements
-pipenv install -r requirements.txt
+REM Install requirements from Pipfile
+pipenv install
 
 REM Generate prisma executable 
 pipenv run prisma generate
