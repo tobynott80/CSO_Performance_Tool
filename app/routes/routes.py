@@ -27,6 +27,10 @@ def docs_one():
 def docs_two():
     return render_template("/docs/test_1_dry_day.html")
 
+@app.route("/docs/test_2_rainfall_discharge")
+def docs_three():
+    return render_template("/docs/test_2_rainfall_discharge.html")
+
 
 
 
