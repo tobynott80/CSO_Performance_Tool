@@ -18,10 +18,11 @@ def index():
     query = request.args.get("search")
     if query:
         locations = Location.prisma().find_many(where={"name": {"contains": query}})
+        return render_template("index.html", locations=locations, search=True)
 
     else:
         locations = Location.prisma().find_many()
-    return render_template("index.html", locations=locations)
+        return render_template("index.html", locations=locations, search=False)
 
 
 @app.route("/add_run")

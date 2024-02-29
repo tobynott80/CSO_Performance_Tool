@@ -36,6 +36,17 @@
 
                 <div>
                   <div class="inline-flex gap-x-2">
+                    {% if search %}
+                    <a href="/"
+                      class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600">
+                      <svg class="w-4 h-4 text-gray-800 dark:text-white" aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M21 9H8a5 5 0 0 0 0 10h9m4-10-4-4m4 4-4 4" />
+                      </svg>
+                      Clear Search
+                    </a>
+                    {% endif %}
                     <button
                       class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
                       onclick="openPopup();">
