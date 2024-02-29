@@ -1,4 +1,4 @@
-from flask import render_template
+from flask import render_template, request
 from app import app
 from prisma.models import Location
 
@@ -39,3 +39,14 @@ def showRuns(locid):
 def createRun(locid):
     # Fetch the location, make sure correct then return the create run page
     return render_template("runs/create.html")
+
+
+@app.route("/location/search")
+def search_locations():
+    query = request.args.get("search")
+    if query:
+        locations = Location.prisma().find_many(where={"name": {"contains": query}})
+
+    else:
+        locations = Location.prisma().find_many()
+    return render_template("index.html", locations=locations)
