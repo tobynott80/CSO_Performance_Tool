@@ -1,4 +1,4 @@
-from flask import render_template
+from flask import render_template, request
 from app import app
 from prisma.models import Location
 
@@ -8,8 +8,14 @@ def tasks():
 
 @app.route("/")
 def index():
-    locations = Location.prisma().find_many()
-    return render_template("index.html", locations=locations)
+    query = request.args.get("search")
+    if query:
+        locations = Location.prisma().find_many(where={"name": {"contains": query}})
+        return render_template("index.html", locations=locations, search=True)
+
+    else:
+        locations = Location.prisma().find_many()
+        return render_template("index.html", locations=locations, search=False)
 
 @app.route("/add_run")
 def add_run():
