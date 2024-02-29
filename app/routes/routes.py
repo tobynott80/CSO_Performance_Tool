@@ -2,9 +2,9 @@ from flask import render_template
 from app import app
 from prisma.models import Location
 
-@app.route('/forest_green')
+@app.route("/forest_green")
 def tasks():
-    return render_template('forestgreen.html')
+    return render_template("forestgreen.html")
 
 @app.route("/")
 def index():
@@ -15,6 +15,7 @@ def index():
 def add_run():
     return render_template("add_run.html")
 
+<<<<<<< app/routes/routes.py
 @app.route("/docs")
 def documentation_page():
     return render_template("/docs.html")
@@ -31,6 +32,17 @@ def docs_two():
 def docs_three():
     return render_template("/docs/test_2_rainfall_discharge.html")
 
+@app.route("/settings")
+def setting_page():
+    return render_template("settings.html")
 
+@app.route("/location/<locid>")
+def showRuns(locid):
+    # Fetch the location, make sure correct then return the page
+    return render_template("forestgreen.html")
 
+@app.route("/location/<locid>/run/create")
+def createRun(locid):
+    # Fetch the location, make sure correct then return the create run page
+    return render_template("runs/create.html")
 
