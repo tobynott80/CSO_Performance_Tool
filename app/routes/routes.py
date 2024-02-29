@@ -20,7 +20,13 @@ def documentation_page():
     return render_template("/documentation.html")
 
 @app.route("/docs/getting_started")
-def example_one():
+def docs_one():
     return render_template("/docs/getting_started.html")
+
+@app.route("/docs/test_1_dry_day")
+def docs_two():
+    return render_template("/docs/test_1_dry_day.html")
+
+
 
 
