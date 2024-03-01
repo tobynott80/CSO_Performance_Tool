@@ -37,10 +37,10 @@ async def index():
         locations = await db.location.find_many(where={"name": {"contains": query}}, skip=(page - 1) * limit, take=limit)
     else:
         total = await getTotalLocations()
-        locations = await getPaginatedLocations(page, limit)  # Correctly pass `page` and `limit`
+        locations = await getPaginatedLocations(page, limit)  
 
     total_pages = ceil(total / limit)
-    return await render_template("index.html", locations=locations, total_pages=total_pages, current_page=page, search=bool(query))
+    return await render_template("index.html", locations=locations, total_pages=total_pages, current_page=page, search=query)
 
 
 
