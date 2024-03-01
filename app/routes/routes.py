@@ -1,6 +1,7 @@
 from quart import render_template, request
 from app import app
 from app.helper.database import initDB
+from math import ceil
 
 db = None
 
@@ -16,16 +17,31 @@ async def tasks():
     return await render_template("forestgreen.html")
 
 
+async def getPaginatedLocations(page, limit):
+    skip = (page - 1) * limit  # Correctly calculate `skip` inside the function
+    locations = await db.location.find_many(skip=skip, take=limit)  # Use `take` for consistency with Prisma's terminology
+    return locations
+
+async def getTotalLocations():
+    total = await db.location.count()
+    return total
+
 @app.route("/")
 async def index():
     query = request.args.get("search")
-    if query:
-        locations = await db.location.find_many(where={"name": {"contains": query}})
-        return await render_template("index.html", locations=locations, search=True)
+    page = int(request.args.get("page", 1))
+    limit = int(request.args.get("limit", 10))
 
+    if query:
+        total = await db.location.count(where={"name": {"contains": query}})
+        locations = await db.location.find_many(where={"name": {"contains": query}}, skip=(page - 1) * limit, take=limit)
     else:
-        locations = await db.location.find_many()
-        return await render_template("index.html", locations=locations, search=False)
+        total = await getTotalLocations()
+        locations = await getPaginatedLocations(page, limit)  # Correctly pass `page` and `limit`
+
+    total_pages = ceil(total / limit)
+    return await render_template("index.html", locations=locations, total_pages=total_pages, current_page=page, search=bool(query))
+
 
 
 @app.route("/add_run")
