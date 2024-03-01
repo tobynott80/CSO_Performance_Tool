@@ -1,5 +1,4 @@
-from flask import Flask
-from prisma import Prisma, register
+from quart import Quart
 from app.routes.api.location import location_blueprint
 from app.routes.api.run import run_blueprint
 
@@ -8,7 +7,7 @@ from app.routes.api.run import run_blueprint
 # db.connect()
 # register(db)
 
-app = Flask(__name__)
+app = Quart(__name__)
 
 # Load configuration from your config.py
 app.config.from_object("config.DevelopmentConfig")

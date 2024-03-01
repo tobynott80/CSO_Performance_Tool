@@ -1,9 +1,8 @@
-from flask import Blueprint, request, render_template_string, render_template
-from prisma.models import Runs
+from quart import Blueprint, render_template
 
 run_blueprint = Blueprint("run", __name__)
 
 # Create
 @run_blueprint.route("/create", methods=["GET", "POST"])
-def createRun():
-    return render_template("runs/create.html")
+async def createRun():
+    return await render_template("runs/create.html")
