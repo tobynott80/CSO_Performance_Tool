@@ -15,11 +15,6 @@ async def initializeDB():
 async def tasks():
     return await render_template("forestgreen.html")
 
-@app.route("/documentation")
-def documentation_page():
-    return render_template("documentation.html")
-
-
 
 @app.route("/")
 async def index():
@@ -69,17 +64,17 @@ async def showRuns(locid):
     return await render_template("forestgreen.html")
 
 
-
 @app.get("/<locid>/create")
 async def createRun(locid):
+    # Redirect if no number
     if (not locid.isnumeric()):
-        # Redirect if no number
         return redirect("/")
-    loc = Location.prisma().find_first(
+
+    loc = await db.location.find_first(
         where={'id': int(locid)}
     )
     if (loc == None):
         # Redirect if not a valid location ID
         return redirect("/")
     step = int(request.args.get('step')) if request.args.get('step') else 1
-    return render_template(f"runs/{'create_one' if step == 1 else 'create_two'}.html", loc=loc, step=step)
+    return await render_template(f"runs/{'create_one' if step == 1 else 'create_two'}.html", loc=loc, step=step)
