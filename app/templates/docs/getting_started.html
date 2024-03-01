@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+  <!-- Head Section -->
+  {% include 'head.html' %}
+
+  <body class="bg-gray-50 dark:bg-slate-900">
+    <!-- Header -->
+    {% include 'header.html' %}
+
+    <!-- Sidebar -->
+    {% include 'sidebar.html' %}
+
+    <!-- Main Content -->
+    <main class="min-h-screen lg:pl-64">
+      <div class="max-w-4xl mx-auto px-4 py-8">
+        <!-- Getting Started -->
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-slate-100" style="margin-bottom: 2rem;">
+          Getting Started
+        </h1>
+
+        <hr>
+        <br>
+
+        <!-- Step 1: Create a New Location -->
+        <h2 class="text-xl font-bold text-gray-900 dark:text-slate-100">
+          Step 1: Create a New Location
+        </h2>
+        <br>
+          <ul-a>
+            <li class="text-gray-600 dark:text-slate-400 mx-10">Navigate to the <a href="/" style="color: red; text-decoration: none;" onmouseover="this.style.color='#FAA0A0'" onmouseout="this.style.color='red'">Dashboard</a> - You will see the "Location Tests" tab.</li>
+            <li class="text-gray-600 dark:text-slate-400 mx-10">Add New Location - Click on the "New" button. You will be prompted to enter details for the new location.</li>
+            <li class="text-gray-600 dark:text-slate-400 mx-10">Enter Location Details -  Provide a name for the location and any other relevant details as required. </li>
+            <li class="text-gray-600 dark:text-slate-400 mx-10">Save the Location - After entering all necessary information, click "Save" to create the new location.</li>
+          </ul-a>
+          
+
+        <br>
+        <hr>
+        <!-- Step 2: Create a Run -->
+        <h2 class="text-xl font-bold text-gray-900 dark:text-slate-100" style="margin-top: 2rem;">
+          Step 2: Create a Run
+        </h2>
+
+        <p class="mt-4 text-gray-600 dark:text-slate-400 mx-5">
+          Once you have defined a location, the next step is to create a run. A run is a specific assessment session that allows you to evaluate storm overflows within the selected location using various tests.
+          <br>
+          <br> 
+          <ul-a>
+            <li class="text-gray-600 dark:text-slate-400 mx-10">Access the Runs Section: After clicking a location you'll be in the "Runs" tab.</li>
+            <li class="text-gray-600 dark:text-slate-400 mx-10">Initiate a New Run: Click on the "New" button.</li>
+            <li class="text-gray-600 dark:text-slate-400 mx-10">Provide Run Details: Give your run a descriptive name and optionally add a description to detail the purpose or focus of this particular run.</li>
+          </ul>
+        </p>
+
+        <br>
+        <hr>
+
+        <!-- Step 3: Pick Tests and Set Parameters -->
+        <h2 class="text-xl font-bold text-gray-900 dark:text-slate-100" style="margin-top: 2rem;">
+          Step 3: Pick Tests and Set Parameters
+        </h2>
+        <p class="mt-4 text-gray-600 dark:text-slate-400 mx-5">
+          With a run created, you can now choose which tests to include in your assessment.
+          <br>
+          <br>
+          <ul-a>
+            <li class="text-gray-600 dark:text-slate-400 mx-10">Select Tests: You'll see a list of available tests, each with a checkbox next to it. Check the boxes for the tests you want to include in your run.</li>
+            <li class="text-gray-600 dark:text-slate-400 mx-10">Configure Test Parameters: Some tests require you to set specific parameters. Click on a test to expand its settings, where you can input the necessary parameters and add a description for clarity.</li>
+            <li class="text-gray-600 dark:text-slate-400 mx-10">Finalize Tests: Once you've selected your tests and configured the required parameters, save your selections to include them in the run.</li>
+          </ul>
+        </p>
+
+        <br>
+        <hr>
+
+        <!-- Step 4: Execute the Run and View Results -->
+        <h2 class="text-xl font-bold text-gray-900 dark:text-slate-100" style="margin-top: 2rem;">
+          Step 4: Execute the Run and View Results
+        </h2>
+        <p class="mt-4 text-gray-600 dark:text-slate-400 mx-5">
+          
+          After configuration and pressing "Create", the tool will execute the run and begin running the tests.
+          <br>
+          <br>
+          <ul-a>
+            <li class="text-gray-600 dark:text-slate-400 mx-10">Start the Run: Click the "Start Run" button to initiate the testing process. The tool will now perform the selected tests based on the provided parameters.</li>
+            <li class="text-gray-600 dark:text-slate-400 mx-10">Monitor Progress: You can view the status of the run in real-time. Once all tests are completed, the run status will change to "Complete"</li>
+          </ul>
+        </p>
+
+        <br>
+        <hr>
+
+        <!-- Step 5: Analyze the Results -->
+        <h2 class="text-xl font-bold text-gray-900 dark:text-slate-100" style="margin-top: 2rem;">
+          Step 5: Analyze the Results
+        </h2>
+        <p class="mt-4 text-gray-600 dark:text-slate-400 mx-5">
+          Upon completion of the run, it's time to review and analyze the results.
+          <br>
+          <br>
+          <ul-a>
+            <li class="text-gray-600 dark:text-slate-400 mx-10">Access the Results Table: Navigate to the completed run and click on it to view a summary table of the results.</li>
+            <li class="text-gray-600 dark:text-slate-400 mx-10">Detailed View: For more detailed information on a specific test result, click on the corresponding row in the table.</li>
+            <li class="text-gray-600 dark:text-slate-400 mx-10">Visualizations: The tool provides visualization options for better understanding the data. Access these by selecting the "Visualizations" tab within the run.</li>
+            <li class="text-gray-600 dark:text-slate-400 mx-10">Download and Export: You have the option to download or export the results for further analysis or reporting.</li>
+          </ul>
+        </p>
+
+        <br>
+        <hr>
+      </div>
+    </main>
+  </body>
+</html>
+
