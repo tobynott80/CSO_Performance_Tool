@@ -369,15 +369,36 @@
                 <div
                   class="pagination flex items-center justify-center space-x-1 my-4"
                 >
-                {% if current_page > 1 %}
-                <a href="/?page=1">First</a>
-                <a href="/?page={{ current_page - 1 }}">Previous</a>
-                {% endif %} Page {{ current_page }} of {{ total_pages }} {% if
-                current_page < total_pages %}
-                <a href="/?page={{ current_page + 1 }}">Next</a>
-                <a href="/?page={{ total_pages }}">Last</a>
-                {% endif %}
-              </div>
+                  {% if current_page > 1 %}
+                  <a
+                    href="/?page=1"
+                    class="px-4 py-2 text-sm text-blue-600 font-semibold bg-white rounded-md border border-gray-300 hover:bg-blue-50"
+                    >First</a
+                  >
+                  <a
+                    href="/?page={{ current_page - 1 }}"
+                    class="px-4 py-2 text-sm text-blue-600 font-semibold bg-white rounded-md border border-gray-300 hover:bg-blue-50"
+                    >Previous</a
+                  >
+                  {% endif %}
+
+                  <span
+                    class="px-4 py-2 text-sm text-gray-700 font-semibold bg-white rounded-md border border-gray-300"
+                    >Page {{ current_page }} of {{ total_pages }}</span
+                  >
+
+                  {% if current_page < total_pages %}
+                  <a
+                    href="/?page={{ current_page + 1 }}"
+                    class="px-4 py-2 text-sm text-blue-600 font-semibold bg-white rounded-md border border-gray-300 hover:bg-blue-50"
+                    >Next</a
+                  >
+                  <a
+                    href="/?page={{ total_pages }}"
+                    class="px-4 py-2 text-sm text-blue-600 font-semibold bg-white rounded-md border border-gray-300 hover:bg-blue-50"
+                    >Last</a
+                  >
+                  {% endif %}
                 </div>
               </div>
             </div>
