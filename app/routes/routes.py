@@ -1,3 +1,4 @@
+from quart import session
 from quart import render_template, request
 from app import app
 from app.helper.database import initDB
@@ -76,8 +77,21 @@ async def setting_page():
 
 @app.route("/location/<locid>")
 async def showRuns(locid):
-    # Fetch the location, make sure correct then return the page
-    return await render_template("forestgreen.html")
+    # Convert locid to integer
+    locid_int = int(locid)
+
+    # Fetch the location details from the database
+    location = await db.location.find_unique(where={"id": locid_int})
+
+    # Add location details to session
+    if 'visited_locations' not in session:
+        session['visited_locations'] = []
+    session['visited_locations'].insert(0, {'id': locid, 'name': location.name})
+    session['visited_locations'] = session['visited_locations'][:5]
+
+    # Render the specific location page
+    return await render_template("forestgreen.html", location=location)
+
 
 
 @app.route("/location/<locid>/run/create")
