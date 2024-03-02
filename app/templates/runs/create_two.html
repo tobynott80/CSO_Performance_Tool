@@ -36,49 +36,33 @@
 
                 <!-- Body -->
                 <div class="w-full min-h-[400px] px-6 py-4">
-                  <div class="grid grid-cols-2">
-                    <div class="grid-span-1 space-y-6">
-                      <div>
-                        <label
-                          for="run_name"
-                          class="block text-sm font-medium mb-2 dark:text-white"
-                          >Run Name</label
-                        >
-                        <input
-                          type="text"
-                          id="run_name"
-                          class="py-3 px-4 block w-4/6 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:focus:ring-gray-600"
-                          placeholder="Run Name"
-                        />
+                  <div class="w-fit grid grid-rows-3 grid-cols-2">
+                    <div class="col-span-1 row-span-3">
+                      <div
+                        class="text-sm font-medium mb-2 dark:text-white row-span-1"
+                      >
+                        Run Name:
                       </div>
-                      <div>
-                        <label
-                          for="run_desc"
-                          class="block text-sm font-medium mb-2 dark:text-white"
-                          >Run Description</label
-                        >
-                        <textarea
-                          type="textarea"
-                          id="run_desc"
-                          class="py-3 px-4 block w-4/6 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:focus:ring-gray-600"
-                          placeholder="Run Description"
-                        ></textarea>
+                      <div
+                        class="text-sm font-medium mb-2 dark:text-white row-span-1"
+                      >
+                        Run Description:
+                      </div>
+                      <div
+                        class="text-sm font-medium mb-2 dark:text-white row-span-1"
+                      >
+                        Date:
                       </div>
                     </div>
-                    <div class="grid-span-1 space-y-2">
-                      <div>
-                        <label
-                          for="date"
-                          class="block text-sm font-medium mb-2 dark:text-white"
-                          >Date</label
-                        >
-                        <input
-                          type="text"
-                          id="date"
-                          class="py-3 px-4 block w-4/6 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:focus:ring-gray-600"
-                          placeholder="Run Name"
-                          disabled="true"
-                        />
+                    <div class="col-span-1 row-span-3">
+                      <div class="text-sm mb-2 dark:text-white row-span-1">
+                        {{ session.run_name }}
+                      </div>
+                      <div class="text-sm mb-2 dark:text-white row-span-1">
+                        {{ session.run_desc }}
+                      </div>
+                      <div class="text-sm mb-2 dark:text-white row-span-1">
+                        {{ session.run_date }}
                       </div>
                     </div>
                   </div>
@@ -86,42 +70,36 @@
                   <div
                     class="text-xl font-semibold text-gray-800 dark:text-gray-200 mt-8"
                   >
-                    Select Tests
+                    Configure Tests
                   </div>
 
                   <hr
                     class="h-px mt-2 mb-6 bg-gray-200 border-0 dark:bg-gray-700"
                   />
 
-                  <div class="flex flex-wrap items-center">
-                    <div class="flex-1">
-                      <input
-                        type="checkbox"
-                        class="shrink-0 mt-0.5 border-gray-200 rounded text-blue-600 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
-                        id="test-1"
-                      />
-                      <label
-                        for="test-1"
-                        class="text-sm ms-3 dark:text-gray-200"
-                        >Dry Day Discharges Test</label
-                      >
-                    </div>
+                  <div class="flex flex-wrap items-center"></div>
 
-                    <div class="flex-1">
-                      <input
-                        type="checkbox"
-                        class="shrink-0 mt-0.5 border-gray-200 rounded text-blue-600 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
-                        id="test-2"
-                      />
-                      <label
-                        for="test-2"
-                        class="text-sm ms-3 dark:text-gray-200"
-                        >Rainfall Discharges Test</label
+                  <div class="mt-5 flex justify-center space-x-4">
+                    <a
+                      href="{{ url_for('createRun', locid=loc.id, step=1) }}"
+                      class="py-2 px-3 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="1.5"
+                        stroke="currentColor"
+                        class="flex-shrink-0 size-4"
                       >
-                    </div>
-                  </div>
-
-                  <div class="mt-5 flex justify-center">
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M15.75 19.5 8.25 12l7.5-7.5"
+                        />
+                      </svg>
+                      Back
+                    </a>
                     <button
                       type="button"
                       class="py-2 px-3 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"

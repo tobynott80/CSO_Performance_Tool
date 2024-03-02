@@ -1,4 +1,4 @@
-from quart import render_template, request, redirect
+from quart import render_template, request, redirect, session
 from app import app
 from app.helper.database import initDB
 
@@ -77,4 +77,18 @@ async def createRun(locid):
         # Redirect if not a valid location ID
         return redirect("/")
     step = int(request.args.get('step')) if request.args.get('step') else 1
-    return await render_template(f"runs/{'create_one' if step == 1 else 'create_two'}.html", loc=loc, step=step)
+
+    if ('loc' in session):
+        # Reset session when in starting step in new location
+        if (session["loc"] != locid):
+            session.pop("loc")
+            session.pop("run_name")
+            session.pop("run_desc")
+            session.pop("run_date")
+            session.pop("tests")
+            step = 1
+    elif 'loc' not in session:
+        # Set step to 1 if no session data found 
+        step = 1
+
+    return await render_template(f"runs/{'create_one' if step == 1 else 'create_two'}.html", loc=loc, step=step, session=session)
