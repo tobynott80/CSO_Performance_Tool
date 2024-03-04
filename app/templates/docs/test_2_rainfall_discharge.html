@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+  <!-- Head Section -->
+  {% include 'head.html' %}
+
+  <body class="bg-gray-50 dark:bg-slate-900">
+    <!-- Header -->
+    {% include 'header.html' %}
+
+    <!-- Sidebar -->
+    {% include 'sidebar.html' %}
+
+    <!-- Main Content -->
+    <main class="min-h-screen lg:pl-64">
+      <div class="max-w-4xl mx-auto px-4 py-8">
+        <h1
+          class="text-3xl font-bold text-gray-900 dark:text-slate-100"
+          style="margin-bottom: 2rem"
+        >
+          Test 2 - Moderate Rainfall Discharges
+        </h1>
+        <hr />
+        <br />
+
+        <h2 class="text-xl font-bold text-gray-900 dark:text-slate-100">
+          What are Moderate Rainfall Discharges?
+        </h2>
+        <br />
+        <ul-a>
+          <li class="text-gray-600 dark:text-slate-400 mx-10">
+            Where a rainfall event totalling 4 mm or more in any one-hour period
+            has been recorded at a representative raingauge in the previous
+            24hrs, then the spill can be considered as “due to heavy rainfall”.
+          </li>
+        </ul-a>
+        <img
+          src="/static/images/test_two_photo.png"
+          alt="Dry Day Discharge information"
+          class="mx-auto"
+          style="max-width: 100%; height: auto"
+        />
+        <br />
+        <ul-a>
+          <li class="text-gray-600 dark:text-slate-400 mx-10">
+            Guidance ambiguity: - Rainfall depth in 1 hour vs. Rainfall
+            intensity of 4mm/h at any point - 24hrs preceding the start of the
+            spill only or the entire spill duration needs to comply
+          </li>
+        </ul-a>
+
+        <br />
+        <hr />
+        <br />
+        <h2 class="text-xl font-bold text-gray-900 dark:text-slate-100">
+          How does the application identify Moderate Rainfall Discharges?
+        </h2>
+        <br />
+        <ul-a>
+          <li class="text-gray-600 dark:text-slate-400 mx-10">
+            From stats report, look at the start of spill and retrieve rainfall
+            data for the previous 24 hrs.
+          </li>
+          <li class="text-gray-600 dark:text-slate-400 mx-10">
+            Perform a rolling 1hr sum on the rainfall data selected.
+          </li>
+          <li class="text-gray-600 dark:text-slate-400 mx-10">
+            If any of the sums is greater than 4mm the spill is “due to heavy
+            rainfall”. If not. it is a moderate rainfall spill and the CSO is
+            substandard
+          </li>
+        </ul-a>
+
+        <br />
+        <hr />
+      </div>
+    </main>
+  </body>
+</html>

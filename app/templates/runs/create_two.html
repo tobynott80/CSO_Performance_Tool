@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+  {% include 'head.html' %}
+
+  <body class="bg-gray-50 dark:bg-slate-900">
+    <!-- ========== HEADER ========== -->
+    {% include 'header.html' %} {% include 'sidebar.html' %}
+    <!-- End Sidebar -->
+
+    <!-- Content -->
+    <div class="max-w-[90rem] px-4 py-4 sm:px-6 lg:px-8 lg:ps-64 mx-auto">
+      <!-- Table Section -->
+      <div class="max-w-[85rem] px-4 sm:px-6 lg:px-8 lg:py-14 mx-auto">
+        <!-- Card -->
+        <div class="flex flex-col">
+          <div class="-m-1.5 overflow-x-auto">
+            <div class="p-1.5 min-w-full inline-block align-middle">
+              <div
+                class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden dark:bg-slate-900 dark:border-gray-700"
+              >
+                <!-- Header -->
+                <div
+                  class="px-6 py-4 border-b border-gray-200 dark:border-gray-700"
+                >
+                  <h2
+                    class="text-xl font-semibold text-gray-800 dark:text-gray-200"
+                  >
+                    Create New Run (Step {{ step }}/2)
+                  </h2>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">
+                    Create a new run in
+                    <span class="font-bold">{{ loc.name }}</span>
+                  </p>
+                </div>
+                <!-- End Header -->
+
+                <!-- Body -->
+                <div class="w-full min-h-[400px] px-6 py-4">
+                  <div class="w-fit grid grid-rows-3 grid-cols-2">
+                    <div class="col-span-1 row-span-3">
+                      <div
+                        class="text-sm font-medium mb-2 dark:text-white row-span-1"
+                      >
+                        Run Name:
+                      </div>
+                      <div
+                        class="text-sm font-medium mb-2 dark:text-white row-span-1"
+                      >
+                        Run Description:
+                      </div>
+                      <div
+                        class="text-sm font-medium mb-2 dark:text-white row-span-1"
+                      >
+                        Date:
+                      </div>
+                    </div>
+                    <div class="col-span-1 row-span-3">
+                      <div class="text-sm mb-2 dark:text-white row-span-1">
+                        {{ session.run_name }}
+                      </div>
+                      <div class="text-sm mb-2 dark:text-white row-span-1">
+                        {{ session.run_desc }}
+                      </div>
+                      <div class="text-sm mb-2 dark:text-white row-span-1">
+                        {{ session.run_date }}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    class="text-xl font-semibold text-gray-800 dark:text-gray-200 mt-8"
+                  >
+                    Configure Tests
+                  </div>
+
+                  <hr
+                    class="h-px mt-2 mb-6 bg-gray-200 border-0 dark:bg-gray-700"
+                  />
+
+                  <form class="flex flex-wrap items-center space-x-4">
+                    {% if 'test-1' in session.tests or 'test-2' in session.tests
+                    %}
+                    <div class="flex-1 space-y-4">
+                      <div>
+                        <label
+                          for="rainfall-stats"
+                          class="block text-sm font-medium mb-2 dark:text-white"
+                          >Rainfall Stats Report</label
+                        >
+                        <input
+                          type="file"
+                          name="rainfall-stats"
+                          id="rainfall-stats"
+                          class="block w-auto border border-gray-200 shadow-sm rounded-lg text-sm focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600 file:bg-gray-50 file:border-0 file:me-4 file:py-3 file:px-4 dark:file:bg-gray-700 dark:file:text-gray-400"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          for="spill-stats"
+                          class="block text-sm font-medium mb-2 dark:text-white"
+                          >Spill Stats Report</label
+                        >
+                        <input
+                          type="file"
+                          name="spill-stats"
+                          id="spill-stats"
+                          class="block w-auto border border-gray-200 shadow-sm rounded-lg text-sm focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600 file:bg-gray-50 file:border-0 file:me-4 file:py-3 file:px-4 dark:file:bg-gray-700 dark:file:text-gray-400"
+                        />
+                      </div>
+                    </div>
+                    {% endif %} {% if 'test-3' in session.tests %}
+                    <div class="flex-1 space-y-4">
+                      <div>
+                        <label
+                          for="formula-a"
+                          class="block text-sm font-medium mb-2 dark:text-white"
+                          >Formula A (I/s)</label
+                        >
+                        <input
+                          type="text"
+                          id="formula-a"
+                          name="formula-a"
+                          class="py-3 px-4 block max-w-80 w-5/6 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:focus:ring-gray-600"
+                          placeholder="Enter Value"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          for="consent-flow"
+                          class="block text-sm font-medium mb-2 dark:text-white"
+                          >Consent Pass Forward Flow (I/s)</label
+                        >
+                        <input
+                          type="text"
+                          id="consent-flow"
+                          name="consent-flow"
+                          class="py-3 px-4 block max-w-80 w-5/6 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:focus:ring-gray-600"
+                          placeholder="Enter Value"
+                        />
+                      </div>
+                    </div>
+                    {% endif %}
+                  </form>
+
+                  <div class="mt-6 flex justify-center space-x-4">
+                    <a
+                      href="{{ url_for('createRun', locid=loc.id, step=1) }}"
+                      class="py-2 px-3 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="1.5"
+                        stroke="currentColor"
+                        class="flex-shrink-0 size-4"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M15.75 19.5 8.25 12l7.5-7.5"
+                        />
+                      </svg>
+                      Back
+                    </a>
+                    <button
+                      type="button"
+                      class="py-2 px-3 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+                    >
+                      <svg
+                        class="flex-shrink-0 size-4"
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path d="M5 12h14" />
+                        <path d="M12 5v14" />
+                      </svg>
+                      Create a new run
+                    </button>
+                  </div>
+                </div>
+                <!-- End Body -->
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- End Card -->
+      </div>
+      <!-- End Table Section -->
+    </div>
+    <!-- ========== END MAIN CONTENT ========== -->
+  </body>
+
+  <script>
+    const now = new Date();
+    const formatted = now.toLocaleString();
+    document.querySelector("#date").value = formatted;
+  </script>
+</html>
