@@ -1,6 +1,7 @@
 from quart import render_template, request, redirect, session
 from app import app
 from app.helper.database import initDB
+from math import ceil
 
 db = None
 
@@ -16,16 +17,31 @@ async def tasks():
     return await render_template("forestgreen.html")
 
 
+async def getPaginatedLocations(page, limit):
+    skip = (page - 1) * limit  # Correctly calculate `skip` inside the function
+    locations = await db.location.find_many(skip=skip, take=limit)  # Use `take` for consistency with Prisma's terminology
+    return locations
+
+async def getTotalLocations():
+    total = await db.location.count()
+    return total
+
 @app.route("/")
 async def index():
     query = request.args.get("search")
-    if query:
-        locations = await db.location.find_many(where={"name": {"contains": query}})
-        return await render_template("index.html", locations=locations, search=True)
+    page = int(request.args.get("page", 1))
+    limit = int(request.args.get("limit", 10))
 
+    if query:
+        total = await db.location.count(where={"name": {"contains": query}})
+        locations = await db.location.find_many(where={"name": {"contains": query}}, skip=(page - 1) * limit, take=limit)
     else:
-        locations = await db.location.find_many()
-        return await render_template("index.html", locations=locations, search=False)
+        total = await getTotalLocations()
+        locations = await getPaginatedLocations(page, limit)  
+
+    total_pages = ceil(total / limit)
+    return await render_template("index.html", locations=locations, total_pages=total_pages, current_page=page, search=query)
+
 
 
 @app.route("/add_run")
@@ -60,8 +76,26 @@ async def setting_page():
 
 @app.route("/<locid>")
 async def showRuns(locid):
-    # Fetch the location, make sure correct then return the page
-    return await render_template("forestgreen.html")
+    # Convert locid to integer
+    locid_int = int(locid)
+
+    # Fetch the location details from the database
+    location = await db.location.find_unique(where={"id": locid_int})
+
+    # Add location details to session
+    if 'visited_locations' not in session:
+        session['visited_locations'] = []
+
+    # Check if location is already in visited locations and if not add it to the list
+    existing_location = next((item for item in session['visited_locations'] if item['id'] == locid), None)
+    if existing_location:
+        session['visited_locations'] = [loc for loc in session['visited_locations'] if loc['id'] != locid]
+    session['visited_locations'].insert(0, {'id': locid, 'name': location.name})
+    session['visited_locations'] = session['visited_locations'][:5]
+
+    # Render the specific location page
+    return await render_template("forestgreen.html", location=location)
+
 
 
 @app.get("/<locid>/create")
