@@ -126,18 +126,32 @@
                       </div>
 
                       <div class="flex-1">
-                        <input
-                          type="checkbox"
-                          {% if 'test-2' in
-                        session.tests %}checked{% endif %}
-                          name="test-2"
-                          class="shrink-0 mt-0.5 border-gray-200 rounded text-blue-600 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
-                          id="test-2"
-                        />
+                        <input type="checkbox" {% if 'test-2' in session.tests
+                        %}checked{% endif %} name="test-2" class="shrink-0
+                        mt-0.5 border-gray-200 rounded text-blue-600
+                        focus:ring-blue-500 dark:bg-gray-800
+                        dark:border-gray-700 dark:checked:bg-blue-500
+                        dark:checked:border-blue-500
+                        dark:focus:ring-offset-gray-800" id="test-2" />
                         <label
                           for="test-2"
                           class="text-sm ms-1 dark:text-gray-200"
                           >Rainfall Discharges Test</label
+                        >
+                      </div>
+
+                      <div class="flex-1">
+                        <input type="checkbox" {% if 'test-3' in session.tests
+                        %}checked{% endif %} name="test-3" class="shrink-0
+                        mt-0.5 border-gray-200 rounded text-blue-600
+                        focus:ring-blue-500 dark:bg-gray-800
+                        dark:border-gray-700 dark:checked:bg-blue-500
+                        dark:checked:border-blue-500
+                        dark:focus:ring-offset-gray-800" id="test-3" />
+                        <label
+                          for="test-3"
+                          class="text-sm ms-1 dark:text-gray-200"
+                          >Formula A and Consent</label
                         >
                       </div>
                     </div>
