@@ -86,6 +86,11 @@ async def showRuns(locid):
     # Add location details to session
     if 'visited_locations' not in session:
         session['visited_locations'] = []
+
+    # Check if location is already in visited locations and if not add it to the list
+    existing_location = next((item for item in session['visited_locations'] if item['id'] == locid), None)
+    if existing_location:
+        session['visited_locations'] = [loc for loc in session['visited_locations'] if loc['id'] != locid]
     session['visited_locations'].insert(0, {'id': locid, 'name': location.name})
     session['visited_locations'] = session['visited_locations'][:5]
 
