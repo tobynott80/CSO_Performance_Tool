@@ -6,20 +6,10 @@ from math import ceil
 db = None
 
 
-@app.route('/locations_page')
-def tasks():
-    return render_template('locations_page.html')
-
-
 @app.before_serving
 async def initializeDB():
     global db
     db = await initDB()
-
-
-@app.route("/forest_green")
-async def tasks():
-    return await render_template("forestgreen.html")
 
 
 async def getPaginatedLocations(page, limit):
@@ -27,11 +17,6 @@ async def getPaginatedLocations(page, limit):
     # Use `take` for consistency with Prisma's terminology
     locations = await db.location.find_many(skip=skip, take=limit)
     return locations
-
-
-async def getTotalLocations():
-    total = await db.location.count()
-    return total
 
 
 @app.route("/")
@@ -44,7 +29,7 @@ async def index():
         total = await db.location.count(where={"name": {"contains": query}})
         locations = await db.location.find_many(where={"name": {"contains": query}}, skip=(page - 1) * limit, take=limit)
     else:
-        total = await getTotalLocations()
+        total = await db.location.count()
         locations = await getPaginatedLocations(page, limit)
 
     total_pages = ceil(total / limit)
@@ -104,7 +89,7 @@ async def showRuns(locid):
     session['visited_locations'] = session['visited_locations'][:5]
 
     # Render the specific location page
-    return await render_template("forestgreen.html", location=location)
+    return await render_template("locations_page.html", location=location)
 
 
 @app.get("/<locid>/create")

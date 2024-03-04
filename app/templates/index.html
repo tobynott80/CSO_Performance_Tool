@@ -234,7 +234,7 @@
                 <!-- Table Dynamic Content -->
                 {% for location in locations %}
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                  <tr class="cursor-pointer bg-white hover:bg-gray-200 dark:bg-slate-900 dark:hover:bg-slate-800" data-url="/locations_page">
+                  <tr class="cursor-pointer bg-white hover:bg-gray-200 dark:bg-slate-900 dark:hover:bg-slate-800" data-locid="{{ location.id }}">
                     
                     <td class="size-px whitespace-nowrap">
                       <button type="button" class="block w-full" data-hs-overlay="#hs-ai-invoice-modal">
@@ -370,13 +370,7 @@
     }
 
     // When the user clicks anywhere in the table row, direct to the new location page
-    document.addEventListener('DOMContentLoaded', (event) => {
-      document.querySelectorAll('tr').forEach(row => {
-          row.addEventListener('click', () => {
-              window.location.href = '/locations_page';
-          });
-      });
-    });
+
     // add a spinner when the submit button is clicked
     document.getElementById('submit-button').addEventListener('click', function () {
       this.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -431,7 +425,7 @@
       document.querySelectorAll('tbody tr').forEach(row => {
         row.addEventListener('click', () => {
             const locId = row.getAttribute('data-locid');
-            window.location.href = `/location/${locId}`;
+            window.location.href = `/${locId}`;
         });
     });
     </script>
