@@ -1,5 +1,4 @@
-from quart import session
-from quart import render_template, request
+from quart import render_template, request, redirect, session
 from app import app
 from app.helper.database import initDB
 from math import ceil
@@ -75,7 +74,7 @@ async def setting_page():
     return await render_template("settings.html")
 
 
-@app.route("/location/<locid>")
+@app.route("/<locid>")
 async def showRuns(locid):
     # Convert locid to integer
     locid_int = int(locid)
@@ -99,7 +98,31 @@ async def showRuns(locid):
 
 
 
-@app.route("/location/<locid>/run/create")
+@app.get("/<locid>/create")
 async def createRun(locid):
-    # Fetch the location, make sure correct then return the create run page
-    return await render_template("runs/create.html")
+    # Redirect if no number
+    if (not locid.isnumeric()):
+        return redirect("/")
+
+    loc = await db.location.find_first(
+        where={'id': int(locid)}
+    )
+    if (loc == None):
+        # Redirect if not a valid location ID
+        return redirect("/")
+    step = int(request.args.get('step')) if request.args.get('step') else 1
+
+    if ('loc' in session):
+        # Reset session when in starting step in new location
+        if (session["loc"] != locid):
+            session.pop("loc")
+            session.pop("run_name")
+            session.pop("run_desc")
+            session.pop("run_date")
+            session.pop("tests")
+            step = 1
+    elif 'loc' not in session:
+        # Set step to 1 if no session data found 
+        step = 1
+
+    return await render_template(f"runs/{'create_one' if step == 1 else 'create_two'}.html", loc=loc, step=step, session=session)
