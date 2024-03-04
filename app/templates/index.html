@@ -242,9 +242,7 @@
                   <!-- Table Dynamic Content -->
                   {% for location in locations %}
                   <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                    <tr
-                      class="bg-white hover:bg-gray-50 dark:bg-slate-900 dark:hover:bg-slate-800"
-                    >
+                    <tr class="cursor-pointer bg-white hover:bg-gray-200 dark:bg-slate-900 dark:hover:bg-slate-800" data-locid="{{ location.id }}">
                       <td class="size-px whitespace-nowrap">
                         <button
                           type="button"
@@ -474,6 +472,13 @@
         updateTableData(newPage);
       }
       updateTableData(1);
+
+      document.querySelectorAll('tbody tr').forEach(row => {
+        row.addEventListener('click', () => {
+            const locId = row.getAttribute('data-locid');
+            window.location.href = `/location/${locId}`;
+        });
+    });
     </script>
   </body>
 </html>
