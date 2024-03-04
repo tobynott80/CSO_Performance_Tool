@@ -21,7 +21,7 @@ model Runs {
   id          Int            @id @default(autoincrement())
   locationID  Int
   name        String
-  date        DateTime
+  date        DateTime      @default(now())
   runsTests   RunTests[]
   importSpills ImportSpills[]
   importRainfall ImportRainfall[]

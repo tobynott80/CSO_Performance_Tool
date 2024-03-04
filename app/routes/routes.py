@@ -12,19 +12,12 @@ async def initializeDB():
     db = await initDB()
 
 
-@app.route("/forest_green")
-async def tasks():
-    return await render_template("forestgreen.html")
-
-
 async def getPaginatedLocations(page, limit):
     skip = (page - 1) * limit  # Correctly calculate `skip` inside the function
-    locations = await db.location.find_many(skip=skip, take=limit)  # Use `take` for consistency with Prisma's terminology
+    # Use `take` for consistency with Prisma's terminology
+    locations = await db.location.find_many(skip=skip, take=limit)
     return locations
 
-async def getTotalLocations():
-    total = await db.location.count()
-    return total
 
 @app.route("/")
 async def index():
@@ -36,12 +29,11 @@ async def index():
         total = await db.location.count(where={"name": {"contains": query}})
         locations = await db.location.find_many(where={"name": {"contains": query}}, skip=(page - 1) * limit, take=limit)
     else:
-        total = await getTotalLocations()
-        locations = await getPaginatedLocations(page, limit)  
+        total = await db.location.count()
+        locations = await getPaginatedLocations(page, limit)
 
     total_pages = ceil(total / limit)
     return await render_template("index.html", locations=locations, total_pages=total_pages, current_page=page, search=query)
-
 
 
 @app.route("/add_run")
@@ -87,15 +79,17 @@ async def showRuns(locid):
         session['visited_locations'] = []
 
     # Check if location is already in visited locations and if not add it to the list
-    existing_location = next((item for item in session['visited_locations'] if item['id'] == locid), None)
+    existing_location = next(
+        (item for item in session['visited_locations'] if item['id'] == locid), None)
     if existing_location:
-        session['visited_locations'] = [loc for loc in session['visited_locations'] if loc['id'] != locid]
-    session['visited_locations'].insert(0, {'id': locid, 'name': location.name})
+        session['visited_locations'] = [
+            loc for loc in session['visited_locations'] if loc['id'] != locid]
+    session['visited_locations'].insert(
+        0, {'id': locid, 'name': location.name})
     session['visited_locations'] = session['visited_locations'][:5]
 
     # Render the specific location page
-    return await render_template("forestgreen.html", location=location)
-
+    return await render_template("locations_page.html", location=location)
 
 
 @app.get("/<locid>/create")
@@ -122,7 +116,7 @@ async def createRun(locid):
             session.pop("tests")
             step = 1
     elif 'loc' not in session:
-        # Set step to 1 if no session data found 
+        # Set step to 1 if no session data found
         step = 1
 
     return await render_template(f"runs/{'create_one' if step == 1 else 'create_two'}.html", loc=loc, step=step, session=session)

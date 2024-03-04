@@ -9,14 +9,16 @@
     <!-- ========== MAIN CONTENT ========== -->
     {% include 'sidebar.html' %}
 
-    <!-- Content -->
-    <div class="max-w-[90rem] px-4 py-4 sm:px-6 lg:px-8 lg:ps-64 mx-auto">
-      <!-- Table Section -->
-      <div class="max-w-[85rem] px-4 sm:px-6 lg:px-8 lg:py-14 mx-auto">
-        <!-- Card -->
-        <div class="flex flex-col">
-          <div class="-m-1.5 overflow-x-auto">
-            <div class="p-1.5 min-w-full inline-block align-middle">
+  <!-- Content -->
+  <div class="max-w-[90rem] px-1 py-1 sm:px-6 lg:px-0 lg:ps-64 mx-auto">
+    <!-- Table Section -->
+    <div class="max-w-[85rem] px-4 sm:px-6 lg:px-8 lg:py-10 mx-auto">
+      <!-- Card -->
+      <div class="flex flex-col">
+        <div class="-m-1.5 overflow-x-auto">
+          <div class=" min-w-full inline-block align-middle">
+            <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden dark:bg-slate-900 dark:border-gray-700">
+              <!-- Header -->
               <div
                 class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden dark:bg-slate-900 dark:border-gray-700"
               >
@@ -108,8 +110,6 @@
                           <div
                             class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 dark:bg-gray-800 dark:text-white"
                           >
-                            <div>
-                              <div>
                                 <!-- Form -->
                                 <form id="infoForm">
                                   <div class="grid gap-y-4">
@@ -146,20 +146,14 @@
                                           </svg>
                                         </div>
                                       </div>
-                                    </div>
                                     <!-- End Form Group -->
-                                    <button
-                                      type="submit"
-                                      value="submit"
-                                      class="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600 dark:bg-blue-700 dark:hover:bg-blue-800"
-                                    >
-                                      Submit
-                                    </button>
                                   </div>
-                                </form>
-                                <!-- End Form -->
-                              </div>
-                            </div>
+                                  <!-- End Form Group -->
+                                  <button id="submit-button" type="submit" value="submit"
+                                    class="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600 dark:bg-blue-700 dark:hover:bg-blue-800">Submit</button>
+                                  </form>
+                                </div>
+                              <!-- End Form -->
                           </div>
                           <div
                             class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse dark:bg-gray-800"
@@ -177,193 +171,126 @@
                     </div>
                   </div>
                 </div>
-                <!-- End Header -->
+<!-- End Header -->
 
-                <!-- Table -->
-                <table
-                  class="min-w-full divide-y divide-gray-200 dark:divide-gray-700"
-                  id="dynamic_table"
-                >
-                  <!-- Table Heading -->
-                  <thead class="bg-gray-50 dark:bg-slate-900">
-                    <tr>
-                      <th scope="col" class="px-6 py-3 text-start">
-                        <div class="flex items-center gap-x-2">
+              <!-- Table -->
+              <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700" id="dynamic_table">
+                <!-- Table Heading -->
+                <thead class="bg-gray-50 dark:bg-slate-900">
+                  <tr>
+                    <th scope="col" class="px-6 py-3 text-start">
+                      <div class="flex items-center gap-x-2 justify-center">
+                        <span class="text-xs text-center font-semibold uppercase tracking-wide text-gray-800 dark:text-gray-200">
+                          Location ID
+                        </span>
+                      </div>
+                    </th>
+
+                    <th scope="col" class="px-6 py-3 text-start">
+                      <div class="flex items-center gap-x-2 justify-center">
+                        <span class="text-xs text-center font-semibold uppercase tracking-wide text-gray-800 dark:text-gray-200">
+                          Number of tests
+                        </span>
+                      </div>
+                    </th>
+
+                    <th scope="col" class="px-6 py-3 text-start">
+                      <div class="flex items-center gap-x-2 justify-center">
+                        <span class="text-xs text-center font-semibold uppercase tracking-wide text-gray-800 dark:text-gray-200">
+                          Current Test status
+                        </span>
+                      </div>
+                    </th>
+
+                    <th scope="col" class="px-6 py-3 text-start">
+                      <div class="flex items-center gap-x-2 justify-center">
+                        <span class="text-xs text-center font-semibold uppercase tracking-wide text-gray-800 dark:text-gray-200">
+                          Last updated
+                        </span>
+                      </div>
+                    </th>
+
+                    <th scope="col" class="px-6 py-3 text-start">
+                      <div class="flex items-center gap-x-2 justify-center">
+                        <span class="text-xs text-center font-semibold uppercase tracking-wide text-gray-800 dark:text-gray-200">
+                          Created
+                        </span>
+                      </div>
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-end"></th>
+                  </tr>
+                </thead>
+                <!-- Table Dynamic Content -->
+                {% for location in locations %}
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                  <tr class="cursor-pointer bg-white hover:bg-gray-200 dark:bg-slate-900 dark:hover:bg-slate-800" data-locid="{{ location.id }}">
+                    
+                    <td class="size-px whitespace-nowrap">
+                      <button type="button" class="block w-full" data-hs-overlay="#hs-ai-invoice-modal">
+                        <span class="block px-6 py-2">
+                          <span class="font-mono text-sm text-blue-600 dark:text-blue-500">{{ location.name }}</span>
+                        </span>
+                      </button>
+                    </td>
+
+                    <td class="size-px whitespace-nowrap">
+                      <button type="button" class="block w-full" data-hs-overlay="#hs-ai-invoice-modal">
+                        <span class="block px-6 py-2">
+                          <span class="text-sm text-gray-600 dark:text-gray-400">{{ location.id }}</span>
+                        </span>
+                      </button>
+                    </td>
+                    <td class="size-px whitespace-nowrap">
+                      <button type="button" class="block w-full" data-hs-overlay="#hs-ai-invoice-modal">
+                        <span class="block px-6 py-2">
                           <span
-                            class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-gray-200"
-                          >
-                            Location ID
+                            class="py-1 px-1.5 inline-flex items-center gap-x-1 text-xs font-medium bg-teal-100 text-teal-800 rounded-full dark:bg-teal-500/10 dark:text-teal-500">
+                            <svg class="size-2.5" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                              fill="currentColor" viewBox="0 0 16 16">
+                              <path
+                                d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z" />
+                            </svg>
+                            Complete
                           </span>
-                        </div>
-                      </th>
-
-                      <th scope="col" class="px-6 py-3 text-start">
-                        <div class="flex items-center gap-x-2">
+                        </span>
+                      </button>
+                    </td>
+                    <td class="size-px whitespace-nowrap">
+                      <button type="button" class="block w-full" data-hs-overlay="#hs-ai-invoice-modal">
+                        <span class="block px-6 py-2">
+                          <span class="text-sm text-gray-600 dark:text-gray-400">{{ location.runs if location.runs is
+                            not none else '0' }}</span>
+                        </span>
+                      </button>
+                    </td>
+                    <td class="size-px whitespace-nowrap">
+                      <button type="button" class="block w-full" data-hs-overlay="#hs-ai-invoice-modal">
+                        <span class="block px-6 py-2">
+                          <span class="text-sm text-gray-600 dark:text-gray-400">{{ location.createdAt.strftime('%d %B
+                            %Y | %H:%M:%S') }}</span> </span>
+                      </button>
+                    </td>
+                    <td class="size-px whitespace-nowrap">
+                      <button type="button" class="block w-full" data-hs-overlay="#hs-ai-invoice-modal">
+                        <span class="px-6 py-1.5">
                           <span
-                            class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-gray-200"
-                          >
-                            Number of tests
+                            class="py-1 px-2 inline-flex justify-center items-center gap-2 rounded-lg border font-medium bg-white text-gray-700 shadow-sm align-middle hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white focus:ring-blue-600 transition-all text-sm dark:bg-slate-900 dark:hover:bg-slate-800 dark:border-gray-700 dark:text-gray-400 dark:hover:text-white dark:focus:ring-offset-gray-800">
+                            <svg class="flex-shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                              fill="currentColor" viewBox="0 0 16 16">
+                              <path
+                                d="M1.92.506a.5.5 0 0 1 .434.14L3 1.293l.646-.647a.5.5 0 0 1 .708 0L5 1.293l.646-.647a.5.5 0 0 1 .708 0L7 1.293l.646-.647a.5.5 0 0 1 .708 0L9 1.293l.646-.647a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .801.13l.5 1A.5.5 0 0 1 15 2v12a.5.5 0 0 1-.053.224l-.5 1a.5.5 0 0 1-.8.13L13 14.707l-.646.647a.5.5 0 0 1-.708 0L11 14.707l-.646.647a.5.5 0 0 1-.708 0L9 14.707l-.646.647a.5.5 0 0 1-.708 0L7 14.707l-.646.647a.5.5 0 0 1-.708 0L5 14.707l-.646.647a.5.5 0 0 1-.708 0L3 14.707l-.646.647a.5.5 0 0 1-.801-.13l-.5-1A.5.5 0 0 1 1 14V2a.5.5 0 0 1 .053-.224l.5-1a.5.5 0 0 1 .367-.27zm.217 1.338L2 2.118v11.764l.137.274.51-.51a.5.5 0 0 1 .707 0l.646.647.646-.646a.5.5 0 0 1 .708 0l.646.646.646-.646a.5.5 0 0 1 .708 0l.646.646.646-.646a.5.5 0 0 1 .708 0l.646.646.646-.646a.5.5 0 0 1 .708 0l.646.646.646-.646a.5.5 0 0 1 .708 0l.509.509.137-.274V2.118l-.137-.274-.51.51a.5.5 0 0 1-.707 0L12 1.707l-.646.647a.5.5 0 0 1-.708 0L10 1.707l-.646.647a.5.5 0 0 1-.708 0L8 1.707l-.646.647a.5.5 0 0 1-.708 0L6 1.707l-.646.647a.5.5 0 0 1-.708 0L4 1.707l-.646.647a.5.5 0 0 1-.708 0l-.509-.51z" />
+                              <path
+                                d="M3 4.5a.5.5 0 0 1 .5-.5h6a.5.5 0 1 1 0 1h-6a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 1 1 0 1h-6a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 1 1 0 1h-6a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5zm8-6a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5z" />
+                            </svg>
+                            View
                           </span>
-                        </div>
-                      </th>
-
-                      <th scope="col" class="px-6 py-3 text-start">
-                        <div class="flex items-center gap-x-2">
-                          <span
-                            class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-gray-200"
-                          >
-                            Current Test status
-                          </span>
-                        </div>
-                      </th>
-
-                      <th scope="col" class="px-6 py-3 text-start">
-                        <div class="flex items-center gap-x-2">
-                          <span
-                            class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-gray-200"
-                          >
-                            Last updated
-                          </span>
-                        </div>
-                      </th>
-
-                      <th scope="col" class="px-6 py-3 text-start">
-                        <div class="flex items-center gap-x-2">
-                          <span
-                            class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-gray-200"
-                          >
-                            Created
-                          </span>
-                        </div>
-                      </th>
-                      <th scope="col" class="px-6 py-3 text-end"></th>
-                    </tr>
-                  </thead>
-                  <!-- Table Dynamic Content -->
-                  {% for location in locations %}
-                  <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                    <tr class="cursor-pointer bg-white hover:bg-gray-200 dark:bg-slate-900 dark:hover:bg-slate-800" data-locid="{{ location.id }}">
-                      <td class="size-px whitespace-nowrap">
-                        <button
-                          type="button"
-                          class="block"
-                          data-hs-overlay="#hs-ai-invoice-modal"
-                        >
-                          <span class="block px-6 py-2">
-                            <span
-                              class="font-mono text-sm text-blue-600 dark:text-blue-500"
-                              >{{ location.name }}</span
-                            >
-                          </span>
-                        </button>
-                      </td>
-                      <td class="size-px whitespace-nowrap">
-                        <button
-                          type="button"
-                          class="block"
-                          data-hs-overlay="#hs-ai-invoice-modal"
-                        >
-                          <span class="block px-6 py-2">
-                            <span
-                              class="text-sm text-gray-600 dark:text-gray-400"
-                              >{{ location.id }}</span
-                            >
-                          </span>
-                        </button>
-                      </td>
-                      <td class="size-px whitespace-nowrap">
-                        <button
-                          type="button"
-                          class="block"
-                          data-hs-overlay="#hs-ai-invoice-modal"
-                        >
-                          <span class="block px-6 py-2">
-                            <span
-                              class="py-1 px-1.5 inline-flex items-center gap-x-1 text-xs font-medium bg-teal-100 text-teal-800 rounded-full dark:bg-teal-500/10 dark:text-teal-500"
-                            >
-                              <svg
-                                class="size-2.5"
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="16"
-                                height="16"
-                                fill="currentColor"
-                                viewBox="0 0 16 16"
-                              >
-                                <path
-                                  d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"
-                                />
-                              </svg>
-                              Complete
-                            </span>
-                          </span>
-                        </button>
-                      </td>
-                      <td class="size-px whitespace-nowrap">
-                        <button
-                          type="button"
-                          class="block"
-                          data-hs-overlay="#hs-ai-invoice-modal"
-                        >
-                          <span class="block px-6 py-2">
-                            <span
-                              class="text-sm text-gray-600 dark:text-gray-400"
-                              >{{ location.runs if location.runs is not none
-                              else '0' }}</span
-                            >
-                          </span>
-                        </button>
-                      </td>
-                      <td class="size-px whitespace-nowrap">
-                        <button
-                          type="button"
-                          class="block"
-                          data-hs-overlay="#hs-ai-invoice-modal"
-                        >
-                          <span class="block px-6 py-2">
-                            <span
-                              class="text-sm text-gray-600 dark:text-gray-400"
-                              >{{ location.createdAt.strftime('%d %B %Y |
-                              %H:%M:%S') }}</span
-                            >
-                          </span>
-                        </button>
-                      </td>
-                      <td class="size-px whitespace-nowrap">
-                        <button
-                          type="button"
-                          class="block"
-                          data-hs-overlay="#hs-ai-invoice-modal"
-                        >
-                          <span class="px-6 py-1.5">
-                            <span
-                              class="py-1 px-2 inline-flex justify-center items-center gap-2 rounded-lg border font-medium bg-white text-gray-700 shadow-sm align-middle hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white focus:ring-blue-600 transition-all text-sm dark:bg-slate-900 dark:hover:bg-slate-800 dark:border-gray-700 dark:text-gray-400 dark:hover:text-white dark:focus:ring-offset-gray-800"
-                            >
-                              <svg
-                                class="flex-shrink-0 size-4"
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="16"
-                                height="16"
-                                fill="currentColor"
-                                viewBox="0 0 16 16"
-                              >
-                                <path
-                                  d="M1.92.506a.5.5 0 0 1 .434.14L3 1.293l.646-.647a.5.5 0 0 1 .708 0L5 1.293l.646-.647a.5.5 0 0 1 .708 0L7 1.293l.646-.647a.5.5 0 0 1 .708 0L9 1.293l.646-.647a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .801.13l.5 1A.5.5 0 0 1 15 2v12a.5.5 0 0 1-.053.224l-.5 1a.5.5 0 0 1-.8.13L13 14.707l-.646.647a.5.5 0 0 1-.708 0L11 14.707l-.646.647a.5.5 0 0 1-.708 0L9 14.707l-.646.647a.5.5 0 0 1-.708 0L7 14.707l-.646.647a.5.5 0 0 1-.708 0L5 14.707l-.646.647a.5.5 0 0 1-.708 0L3 14.707l-.646.647a.5.5 0 0 1-.801-.13l-.5-1A.5.5 0 0 1 1 14V2a.5.5 0 0 1 .053-.224l.5-1a.5.5 0 0 1 .367-.27zm.217 1.338L2 2.118v11.764l.137.274.51-.51a.5.5 0 0 1 .707 0l.646.647.646-.646a.5.5 0 0 1 .708 0l.646.646.646-.646a.5.5 0 0 1 .708 0l.646.646.646-.646a.5.5 0 0 1 .708 0l.646.646.646-.646a.5.5 0 0 1 .708 0l.646.646.646-.646a.5.5 0 0 1 .708 0l.509.509.137-.274V2.118l-.137-.274-.51.51a.5.5 0 0 1-.707 0L12 1.707l-.646.647a.5.5 0 0 1-.708 0L10 1.707l-.646.647a.5.5 0 0 1-.708 0L8 1.707l-.646.647a.5.5 0 0 1-.708 0L6 1.707l-.646.647a.5.5 0 0 1-.708 0L4 1.707l-.646.647a.5.5 0 0 1-.708 0l-.509-.51z"
-                                />
-                                <path
-                                  d="M3 4.5a.5.5 0 0 1 .5-.5h6a.5.5 0 1 1 0 1h-6a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 1 1 0 1h-6a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 1 1 0 1h-6a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5zm8-6a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5z"
-                                />
-                              </svg>
-                              View
-                            </span>
-                          </span>
-                        </button>
-                      </td>
-                    </tr>
-                  </tbody>
-
-                  {% endfor %}
-                </table>
-                <!-- End Table -->
+                        </span>
+                      </button>
+                    </td>
+                </tbody>
+                {% endfor %}
+              </table>
+              <!-- End Table -->
                 <div
                   class="pagination flex items-center justify-center space-x-1 my-4"
                 >
@@ -410,30 +337,41 @@
         <!-- End Card -->
       </div>
       <!-- End Table Section -->
-    </div>
-    <!-- End Content -->
-    <!-- ========== END MAIN CONTENT ========== -->
-    <script>
-      var modal = document.getElementById("popup");
-      // Get the close button
-      var close = document.getElementById("close");
-      // Get the input field
-      var input = document.getElementById("info");
-      // When the user clicks on the close button, close the modal
-      close.onclick = function () {
-        modal.classList.add("hidden");
-      };
+  </div>
+  <!-- End Content -->
+  <!-- ========== END MAIN CONTENT ========== -->
 
-      function openPopup() {
-        input.value = "";
-        modal.classList.remove("hidden");
-      }
+  <!-- ============= JavaScript ============= -->
+  <script>
+    var modal = document.getElementById('popup');
+    // Get the close button
+    var close = document.getElementById('close');
+    // Get the input field
+    var input = document.getElementById('info');
+    // When the user clicks on the close button, close the modal
+    close.onclick = function () {
+      modal.classList.add('hidden');
+    }
+    // Open the popup
+    function openPopup() {
+      input.value = '';
+      modal.classList.remove('hidden');
+    }
 
-      document
-        .getElementById("infoForm")
-        .addEventListener("submit", function (event) {
-          event.preventDefault();
-          var name = document.getElementById("info").value;
+    // When the user clicks anywhere in the table row, direct to the new location page
+
+    // add a spinner when the submit button is clicked
+    document.getElementById('submit-button').addEventListener('click', function () {
+      this.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>`;
+    });
+
+    // Submit the form
+    document.getElementById('infoForm').addEventListener('submit', function (event) {
+      event.preventDefault();
+      var name = document.getElementById('info').value;
 
           fetch("/api/location", {
             method: "POST",
@@ -476,7 +414,7 @@
       document.querySelectorAll('tbody tr').forEach(row => {
         row.addEventListener('click', () => {
             const locId = row.getAttribute('data-locid');
-            window.location.href = `/location/${locId}`;
+            window.location.href = `/${locId}`;
         });
     });
     </script>
