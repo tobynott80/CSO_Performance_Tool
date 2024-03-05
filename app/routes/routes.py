@@ -66,13 +66,11 @@ async def setting_page():
     return await render_template("settings.html")
 
 
-@app.route("/<locid>")
+@app.route("/<int:locid>")
 async def showRuns(locid):
-    # Convert locid to integer
-    locid_int = int(locid)
 
     # Fetch the location details from the database
-    location = await db.location.find_unique(where={"id": locid_int})
+    location = await db.location.find_unique(where={"id": locid})
 
     # Add location details to session
     if 'visited_locations' not in session:
