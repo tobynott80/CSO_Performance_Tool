@@ -13,8 +13,7 @@ async def initializeDB():
 
 
 async def getPaginatedLocations(page, limit):
-    skip = (page - 1) * limit  # Correctly calculate `skip` inside the function
-    # Use `take` for consistency with Prisma's terminology
+    skip = (page - 1) * limit  
     locations = await db.location.find_many(skip=skip, take=limit)
     return locations
 

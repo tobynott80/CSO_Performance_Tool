@@ -76,7 +76,8 @@
                             name="run_desc"
                             class="py-3 px-4 block w-4/6 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:focus:ring-gray-600"
                             placeholder="Run Description"
-                          >{{session.run_desc}}</textarea
+                          >
+{{session.run_desc}}</textarea
                           >
                         </div>
                       </div>
@@ -156,7 +157,27 @@
                       </div>
                     </div>
 
-                    <div class="mt-6 flex justify-center">
+                    <div class="mt-6 flex justify-center space-x-4">
+                      <a
+                        href="/{{loc.id}}"
+                        class="py-2 px-3 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke-width="1.5"
+                          stroke="currentColor"
+                          class="flex-shrink-0 size-4"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M15.75 19.5 8.25 12l7.5-7.5"
+                          />
+                        </svg>
+                        Cancel
+                      </a>
                       <button
                         type="button"
                         onclick="submitForm()"
