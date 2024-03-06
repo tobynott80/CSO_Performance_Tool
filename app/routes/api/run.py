@@ -1,5 +1,6 @@
 from quart import Blueprint, render_template, request, redirect, session, url_for
 import asyncio
+
 # from asyncio import create_task, all_tasks
 from datetime import date
 
@@ -8,6 +9,8 @@ from app.gn066_tests.csvHandler import csvReader, csvWriter
 from app.gn066_tests import analysis
 from app.gn066_tests import visualisation as vis
 from app.gn066_tests.stats import timeStats, spillStats
+from threading import Thread
+
 pd.options.mode.chained_assignment = None  # default='warn'
 
 run_blueprint = Blueprint("run", __name__)
@@ -17,9 +20,9 @@ run_blueprint = Blueprint("run", __name__)
 async def createRunStep1():
     # Use sessions to save step 1 data and then use it when submitting step 2 to create a run
     data = (await request.form).to_dict()
-    if (data is None):
+    if data is None:
         return redirect("/")
-    if 'loc' not in data:
+    if "loc" not in data:
         return redirect("/")
     else:
         session["loc"] = data.pop("loc")
@@ -29,22 +32,26 @@ async def createRunStep1():
     session["run_date"] = data.pop("run_date", date.today())
     tests = []
     for test in data:
-        if (data[test] == "on"):
+        if data[test] == "on":
             tests.append(test)
     session["tests"] = tests
     print(session)
-    return redirect(url_for(f"createRun", locid=session['loc'], step=2))
+    return redirect(url_for(f"createRun", locid=session["loc"], step=2))
 
 
 @run_blueprint.route("/create/step2", methods=["POST"])
 async def createRunStep2():
     # from app import app
-    if ('loc' not in session):
+    if "loc" not in session:
         # If no loc found, invalid since no session data
         return redirect("/")
 
-    run = {"name": session["run_name"],
-           "desc": session["run_desc"], "date": session["run_date"], "tests": session["tests"]}
+    run = {
+        "name": session["run_name"],
+        "desc": session["run_desc"],
+        "date": session["run_date"],
+        "tests": session["tests"],
+    }
 
     # Delete session data since not needed in client side
     # session.pop("loc")
@@ -56,20 +63,29 @@ async def createRunStep2():
     files = await request.files
     print(files)
     for test in run["tests"]:
-        if (test == "test-1" or test == "test-2"):
+        if test == "test-1" or test == "test-2":
             # Do checks to ensure the appropriate files are here
-            if ("rainfall-stats" not in files or "spill-stats" not in files):
+            if "rainfall-stats" not in files or "spill-stats" not in files:
                 # TODO: Add a flash message to notify user of issue
-                return redirect(url_for(f"createRun", locid=session['loc'], step=2))
+                return redirect(url_for(f"createRun", locid=session["loc"], step=2))
 
-    if ('runs' not in session):
+    if "runs" not in session:
         # Initialize runs for tracking tasks
         session["runs"] = {}
 
-    loop = asyncio.get_event_loop()
-    loop.create_task(createTests1andor2(
-        files["rainfall-stats"], (files["spill-stats"], "None", run["name"]), [1, 2]))
-
+    # loop = asyncio.get_event_loop()
+    # loop.create_task(createTests1andor2(
+    #     files["rainfall-stats"], (files["spill-stats"], "None", run["name"]), [1, 2]))
+    myThread = Thread(
+        target=thread_callback,
+        args=(
+            files["rainfall-stats"],
+            (files["spill-stats"], "None", run["name"]),
+            [1, 2],
+        ),
+    )
+    myThread.setName("1")
+    myThread.start()
     # app.add_background_task(createTests1andor2, files["rainfall-stats"], (files["spill-stats"], "None", run["name"]), [1,2])
     # session["runs"][1]
 
@@ -82,9 +98,18 @@ async def createRunStep2():
 async def checkStatus():
     tasks = asyncio.all_tasks()
     for task in tasks:
-        print(f'> {task.get_name()}, {task.get_coro()}')
+        print(f"> {task.get_name()}, {task.get_coro()}")
     print(session["runs"])
     return "logged tasks"
+
+
+def thread_callback(rainfall_file, spills_baseline, tests):
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    # loop.run_until_complete(createTests1andor2(rainfall_file, spills_baseline, tests))
+    loop.run_until_complete(createTests1andor2(rainfall_file, spills_baseline, tests))
+    loop.close()
 
 
 async def createTests1andor2(rainfall_file, spills_baseline, tests):
@@ -95,15 +120,16 @@ async def createTests1andor2(rainfall_file, spills_baseline, tests):
     csvReader.readCSV(df_rain_dtindex)
 
     df, spills_df = analysis.sewage_be_spillin(
-        spills_baseline, df_rain_dtindex, heavy_rain)
-    vis.timeline_visual(spills_baseline, df,
-                        vis.timeline_start, vis.timeline_end)
+        spills_baseline, df_rain_dtindex, heavy_rain
+    )
+    vis.timeline_visual(spills_baseline, df, vis.timeline_start, vis.timeline_end)
 
     perc_data = timeStats.time_stats(df, spills_baseline)
 
     all_spill_classification, spill_count_data = spillStats.spill_stats(
-        spills_df, df, tests)
+        spills_df, df, tests
+    )
 
-    summary = pd.merge(perc_data, spill_count_data, on='Year')
+    summary = pd.merge(perc_data, spill_count_data, on="Year")
 
     csvWriter.writeCSV(df, summary, all_spill_classification)
