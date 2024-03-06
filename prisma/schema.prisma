@@ -36,12 +36,12 @@ model Tests {
 
 // Run Test Table
 model RunTests {
-  runID  Int
-  testID Int
-  run    Runs  @relation(fields: [runID], references: [id])
-  test   Tests @relation(fields: [testID], references: [id])
-
-  @@id([runID, testID])
+  id              Int               @id @default(autoincrement())
+  runID           Int
+  testID          Int
+  run             Runs              @relation(fields: [runID], references: [id])
+  test            Tests             @relation(fields: [testID], references: [id])
+  ProcessedResult ProcessedResult[]
 }
 
 model ProcessedResult {
@@ -49,9 +49,11 @@ model ProcessedResult {
   summaryId    Int
   timeSeriesId Int
   spillEventId Int
+  RunTestID    Int
   summary      Summary    @relation(fields: [summaryId], references: [id])
   timeSeries   TimeSeries @relation(fields: [timeSeriesId], references: [id])
   spillEvent   SpillEvent @relation(fields: [spillEventId], references: [id])
+  runTest      RunTests   @relation(fields: [RunTestID], references: [id])
 }
 
 model Summary {
