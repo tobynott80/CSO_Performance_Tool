@@ -64,11 +64,20 @@ async def docs_three():
 async def setting_page():
     return await render_template("settings.html")
 
+@app.delete("/api/location/<int:locid>")
+async def delete_location(locid):
+    try:
+        # Delete the location from the database
+        await db.location.delete(where={"id": locid})
+        return {"success": True}
+    except Exception as e:
+        return {"success": False, "error": str(e)}, 500
 
 @app.route("/<locid>")
 async def showRuns(locid):
     # Convert locid to integer
     locid_int = int(locid)
+
 
     # Fetch the location details from the database
     location = await db.location.find_unique(where={"id": locid_int})
