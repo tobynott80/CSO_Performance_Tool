@@ -10,6 +10,8 @@ quart = "==0.19.4"
 hypercorn = "==0.16.0"
 pandas = "*"
 matplotlib = "*"
+openpyxl = "*"
+xlsxwriter = "*"
 
 [dev-packages]
 

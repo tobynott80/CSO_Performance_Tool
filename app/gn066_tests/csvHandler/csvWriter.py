@@ -1,5 +1,5 @@
 import pandas as pd
-import config as c
+import app.gn066_tests.config as c
 import datetime as dt
 
 def writeCSV(df, summary, all_spill_classification):

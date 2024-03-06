@@ -28,10 +28,10 @@ df_rain_dtindex = csvReader.init()
 csvReader.readCSV(df_rain_dtindex)
 
 #Performs sewage be spilling malarky
-df, spills_df = analysis.sewage_be_spillin(runs, df_rain_dtindex, heavy_rain)
+df, spills_df = analysis.sewage_be_spillin(spills_baseline, df_rain_dtindex, heavy_rain)
 
 #Creates visualisation
-vis.timeline_visual(runs, df, vis.timeline_start, vis.timeline_end)
+vis.timeline_visual(spills_baseline, df, vis.timeline_start, vis.timeline_end)
 
 #Creates time stats and spill stats
 perc_data = ts.time_stats(df)
