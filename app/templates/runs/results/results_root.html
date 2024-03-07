@@ -9,16 +9,19 @@
     <div class="mx-auto max-w-[85rem] px-4 sm:px-6 lg:px-8 lg:py-10">
       <div class="-m-1.5 overflow-x-auto">
         <div class="inline-block align-middle min-w-full">
-          <div
+          <div id="outer-parent"
             class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden px-6 py-4 dark:bg-slate-900 dark:border-gray-700">
             <div>
               <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">
-                Run Results - <span class="text-gray-600 dark:text-gray-400">Run {run.id}</span>
+                Run Results <span class="text-gray-400 dark:text-gray-400">- Run {run.id}</span>
               </h2>
               <p class="text-sm text-gray-600 dark:text-gray-400">
                 View test results - (WHT = Whole Time Series)
               </p>
             </div>
+            {% include 'runs/results/components/test1_bubble.html' %}
+            {% include 'runs/results/components/test2_bubble.html' %}
+            {% include 'runs/results/components/formula_a_bubble.html' %}
           </div>
         </div>
       </div>

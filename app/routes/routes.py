@@ -137,4 +137,4 @@ async def createRun(locid):
 @app.get("/<location_id>/<run_id>")
 async def view_run(location_id, run_id):
 
-    return await render_template("runs/results_root.html")
+    return await render_template("runs/results/results_root.html")
