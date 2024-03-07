@@ -161,4 +161,5 @@ def timeline_visual(spills_baseline, df, timeline_start, timeline_end):
     ax2.set_ylabel('Rainfall depth over any hour (mm)')
     ax2.set_ylim(0, data['Rolling 1hr depth'].max()*(4)/3)
 
-    plt.show()
+    # Figure out showing this in the visualizations tab at a later stage (store the inputs?)
+    # plt.show()

@@ -3,13 +3,14 @@ import asyncio
 
 # from asyncio import create_task, all_tasks
 from datetime import date
+import time
 
 import pandas as pd
 from app.gn066_tests.csvHandler import csvReader, csvWriter
 from app.gn066_tests import analysis
 from app.gn066_tests import visualisation as vis
 from app.gn066_tests.stats import timeStats, spillStats
-from threading import Thread
+from threading import Thread, enumerate
 
 pd.options.mode.chained_assignment = None  # default='warn'
 
@@ -96,9 +97,9 @@ async def createRunStep2():
 
 @run_blueprint.route("/status", methods=["GET"])
 async def checkStatus():
-    tasks = asyncio.all_tasks()
-    for task in tasks:
-        print(f"> {task.get_name()}, {task.get_coro()}")
+    threads = enumerate()
+    for t in threads:
+        print(f"> {t.is_alive}, {t}")
     print(session["runs"])
     return "logged tasks"
 
@@ -110,9 +111,11 @@ def thread_callback(rainfall_file, spills_baseline, tests):
     # loop.run_until_complete(createTests1andor2(rainfall_file, spills_baseline, tests))
     loop.run_until_complete(createTests1andor2(rainfall_file, spills_baseline, tests))
     loop.close()
+    return
 
 
 async def createTests1andor2(rainfall_file, spills_baseline, tests):
+    starttime = time.perf_counter()
     heavy_rain = 4
 
     # Read CSV and Reformat
@@ -130,6 +133,9 @@ async def createTests1andor2(rainfall_file, spills_baseline, tests):
         spills_df, df, tests
     )
 
-    summary = pd.merge(perc_data, spill_count_data, on="Year")
 
-    csvWriter.writeCSV(df, summary, all_spill_classification)
+    summary = pd.merge(perc_data, spill_count_data, on="Year")
+    endtime = time.perf_counter()
+    print("Elapsed Time: ", endtime - starttime)
+
+    # csvWriter.writeCSV(df, summary, all_spill_classification)
