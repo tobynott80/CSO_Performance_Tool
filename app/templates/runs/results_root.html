@@ -6,31 +6,20 @@
   {% include 'header.html' %}
   {% include 'sidebar.html' %}
   <div class="max-w-[90rem] px-1 py-1 sm:px-6 lg:px-0 lg:ps-64 mx-auto">
-    <!-- Table Section -->
     <div class="max-w-[85rem] px-4 sm:px-6 lg:px-8 lg:py-10 mx-auto">
-      <!-- Card -->
-      <div class="flex flex-col">
-        <div class="-m-1.5 overflow-x-auto">
-          <div class=" min-w-full inline-block align-middle">
-            <div
-              class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden dark:bg-slate-900 dark:border-gray-700">
-              <!-- Header -->
-              <div
-                class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden dark:bg-slate-900 dark:border-gray-700">
-                <!-- Header -->
-                <div
-                  class="px-6 py-4 grid gap-3 md:flex md:justify-between md:items-center border-b border-gray-200 dark:border-gray-700">
-                  <div>
-                    <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">
-                      Run Results - <span class="text-gray-600 dark:text-gray-400">Run {run.id}</span>
-                    </h2>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">
-                      View test results - (WHT = Whole Time Series) </p>
-                  </div>
-                </div>
-              </div>
+      <div class="-m-1.5 overflow-x-auto">
+        <div class="min-w-full inline-block align-middle">
+          <div id="outer-bubble-parent"
+            class="px-6 py-4 bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden dark:bg-slate-900 dark:border-gray-700">
 
+            <div>
+              <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">
+                Run Results - <span class="text-gray-600 dark:text-gray-400">Run {run.id}</span>
+              </h2>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                View test results - (WHT = Whole Time Series) </p>
             </div>
+
           </div>
         </div>
       </div>
