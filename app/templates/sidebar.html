@@ -207,6 +207,7 @@
             dropdown.classList.toggle("hidden");
           }
         }
+        
 
         // Automatically open the "Documentation" dropdown if on a documentation page
         document.addEventListener("DOMContentLoaded", function () {
@@ -224,4 +225,24 @@
       </script>
     </ul>
   </nav>
+  <script>
+    
+    document.addEventListener('DOMContentLoaded', function () {
+      const menuButtonOpen = document.getElementById('menu-button-open');
+      const menuButtonClose = document.getElementById('menu-button-close');
+      const sidebar = document.getElementById('application-sidebar');
+
+  // Toggle sidebar for open button
+    menuButtonOpen.addEventListener('click', function () {
+      sidebar.classList.remove('-translate-x-full');
+      sidebar.classList.add('translate-x-0');
+    });
+
+  // Toggle sidebar for close button
+    menuButtonClose.addEventListener('click', function () {
+      sidebar.classList.add('-translate-x-full');
+      sidebar.classList.remove('translate-x-0');
+    });
+});
+  </script>
 </div>
