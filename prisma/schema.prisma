@@ -36,28 +36,18 @@ model Tests {
 
 // Run Test Table
 model RunTests {
-  id              Int               @id @default(autoincrement())
-  runID           Int
-  testID          Int
-  run             Runs              @relation(fields: [runID], references: [id])
-  test            Tests             @relation(fields: [testID], references: [id])
-  ProcessedResult ProcessedResult[]
-}
-
-model ProcessedResult {
-  id           Int        @id @default(autoincrement())
-  summaryId    Int
-  timeSeriesId Int
-  spillEventId Int
-  RunTestID    Int
-  summary      Summary    @relation(fields: [summaryId], references: [id])
-  timeSeries   TimeSeries @relation(fields: [timeSeriesId], references: [id])
-  spillEvent   SpillEvent @relation(fields: [spillEventId], references: [id])
-  runTest      RunTests   @relation(fields: [RunTestID], references: [id])
+  id         Int          @id @default(autoincrement())
+  runID      Int
+  testID     Int
+  run        Runs         @relation(fields: [runID], references: [id])
+  test       Tests        @relation(fields: [testID], references: [id])
+  summary    Summary[]    @relation("RunTestToSummary")
+  timeSeries TimeSeries[] @relation("RunTestToTimeSeries")
+  spillEvent SpillEvent[] @relation("RunTestToSpillEvent")
 }
 
 model Summary {
-  id                   Int               @id @default(autoincrement())
+  id                   Int      @id @default(autoincrement())
   year                 String
   dryPerc              Float
   heavyPerc            Float
@@ -65,30 +55,33 @@ model Summary {
   unsatisfactorySpills Int
   substandardSpills    Int
   satisfactorySpills   Int
-  processedResults     ProcessedResult[]
+  runTestID            Int      @unique
+  runTest              RunTests @relation("RunTestToSummary", fields: [runTestID], references: [id])
 }
 
 model TimeSeries {
-  id               Int               @id @default(autoincrement())
-  dateTime         DateTime
-  intensity        Float
-  depth            Float
-  rollingDepth     Float
-  classification   String
-  processedResults ProcessedResult[]
+  id             Int      @id @default(autoincrement())
+  dateTime       DateTime
+  intensity      Float
+  depth          Float
+  rollingDepth   Float
+  classification String
+  runTestID      Int
+  runTest        RunTests @relation("RunTestToTimeSeries", fields: [runTestID], references: [id])
 }
 
 model SpillEvent {
-  id               Int               @id @default(autoincrement())
-  start            DateTime
-  end              DateTime
-  volume           Float
-  runName          String
-  maxIntensity     Float
-  maxDepthInHour   Float
-  totalDepth       Float
-  test1            String
-  test2            String
-  classification   String
-  processedResults ProcessedResult[]
+  id             Int      @id @default(autoincrement())
+  start          DateTime
+  end            DateTime
+  volume         Float
+  runName        String
+  maxIntensity   Float
+  maxDepthInHour Float
+  totalDepth     Float
+  test1          String
+  test2          String
+  classification String
+  runTestID      Int
+  runTest        RunTests @relation("RunTestToSpillEvent", fields: [runTestID], references: [id])
 }
