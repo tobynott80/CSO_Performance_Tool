@@ -1,8 +1,7 @@
 from quart import Blueprint, render_template, request, redirect, session, url_for
-import asyncio
-
-# from asyncio import create_task, all_tasks
+from app.helper.database import initDB
 from datetime import date
+import asyncio
 import time
 
 import pandas as pd
@@ -15,6 +14,15 @@ from threading import Thread, enumerate
 pd.options.mode.chained_assignment = None  # default='warn'
 
 run_blueprint = Blueprint("run", __name__)
+
+db = None
+runs_tracker = {}
+
+
+@run_blueprint.before_app_serving
+async def initializeDB():
+    global db
+    db = await initDB()
 
 
 @run_blueprint.route("/create/step1", methods=["POST"])
@@ -42,16 +50,19 @@ async def createRunStep1():
 
 @run_blueprint.route("/create/step2", methods=["POST"])
 async def createRunStep2():
+    global runs_tracker
     # from app import app
     if "loc" not in session:
         # If no loc found, invalid since no session data
         return redirect("/")
 
     run = {
+        "id": await getNextRunID(),
         "name": session["run_name"],
         "desc": session["run_desc"],
         "date": session["run_date"],
         "tests": session["tests"],
+        "progress": 0
     }
 
     # Delete session data since not needed in client side
@@ -70,9 +81,13 @@ async def createRunStep2():
                 # TODO: Add a flash message to notify user of issue
                 return redirect(url_for(f"createRun", locid=session["loc"], step=2))
 
-    if "runs" not in session:
+    # if "runs" not in session:
+    #     session["runs"] = {}
         # Initialize runs for tracking tasks
-        session["runs"] = {}
+    # session["runs"][str(run["id"])] = run
+    runs_tracker[str(run["id"])] = run
+
+    # session["runs"][nextID]
 
     # loop = asyncio.get_event_loop()
     # loop.create_task(createTests1andor2(
@@ -83,9 +98,11 @@ async def createRunStep2():
             files["rainfall-stats"],
             (files["spill-stats"], "None", run["name"]),
             [1, 2],
+            runs_tracker,
+            run
         ),
     )
-    myThread.setName("1")
+    myThread.setName(run["id"])
     myThread.start()
     # app.add_background_task(createTests1andor2, files["rainfall-stats"], (files["spill-stats"], "None", run["name"]), [1,2])
     # session["runs"][1]
@@ -97,42 +114,52 @@ async def createRunStep2():
 
 @run_blueprint.route("/status", methods=["GET"])
 async def checkStatus():
-    threads = enumerate()
-    for t in threads:
-        print(f"> {t.is_alive}, {t}")
-    print(session["runs"])
-    return "logged tasks"
+    global runs_tracker
+    return runs_tracker
 
 
-def thread_callback(rainfall_file, spills_baseline, tests):
+async def getNextRunID():
+    result = await db.runs.find_first(order={"id": "desc"})
+    nextID = 1
+    if result:
+        nextID = result.id + 1
+    return nextID
+
+
+def thread_callback(rainfall_file, spills_baseline, tests, runs_tracker, run):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
 
     # loop.run_until_complete(createTests1andor2(rainfall_file, spills_baseline, tests))
-    loop.run_until_complete(createTests1andor2(rainfall_file, spills_baseline, tests))
+    loop.run_until_complete(createTests1andor2(
+        rainfall_file, spills_baseline, tests, runs_tracker, run))
     loop.close()
     return
 
 
-async def createTests1andor2(rainfall_file, spills_baseline, tests):
+async def createTests1andor2(rainfall_file, spills_baseline, tests, runs_tracker, run):
     starttime = time.perf_counter()
     heavy_rain = 4
 
     # Read CSV and Reformat
     df_rain_dtindex = csvReader.init(rainfall_file)
+    runs_tracker[str(run["id"])]["progress"] += 20
     csvReader.readCSV(df_rain_dtindex)
+    runs_tracker[str(run["id"])]["progress"] += 20
 
     df, spills_df = analysis.sewage_be_spillin(
         spills_baseline, df_rain_dtindex, heavy_rain
     )
-    vis.timeline_visual(spills_baseline, df, vis.timeline_start, vis.timeline_end)
-
+    runs_tracker[str(run["id"])]["progress"] += 20
+    vis.timeline_visual(spills_baseline, df,
+                        vis.timeline_start, vis.timeline_end)
+    runs_tracker[str(run["id"])]["progress"] += 20
     perc_data = timeStats.time_stats(df, spills_baseline)
-
+    runs_tracker[str(run["id"])]["progress"] += 10
     all_spill_classification, spill_count_data = spillStats.spill_stats(
         spills_df, df, tests
     )
-
+    runs_tracker[str(run["id"])]["progress"] += 10
 
     summary = pd.merge(perc_data, spill_count_data, on="Year")
     endtime = time.perf_counter()
