@@ -51,19 +51,28 @@ async def createRunStep1():
 @run_blueprint.route("/create/step2", methods=["POST"])
 async def createRunStep2():
     global runs_tracker
-    # from app import app
+
     if "loc" not in session:
         # If no loc found, invalid since no session data
         return redirect("/")
 
     run = {
         "id": await getNextRunID(),
+        "locationID": session["loc"],
         "name": session["run_name"],
-        "desc": session["run_desc"],
+        "description": session["run_desc"],
         "date": session["run_date"],
         "tests": session["tests"],
-        "progress": 0
+        "progress": {}
     }
+
+    await db.runs.create(data={
+        "id": run["id"],
+        "date": run["date"],
+        "locationID": run["locationID"],
+        "name": run["name"],
+        "description": run["description"],
+    })
 
     # Delete session data since not needed in client side
     # session.pop("loc")
@@ -74,40 +83,35 @@ async def createRunStep2():
 
     files = await request.files
     print(files)
+
+    runs_tracker[str(run["id"])] = run
+
     for test in run["tests"]:
         if test == "test-1" or test == "test-2":
             # Do checks to ensure the appropriate files are here
             if "rainfall-stats" not in files or "spill-stats" not in files:
                 # TODO: Add a flash message to notify user of issue
                 return redirect(url_for(f"createRun", locid=session["loc"], step=2))
+            test12thread = Thread(
+                target=test1and2callback,
+                args=(
+                    files["rainfall-stats"],
+                    (files["spill-stats"], "None", run["name"]),
+                    [1, 2],
+                    run
+                ),
+            )
+            test12thread.start()
+        if (test == "test-3"):
+            # Do checks to ensure the appropriate files are here
+            test3thread = Thread(
+                target=test3callback,
+                args=(
+                    run
+                ),
+            )
+            test3thread.start()
 
-    # if "runs" not in session:
-    #     session["runs"] = {}
-        # Initialize runs for tracking tasks
-    # session["runs"][str(run["id"])] = run
-    runs_tracker[str(run["id"])] = run
-
-    # session["runs"][nextID]
-
-    # loop = asyncio.get_event_loop()
-    # loop.create_task(createTests1andor2(
-    #     files["rainfall-stats"], (files["spill-stats"], "None", run["name"]), [1, 2]))
-    myThread = Thread(
-        target=thread_callback,
-        args=(
-            files["rainfall-stats"],
-            (files["spill-stats"], "None", run["name"]),
-            [1, 2],
-            runs_tracker,
-            run
-        ),
-    )
-    myThread.setName(run["id"])
-    myThread.start()
-    # app.add_background_task(createTests1andor2, files["rainfall-stats"], (files["spill-stats"], "None", run["name"]), [1,2])
-    # session["runs"][1]
-
-    print(session["runs"])
     return "helo", 200
     # return await render_template("runs/create_two.html")
 
@@ -126,43 +130,68 @@ async def getNextRunID():
     return nextID
 
 
-def thread_callback(rainfall_file, spills_baseline, tests, runs_tracker, run):
+def test1and2callback(rainfall_file, spills_baseline, tests, run):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
 
     # loop.run_until_complete(createTests1andor2(rainfall_file, spills_baseline, tests))
     loop.run_until_complete(createTests1andor2(
-        rainfall_file, spills_baseline, tests, runs_tracker, run))
+        rainfall_file, spills_baseline, tests, run))
     loop.close()
     return
 
 
-async def createTests1andor2(rainfall_file, spills_baseline, tests, runs_tracker, run):
+def test3callback(run):
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    # loop.run_until_complete(createTests1andor2(rainfall_file, spills_baseline, tests))
+    loop.run_until_complete(createTest3(run))
+    loop.close()
+
+
+async def createTests1andor2(rainfall_file, spills_baseline, tests, run):
+    global runs_tracker
     starttime = time.perf_counter()
     heavy_rain = 4
 
     # Read CSV and Reformat
     df_rain_dtindex = csvReader.init(rainfall_file)
-    runs_tracker[str(run["id"])]["progress"] += 20
+    runs_tracker[str(run["id"])]["progress"]["test-2"] = 20
+    runs_tracker[str(run["id"])]["progress"]["test-1"] = 20
+
     csvReader.readCSV(df_rain_dtindex)
-    runs_tracker[str(run["id"])]["progress"] += 20
+    runs_tracker[str(run["id"])]["progress"]["test-1"] += 20
+    runs_tracker[str(run["id"])]["progress"]["test-2"] += 20
 
     df, spills_df = analysis.sewage_be_spillin(
         spills_baseline, df_rain_dtindex, heavy_rain
     )
-    runs_tracker[str(run["id"])]["progress"] += 20
+    runs_tracker[str(run["id"])]["progress"]["test-1"] += 20
+    runs_tracker[str(run["id"])]["progress"]["test-2"] += 20
+
     vis.timeline_visual(spills_baseline, df,
                         vis.timeline_start, vis.timeline_end)
-    runs_tracker[str(run["id"])]["progress"] += 20
+    runs_tracker[str(run["id"])]["progress"]["test-1"] += 20
+    runs_tracker[str(run["id"])]["progress"]["test-2"] += 20
     perc_data = timeStats.time_stats(df, spills_baseline)
-    runs_tracker[str(run["id"])]["progress"] += 10
+    runs_tracker[str(run["id"])]["progress"]["test-1"] += 10
+    runs_tracker[str(run["id"])]["progress"]["test-2"] += 10
     all_spill_classification, spill_count_data = spillStats.spill_stats(
         spills_df, df, tests
     )
-    runs_tracker[str(run["id"])]["progress"] += 10
+    runs_tracker[str(run["id"])]["progress"]["test-1"] += 10
+    runs_tracker[str(run["id"])]["progress"]["test-2"] += 10
 
     summary = pd.merge(perc_data, spill_count_data, on="Year")
     endtime = time.perf_counter()
     print("Elapsed Time: ", endtime - starttime)
 
     # csvWriter.writeCSV(df, summary, all_spill_classification)
+
+
+async def createTest3(run):
+    global runs_tracker
+
+    runs_tracker[str(run["id"])]["progress"]["test-3"] = 100
+    return
