@@ -1,4 +1,4 @@
-from quart import render_template, request, redirect, session
+from quart import render_template, render_template_string, request, redirect, session
 from app import app
 from app.helper.database import initDB
 from math import ceil
@@ -136,5 +136,23 @@ async def createRun(locid):
 
 @app.get("/<location_id>/<run_id>")
 async def view_run(location_id, run_id):
+    location = await db.location.find_first(where={"id": int(location_id)})
+    run = await db.runs.find_first(where={"id": int(run_id)})
 
-    return await render_template("runs/results/results_root.html")
+    runTest = await db.runtests.find_first(
+        where={
+            "runID": int(run_id),
+        },
+        include={
+            "test": True,
+            "spillEvent": True,
+            "timeSeries": True,
+            "summary": True,
+        },
+    )
+    print(location)
+    print(run)
+    print(runTest)
+    return await render_template(
+        "runs/results/results_root.html", location=location, run=run, runTest=runTest
+    )
