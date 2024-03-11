@@ -1,10 +1,9 @@
 import pandas as pd
-import config as config
 import datetime as dt
 intensity = True
 
-def init():
-    df_rain = pd.read_csv(config.rainfall_file,skiprows=13)
+def init(rainfall_file):
+    df_rain = pd.read_csv(rainfall_file,skiprows=13)
     df_rain["P_DATETIME"] = pd.to_datetime(df_rain["P_DATETIME"],format="%d/%m/%Y %H:%M:%S")
     df_rain_dtindex = df_rain.set_index("P_DATETIME",drop=False)
     return df_rain_dtindex

@@ -83,15 +83,29 @@
                         </svg>
                         New
                       </button>
+                      <button
+                        class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+                        onclick="deleteLocations();"
+                      >
+                        <svg
+                          class="flex-shrink-0 size-4"
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                        </svg>
+                        Delete
+                      </button>
                     </div>
 
-                    <div
-                      id="popup"
-                      class="fixed z-10 inset-0 overflow-y-auto hidden"
-                      aria-labelledby="modal-title"
-                      role="dialog"
-                      aria-modal="true"
-                    >
+                    <div id="popup" class="fixed z-10 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
                       <div
                         class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0"
                       >
@@ -180,6 +194,11 @@
                   <tr>
                     <th scope="col" class="px-6 py-3 text-start">
                       <div class="flex items-center gap-x-2 justify-center">
+                        <span class="text-xs text-center font-semibold uppercase tracking-wide text-gray-800 dark:text-gray-200"></span>
+                      </div>
+                    </th>
+                    <th scope="col" class="px-6 py-3 text-start">
+                      <div class="flex items-center gap-x-2 justify-center">
                         <span class="text-xs text-center font-semibold uppercase tracking-wide text-gray-800 dark:text-gray-200">
                           Location ID
                         </span>
@@ -189,7 +208,7 @@
                     <th scope="col" class="px-6 py-3 text-start">
                       <div class="flex items-center gap-x-2 justify-center">
                         <span class="text-xs text-center font-semibold uppercase tracking-wide text-gray-800 dark:text-gray-200">
-                          Number of tests
+                          Number of Runs
                         </span>
                       </div>
                     </th>
@@ -224,25 +243,33 @@
                 {% for location in locations %}
                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                   <tr class="cursor-pointer bg-white hover:bg-gray-200 dark:bg-slate-900 dark:hover:bg-slate-800" data-locid="{{ location.id }}">
-                    
+
                     <td class="size-px whitespace-nowrap">
-                      <button type="button" class="block w-full" data-hs-overlay="#hs-ai-invoice-modal">
-                        <span class="block px-6 py-2">
+                      <button type="button" class="block w-full">
+                        <span class="block px-1 py-2 flex items-center justify-center">
+                          <input type="checkbox" class="location-checkbox form-checkbox h-5 w-5 text-blue-600 checkbox-hidden" data-locid="{{ location.id }}">
+                        </span>
+                      </button>
+                    </td>
+
+                    <td class="size-px whitespace-nowrap">
+                      <button type="button" class="block w-full">
+                        <span class="block px-1 py-2">
                           <span class="font-mono text-sm text-blue-600 dark:text-blue-500">{{ location.name }}</span>
                         </span>
                       </button>
                     </td>
 
                     <td class="size-px whitespace-nowrap">
-                      <button type="button" class="block w-full" data-hs-overlay="#hs-ai-invoice-modal">
-                        <span class="block px-6 py-2">
+                      <button type="button" class="block w-full">
+                        <span class="block px-1 py-2">
                           <span class="text-sm text-gray-600 dark:text-gray-400">{{ location.id }}</span>
                         </span>
                       </button>
                     </td>
                     <td class="size-px whitespace-nowrap">
-                      <button type="button" class="block w-full" data-hs-overlay="#hs-ai-invoice-modal">
-                        <span class="block px-6 py-2">
+                      <button type="button" class="block w-full">
+                        <span class="block px-1 py-2">
                           <span
                             class="py-1 px-1.5 inline-flex items-center gap-x-1 text-xs font-medium bg-teal-100 text-teal-800 rounded-full dark:bg-teal-500/10 dark:text-teal-500">
                             <svg class="size-2.5" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
@@ -256,7 +283,7 @@
                       </button>
                     </td>
                     <td class="size-px whitespace-nowrap">
-                      <button type="button" class="block w-full" data-hs-overlay="#hs-ai-invoice-modal">
+                      <button type="button" class="block w-full">
                         <span class="block px-6 py-2">
                           <span class="text-sm text-gray-600 dark:text-gray-400">{{ location.runs if location.runs is
                             not none else '0' }}</span>
@@ -264,14 +291,14 @@
                       </button>
                     </td>
                     <td class="size-px whitespace-nowrap">
-                      <button type="button" class="block w-full" data-hs-overlay="#hs-ai-invoice-modal">
+                      <button type="button" class="block w-full">
                         <span class="block px-6 py-2">
                           <span class="text-sm text-gray-600 dark:text-gray-400">{{ location.createdAt.strftime('%d %B
                             %Y | %H:%M:%S') }}</span> </span>
                       </button>
                     </td>
                     <td class="size-px whitespace-nowrap">
-                      <button type="button" class="block w-full" data-hs-overlay="#hs-ai-invoice-modal">
+                      <button type="button" class="block w-full">
                         <span class="px-6 py-1.5">
                           <span
                             class="py-1 px-2 inline-flex justify-center items-center gap-2 rounded-lg border font-medium bg-white text-gray-700 shadow-sm align-middle hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white focus:ring-blue-600 transition-all text-sm dark:bg-slate-900 dark:hover:bg-slate-800 dark:border-gray-700 dark:text-gray-400 dark:hover:text-white dark:focus:ring-offset-gray-800">
@@ -297,15 +324,15 @@
                   {% if current_page > 1 %}
                   <a
                     href="/?page=1{{ '&search=' + search|urlencode if search }}"
-                    class="px-4 py-2 text-sm font-semibold bg-white rounded-md border border-gray-300 hover:bg-blue-50 dark:text-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+                    class="px-4 py-2 text-sm font-bold bg-white rounded-md border border-gray-300 hover:bg-blue-50 dark:text-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
                   >
-                    First
+                    <<
                   </a>
                   <a
                     href="/?page={{ current_page - 1 }}{{ '&search=' + search|urlencode if search }}"
-                    class="px-4 py-2 text-sm font-semibold bg-white rounded-md border border-gray-300 hover:bg-blue-50 dark:text-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600"
+                    class="px-4 py-2 text-sm font-bold bg-white rounded-md border border-gray-300 hover:bg-blue-50 dark:text-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600"
                   >
-                    Previous
+                    <
                   </a>
                   {% endif %}
 
@@ -318,15 +345,15 @@
                   {% if current_page < total_pages %}
                   <a
                     href="/?page={{ current_page + 1 }}{{ '&search=' + search|urlencode if search }}"
-                    class="px-4 py-2 text-sm font-semibold bg-white rounded-md border border-gray-300 hover:bg-blue-50 dark:text-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600"
+                    class="px-4 py-2 text-sm font-bold bg-white rounded-md border border-gray-300 hover:bg-blue-50 dark:text-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600"
                   >
-                    Next
+                    >
                   </a>
                   <a
                     href="/?page={{ total_pages }}{{ '&search=' + search|urlencode if search }}"
-                    class="px-4 py-2 text-sm font-semibold bg-white rounded-md border border-gray-300 hover:bg-blue-50 dark:text-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600"
+                    class="px-4 py-2 text-sm font-bold bg-white rounded-md border border-gray-300 hover:bg-blue-50 dark:text-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600"
                   >
-                    Last
+                    >>
                   </a>
                   {% endif %}
                 </div>
@@ -388,7 +415,7 @@
             .catch((error) => {
               console.error("Error:", error);
             });
-        });
+      });
 
       function updateTableData(page) {
         fetch(`/api/locations?page=${page}`)
@@ -411,12 +438,46 @@
       }
       updateTableData(1);
 
-      document.querySelectorAll('tbody tr').forEach(row => {
-        row.addEventListener('click', () => {
+      document.querySelectorAll('tr').forEach(row => {
+        row.addEventListener('click', (event) => {
+            if (event.target.tagName === 'INPUT') {
+                return; // Stop redirection if clicking on the checkbox
+            }
+    
             const locId = row.getAttribute('data-locid');
-            window.location.href = `/${locId}`;
+            window.location.href = `/${locId}`; 
         });
-    });
+      });
+
+    function deleteLocations() {
+      const selectedLocations = Array.from(document.querySelectorAll('input.location-checkbox:checked'))
+        .map(checkbox => checkbox.getAttribute('data-locid'));
+
+      if (selectedLocations.length === 0) {
+        alert('Please select at least one location to delete.');
+        return;
+      }
+      // Add event listeners to checkboxes
+      document.querySelectorAll('input.location-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('click', event => {
+          event.stopPropagation(); // Prevent event from propagating to parent row
+        });
+      });
+    
+      if (confirm(`Are you sure you want to delete ${selectedLocations.length} locations?`)) {
+        // Send a DELETE request to the server for each selected location
+        selectedLocations.forEach(locId => {
+          fetch(`/api/location/${locId}`, {
+            method: 'DELETE',
+          })
+            .then(response => {
+              
+            })
+            .catch(error => console.error('Error deleting location:', error));
+        });
+      }
+    }
+
     </script>
   </body>
 </html>

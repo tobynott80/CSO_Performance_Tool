@@ -164,3 +164,8 @@ cython_debug/
 .db
 .db-journal
 /prisma/*.db
+/prisma/*.db-journal
+
+/output/*
+# VS code IDE Workspace Settings
+.vscode

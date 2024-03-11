@@ -10,108 +10,83 @@ datasource db {
 
 // Location Table
 model Location {
-  id    Int    @id @default(autoincrement())
-  name  String
+  id        Int      @id @default(autoincrement())
+  name      String
   createdAt DateTime @default(now())
-  runs  Runs[]
+  runs      Runs[]
 }
 
 // Runs Table
 model Runs {
-  id          Int            @id @default(autoincrement())
+  id          Int        @id @default(autoincrement())
+  date        DateTime   @default(now())
   locationID  Int
   name        String
-  date        DateTime      @default(now())
+  description String
   runsTests   RunTests[]
-  importSpills ImportSpills[]
-  importRainfall ImportRainfall[]
-  location    Location        @relation(fields: [locationID], references: [id])
+  location    Location   @relation(fields: [locationID], references: [id])
 }
 
 // Tests Table
 model Tests {
-  id        Int       @id @default(autoincrement())
-  name      String
+  id          Int        @id @default(autoincrement())
+  name        String
   description String
-  runsTests RunTests[]
+  runsTests   RunTests[]
 }
 
 // Run Test Table
 model RunTests {
-  runID  Int
-  testID Int
-  run    Runs   @relation(fields: [runID], references: [id])
-  test   Tests  @relation(fields: [testID], references: [id])
-  @@id([runID, testID])
-}
-
-// Import Spills Table
-model ImportSpills {
-  id       Int   @id @default(autoincrement())
-  runID    Int
-  status   String
-  startTime DateTime
-  endTime   DateTime
-  volume    Float
-  run      Runs   @relation(fields: [runID], references: [id])
-}
-
-// Import Rainfall Table
-model ImportRainfall {
-  id       Int   @id @default(autoincrement())
-  runID    Int
-  status   String
-  datetime  DateTime
-  depth     Float
-  intensity Float
-  run      Runs   @relation(fields: [runID], references: [id])
-}
-
-model ProcessedResult {
-  id                   Int      @id @default(autoincrement())
-  summaryId            Int
-  timeSeriesId         Int
-  spillEventId         Int
-  summary              Summary    @relation(fields: [summaryId], references: [id])
-  timeSeries           TimeSeries  @relation(fields: [timeSeriesId], references: [id])
-  spillEvent           SpillEvent  @relation(fields: [spillEventId], references: [id])
+  id         Int          @id @default(autoincrement())
+  runID      Int
+  testID     Int
+  status     String
+  run        Runs         @relation(fields: [runID], references: [id])
+  test       Tests        @relation(fields: [testID], references: [id])
+  summary    Summary[]    @relation("RunTestToSummary")
+  timeSeries TimeSeries[] @relation("RunTestToTimeSeries")
+  spillEvent SpillEvent[] @relation("RunTestToSpillEvent")
 }
 
 model Summary {
-  id                   Int               @id @default(autoincrement())
+  id                   Int      @id @default(autoincrement())
   year                 String
   dryPerc              Float
   heavyPerc            Float
-  spillPerc            Float            
-  unsatisfactorySpills Int              
-  substandardSpills    Int              
-  satisfactorySpills   Int             
-  processedResults     ProcessedResult[]
+  spillPerc            Float
+  unsatisfactorySpills Int
+  substandardSpills    Int
+  satisfactorySpills   Int
+  runTestID            Int
+  runTest              RunTests @relation("RunTestToSummary", fields: [runTestID], references: [id])
 }
 
 model TimeSeries {
-  id                   Int               @id @default(autoincrement())
-  dateTime             DateTime
-  intensity            Float
-  depth                Float
-  rollingDepth         Float
-  classification       String
-  processedResults     ProcessedResult[]
+  id             Int      @id @default(autoincrement())
+  dateTime       DateTime
+  intensity      Float
+  depth          Float
+  rollingDepth   Float
+  classification String
+  spillAllowed   String?
+  dayType        String
+  result         String?
+  runTestID      Int
+  runTest        RunTests @relation("RunTestToTimeSeries", fields: [runTestID], references: [id])
 }
 
 model SpillEvent {
-  id                   Int               @id @default(autoincrement())
-  start                DateTime
-  end                  DateTime
-  volume               Float
-  runName              String
-  maxIntensity         Float
-  maxDepthInHour       Float
-  totalDepth           Float
-  test1                String
-  test2                String
-  classification       String
-  processedResults     ProcessedResult[]
+  id             Int      @id @default(autoincrement())
+  start          DateTime
+  end            DateTime
+  volume         Float
+  runName        String
+  maxIntensity   Float
+  maxDepthInHour Float
+  totalDepth     Float
+  test1          String
+  test2          String
+  classification String
+  runTestID      Int
+  runTest        RunTests @relation("RunTestToSpillEvent", fields: [runTestID], references: [id])
 }
-
-
