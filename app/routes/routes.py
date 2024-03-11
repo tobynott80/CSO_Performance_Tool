@@ -140,14 +140,14 @@ async def createRun(locid):
     )
 
 
-@app.get("/<location_id>/<run_id>")
+@app.get("/<int:location_id>/<int:run_id>")
 async def view_run(location_id, run_id):
-    location = await db.location.find_first(where={"id": int(location_id)})
-    run = await db.runs.find_first(where={"id": int(run_id)})
+    location = await db.location.find_first(where={"id": location_id})
+    run = await db.runs.find_first(where={"id": run_id})
 
     runTest = await db.runtests.find_first(
         where={
-            "runID": int(run_id),
+            "runID": run_id,
         },
         include={
             "test": True,
