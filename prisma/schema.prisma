@@ -57,7 +57,7 @@ model Summary {
   unsatisfactorySpills Int
   substandardSpills    Int
   satisfactorySpills   Int
-  runTestID            Int      @unique
+  runTestID            Int
   runTest              RunTests @relation("RunTestToSummary", fields: [runTestID], references: [id])
 }
 
@@ -68,6 +68,9 @@ model TimeSeries {
   depth          Float
   rollingDepth   Float
   classification String
+  spillAllowed   String?
+  dayType        String
+  result         String?
   runTestID      Int
   runTest        RunTests @relation("RunTestToTimeSeries", fields: [runTestID], references: [id])
 }
