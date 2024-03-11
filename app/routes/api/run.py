@@ -1,8 +1,6 @@
 from quart import Blueprint, render_template, request, redirect, session, url_for
 from app.helper.database import initDB
-from datetime import date
 import asyncio
-import time
 
 import pandas as pd
 from app.gn066_tests.csvHandler import csvReader, csvWriter
@@ -116,7 +114,6 @@ async def createRunStep2():
                 args=(
                     files["rainfall-stats"],
                     (files["spill-stats"], "None", run["name"]),
-                    [1, 2],
                     run
                 ),
             )
@@ -149,12 +146,12 @@ async def getNextRunID():
     return nextID
 
 
-def test1and2callback(rainfall_file, spills_baseline, tests, run):
+def test1and2callback(rainfall_file, spills_baseline, run):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
 
     loop.run_until_complete(createTests1andor2(
-        rainfall_file, spills_baseline, tests, run))
+        rainfall_file, spills_baseline, run))
     loop.close()
     return
 
@@ -168,13 +165,12 @@ def test3callback(run):
     loop.close()
 
 
-async def createTests1andor2(rainfall_file, spills_baseline, tests, run):
+async def createTests1andor2(rainfall_file, spills_baseline, run):
     from prisma import Prisma
 
     global runs_tracker
     db = Prisma()
     await db.connect()
-    starttime = time.perf_counter()
     heavy_rain = 4
 
     # Read CSV and Reformat
@@ -200,16 +196,13 @@ async def createTests1andor2(rainfall_file, spills_baseline, tests, run):
     runs_tracker[str(run["id"])]["progress"]["test-2"] += 10
 
     all_spill_classification, spill_count_data = spillStats.spill_stats(
-        spills_df, df, tests
+        spills_df, df, [1, 2]
     )
 
     runs_tracker[str(run["id"])]["progress"]["test-1"] += 20
     runs_tracker[str(run["id"])]["progress"]["test-2"] += 20
 
     summary = pd.merge(perc_data, spill_count_data, on="Year")
-    endtime = time.perf_counter()
-
-    print("Elapsed Time: ", endtime - starttime)
 
     runs_tracker[str(run["id"])]["progress"]["test-1"] += 10
     runs_tracker[str(run["id"])]["progress"]["test-2"] += 10
@@ -217,10 +210,21 @@ async def createTests1andor2(rainfall_file, spills_baseline, tests, run):
     # Save all results to SQLite database
     await saveSummaryToDB(db, run, summary)
     await saveSpillToDB(db, run, all_spill_classification)
-    await saveTimeSeriesToDB(db, run, df)
 
     runs_tracker[str(run["id"])]["progress"]["test-1"] += 20
     runs_tracker[str(run["id"])]["progress"]["test-2"] += 20
+
+    for test in run["runids"]:
+        await db.runtests.update(
+            where={
+                'id': test
+            },
+            data={
+                "status": "COMPLETED"
+            })
+
+    # Saves 300k worth of rows - can be done in background?
+    await saveTimeSeriesToDB(db, run, df)
 
     # csvWriter.writeCSV(df, summary, all_spill_classification)
 
