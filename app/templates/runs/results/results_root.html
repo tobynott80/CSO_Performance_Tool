@@ -13,15 +13,24 @@
             class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden px-6 py-4 dark:bg-slate-900 dark:border-gray-700">
             <div>
               <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-200">
-                Run Results <span class="text-gray-400 dark:text-gray-400">- Run {run.id}</span>
+                Run Results <span class="text-gray-400 dark:text-gray-400">- Run {{run.id}} ({{location.name}})</span>
               </h2>
               <p class="text-sm text-gray-600 dark:text-gray-400">
                 View test results - (WHT = Whole Time Series)
               </p>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                {{run.date.strftime('%d %B %Y | %H:%M:%S')}}
+              </p>
             </div>
+            {% with runTest=runTest, so_performance=so_performance %}
             {% include 'runs/results/components/test1_bubble.html' %}
+            {% endwith %}
+            {% with runTest=runTest, so_performance=so_performance %}
             {% include 'runs/results/components/test2_bubble.html' %}
+            {% endwith %}
+            {% with runTest=runTest, so_performance=so_performance %}
             {% include 'runs/results/components/formula_a_bubble.html' %}
+            {% endwith %}
           </div>
         </div>
       </div>

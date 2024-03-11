@@ -1,4 +1,4 @@
-from quart import render_template, request, redirect, session
+from quart import render_template, render_template_string, request, redirect, session
 from app import app
 from app.helper.database import initDB
 from math import ceil
@@ -72,9 +72,18 @@ async def docs_three():
 async def setting_page():
     return await render_template("settings.html")
 
+@app.delete("/api/location/<int:locid>")
+async def delete_location(locid):
+    try:
+        # Delete the location from the database
+        await db.location.delete(where={"id": locid})
+        return {"success": True}
+    except Exception as e:
+        return {"success": False, "error": str(e)}, 500
 
 @app.route("/<int:locid>")
 async def showRuns(locid):
+
 
     # Fetch the location details from the database
     location = await db.location.find_unique(where={"id": locid})
@@ -133,5 +142,23 @@ async def createRun(locid):
 
 @app.get("/<location_id>/<run_id>")
 async def view_run(location_id, run_id):
+    location = await db.location.find_first(where={"id": int(location_id)})
+    run = await db.runs.find_first(where={"id": int(run_id)})
 
-    return await render_template("runs/results/results_root.html")
+    runTest = await db.runtests.find_first(
+        where={
+            "runID": int(run_id),
+        },
+        include={
+            "test": True,
+            "spillEvent": True,
+            "timeSeries": True,
+            "summary": True,
+        },
+    )
+    print(location)
+    print(run)
+    print(runTest)
+    return await render_template(
+        "runs/results/results_root.html", location=location, run=run, runTest=runTest
+    )

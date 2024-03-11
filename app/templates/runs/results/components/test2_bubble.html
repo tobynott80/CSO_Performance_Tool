@@ -2,8 +2,8 @@
   class="bg-grey-200 border border-gray-200 rounded-xl shadow-sm overflow-hidden px-4 py-4 my-4 dark:bg-slate-900 dark:border-gray-700">
   <div class="flex flex-row">
     <h2 class="flex-grow text-l font-semibold text-gray-800 dark:text-gray-200">
-      {run.test.testName} <span class="text-gray-400 dark:text-gray-400"> -
-        {run.test.testDescription}</span>
+      Heavy Rainfall Spills <span class="text-gray-400 dark:text-gray-400"> -
+        GN066 Test 2: Analysing SO spills due to heavy rainfall </span>
     </h2>
     <span
       class="mx-2 py-1 px-1.5 inline-flex items-center gap-x-1 text-xs font-medium bg-teal-100 text-teal-800 rounded-full dark:bg-teal-500/10 dark:text-teal-500">
@@ -18,12 +18,20 @@
   <div class="flex flex-row">
     <div class="flex flex-col flex-grow">
       <a class=""><span class="underline font-mono text-base text-blue-600 dark:text-blue-500">Allowed Spill Start
-          (WHT)</span> <span class="border rounded-lg bg-green-700 text-white px-1">30.67%</span></a>
+          (WHT)</span> <span class="border rounded-lg bg-green-700 text-white px-1">{{runTest.summary[0].spillPerc}}
+          %</span></a>
 
       <a class=""><span class="underline font-mono text-base text-blue-600 dark:text-blue-500">Year Spilling
-          (WHT)</span> <span class="border rounded-lg bg-green-700 text-white px-1">34.29%</span></a>
+          (WHT)</span> <span
+          class="border rounded-lg bg-green-700 text-white px-1">{{runTest.summary[0].satisfactorySpills}}
+          %</span></a>
 
+      {% if so_performance %}
       <a class="underline font-mono text-base text-blue-600 dark:text-blue-500">Storm Overflow Performance</a>
+      {% else %}
+      <p class="font-mono text-base text-gray-400 dark:text-gray-400">Run Both Dry Day Discharge and Heavy Rainfall
+        Spills to view Storm Overflow Performance</p>
+      {% endif %}
     </div>
     <div class="flex flex-col pl-4 pr-2 py-1">
       <button
