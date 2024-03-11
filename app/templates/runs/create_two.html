@@ -77,114 +77,126 @@
                     class="h-px mt-2 mb-6 bg-gray-200 border-0 dark:bg-gray-700"
                   />
 
-                  <form class="flex flex-wrap items-center space-x-4">
-                    {% if 'test-1' in session.tests or 'test-2' in session.tests
-                    %}
-                    <div class="flex-1 space-y-4">
-                      <div>
-                        <label
-                          for="rainfall-stats"
-                          class="block text-sm font-medium mb-2 dark:text-white"
-                          >Rainfall Stats Report</label
-                        >
-                        <input
-                          type="file"
-                          name="rainfall-stats"
-                          id="rainfall-stats"
-                          class="block w-auto border border-gray-200 shadow-sm rounded-lg text-sm focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600 file:bg-gray-50 file:border-0 file:me-4 file:py-3 file:px-4 dark:file:bg-gray-700 dark:file:text-gray-400"
-                        />
+                  <form
+                    enctype="multipart/form-data"
+                    action="/api/run/create/step2"
+                    method="post"
+                  >
+                    <div class="flex flex-wrap items-center space-x-4">
+                      {% if 'test-1' in session.tests or 'test-2' in
+                      session.tests %}
+                      <div class="flex-1 space-y-4">
+                        <div>
+                          <label
+                            for="rainfall-stats"
+                            class="block text-sm font-medium mb-2 dark:text-white"
+                            >Rainfall Stats Report</label
+                          >
+                          <input
+                            type="file"
+                            name="rainfall-stats"
+                            id="rainfall-stats"
+                            required
+                            accept=".xlsx,.csv"
+                            class="block w-auto border border-gray-200 shadow-sm rounded-lg text-sm focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600 file:bg-gray-50 file:border-0 file:me-4 file:py-3 file:px-4 dark:file:bg-gray-700 dark:file:text-gray-400"
+                          />
+                        </div>
+                        <div>
+                          <label
+                            for="spill-stats"
+                            class="block text-sm font-medium mb-2 dark:text-white"
+                            >Spill Stats Report</label
+                          >
+                          <input
+                            type="file"
+                            name="spill-stats"
+                            id="spill-stats"
+                            required
+                            accept=".xlsx,.csv"
+                            class="block w-auto border border-gray-200 shadow-sm rounded-lg text-sm focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600 file:bg-gray-50 file:border-0 file:me-4 file:py-3 file:px-4 dark:file:bg-gray-700 dark:file:text-gray-400"
+                          />
+                        </div>
                       </div>
-                      <div>
-                        <label
-                          for="spill-stats"
-                          class="block text-sm font-medium mb-2 dark:text-white"
-                          >Spill Stats Report</label
-                        >
-                        <input
-                          type="file"
-                          name="spill-stats"
-                          id="spill-stats"
-                          class="block w-auto border border-gray-200 shadow-sm rounded-lg text-sm focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600 file:bg-gray-50 file:border-0 file:me-4 file:py-3 file:px-4 dark:file:bg-gray-700 dark:file:text-gray-400"
-                        />
+                      {% endif %} {% if 'test-3' in session.tests %}
+                      <div class="flex-1 space-y-4">
+                        <div>
+                          <label
+                            for="formula-a"
+                            class="block text-sm font-medium mb-2 dark:text-white"
+                            >Formula A (I/s)</label
+                          >
+                          <input
+                            type="text"
+                            id="formula-a"
+                            name="formula-a"
+                            class="py-3 px-4 block max-w-80 w-5/6 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:focus:ring-gray-600"
+                            placeholder="Enter Value"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label
+                            for="consent-flow"
+                            class="block text-sm font-medium mb-2 dark:text-white"
+                            >Consent Pass Forward Flow (I/s)</label
+                          >
+                          <input
+                            type="text"
+                            id="consent-flow"
+                            name="consent-flow"
+                            class="py-3 px-4 block max-w-80 w-5/6 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:focus:ring-gray-600"
+                            placeholder="Enter Value"
+                            required
+                          />
+                        </div>
                       </div>
+                      {% endif %}
                     </div>
-                    {% endif %} {% if 'test-3' in session.tests %}
-                    <div class="flex-1 space-y-4">
-                      <div>
-                        <label
-                          for="formula-a"
-                          class="block text-sm font-medium mb-2 dark:text-white"
-                          >Formula A (I/s)</label
-                        >
-                        <input
-                          type="text"
-                          id="formula-a"
-                          name="formula-a"
-                          class="py-3 px-4 block max-w-80 w-5/6 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:focus:ring-gray-600"
-                          placeholder="Enter Value"
-                        />
-                      </div>
-                      <div>
-                        <label
-                          for="consent-flow"
-                          class="block text-sm font-medium mb-2 dark:text-white"
-                          >Consent Pass Forward Flow (I/s)</label
-                        >
-                        <input
-                          type="text"
-                          id="consent-flow"
-                          name="consent-flow"
-                          class="py-3 px-4 block max-w-80 w-5/6 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:focus:ring-gray-600"
-                          placeholder="Enter Value"
-                        />
-                      </div>
-                    </div>
-                    {% endif %}
-                  </form>
 
-                  <div class="mt-6 flex justify-center space-x-4">
-                    <a
-                      href="{{ url_for('createRun', locid=loc.id, step=1) }}"
-                      class="py-2 px-3 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke-width="1.5"
-                        stroke="currentColor"
-                        class="flex-shrink-0 size-4"
+                    <div class="mt-6 flex justify-center space-x-4">
+                      <a
+                        href="{{ url_for('createRun', locid=loc.id, step=1) }}"
+                        class="py-2 px-3 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
                       >
-                        <path
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke-width="1.5"
+                          stroke="currentColor"
+                          class="flex-shrink-0 size-4"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M15.75 19.5 8.25 12l7.5-7.5"
+                          />
+                        </svg>
+                        Back
+                      </a>
+                      <button
+                        type="submit"
+                        class="py-2 px-3 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+                      >
+                        <svg
+                          class="flex-shrink-0 size-4"
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
                           stroke-linecap="round"
                           stroke-linejoin="round"
-                          d="M15.75 19.5 8.25 12l7.5-7.5"
-                        />
-                      </svg>
-                      Back
-                    </a>
-                    <button
-                      type="button"
-                      class="py-2 px-3 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
-                    >
-                      <svg
-                        class="flex-shrink-0 size-4"
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                      >
-                        <path d="M5 12h14" />
-                        <path d="M12 5v14" />
-                      </svg>
-                      Create a new run
-                    </button>
-                  </div>
+                        >
+                          <path d="M5 12h14" />
+                          <path d="M12 5v14" />
+                        </svg>
+                        Create a new run
+                      </button>
+                    </div>
+                  </form>
                 </div>
                 <!-- End Body -->
               </div>

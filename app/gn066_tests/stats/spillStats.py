@@ -1,9 +1,9 @@
 import pandas as pd
-import config as c
+import app.gn066_tests.config as c
 import datetime as dt
 results_ts = '15T'
-import tests.test1 as test1
-import tests.test2 as test2
+import app.gn066_tests.tests.test1 as test1
+import app.gn066_tests.tests.test2 as test2
 
 test1
 test2
@@ -50,7 +50,7 @@ def spill_stats(spills_df, df, run_tests=[1, 2]):
     print('Classification complete')
         
     years = []
-    spill_count = [[] for _ in range(len(c.runs)*3)]
+    spill_count = [[] for _ in range(3)]
 
     for yr,yr_grp in spills_df.groupby(pd.Grouper(key="Start of Spill (absolute)", freq='Y')):
         print (yr.year)

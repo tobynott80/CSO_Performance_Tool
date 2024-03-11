@@ -18,12 +18,13 @@ model Location {
 
 // Runs Table
 model Runs {
-  id         Int        @id @default(autoincrement())
-  locationID Int
-  name       String
-  date       DateTime   @default(now())
-  runsTests  RunTests[]
-  location   Location   @relation(fields: [locationID], references: [id])
+  id          Int        @id @default(autoincrement())
+  date        DateTime   @default(now())
+  locationID  Int
+  name        String
+  description String
+  runsTests   RunTests[]
+  location    Location   @relation(fields: [locationID], references: [id])
 }
 
 // Tests Table
@@ -39,6 +40,7 @@ model RunTests {
   id         Int          @id @default(autoincrement())
   runID      Int
   testID     Int
+  status     String
   run        Runs         @relation(fields: [runID], references: [id])
   test       Tests        @relation(fields: [testID], references: [id])
   summary    Summary[]    @relation("RunTestToSummary")
@@ -55,7 +57,7 @@ model Summary {
   unsatisfactorySpills Int
   substandardSpills    Int
   satisfactorySpills   Int
-  runTestID            Int      @unique
+  runTestID            Int
   runTest              RunTests @relation("RunTestToSummary", fields: [runTestID], references: [id])
 }
 
@@ -66,6 +68,9 @@ model TimeSeries {
   depth          Float
   rollingDepth   Float
   classification String
+  spillAllowed   String?
+  dayType        String
+  result         String?
   runTestID      Int
   runTest        RunTests @relation("RunTestToTimeSeries", fields: [runTestID], references: [id])
 }
