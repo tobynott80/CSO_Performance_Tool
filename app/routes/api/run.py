@@ -8,6 +8,7 @@ from app.gn066_tests import analysis
 from app.gn066_tests import visualisation as vis
 from app.gn066_tests.stats import timeStats, spillStats
 from threading import Thread
+from app.gn066_tests.tests import test3 
 
 pd.options.mode.chained_assignment = None  # default='warn'
 
@@ -76,6 +77,23 @@ async def createRunStep2():
     session.pop("run_desc")
     session.pop("tests")
 
+    form_data = await request.form
+    files = await request.files
+
+    # Parsing user input for formula A and consent pass forward flow
+    formula_a_value = float(form_data.get('formula-a', 0))
+    consent_flow_value = float(form_data.get('consent-flow', 0))
+    
+    baseline_stats_file = files.get('Baseline Stats Report')
+
+    # Processing the Baseline Stats Report
+    df_pff = pd.read_excel(baseline_stats_file.stream, sheet_name="Summary", header=1)
+    
+    df_pff['Compliance Status'] = df_pff.apply(lambda row: test3.check_compliance(row, formula_a_value, consent_flow_value), axis=1)
+    
+    print(df_pff[['Year', 'Compliance Status']])
+
+
     files = await request.files
     print(files)
 
@@ -128,7 +146,9 @@ async def createRunStep2():
             )
             test3thread.start()
 
-    return "helo", 200
+    html_content = df_pff[['Year', 'Compliance Status']].to_html()
+    return f"hello<br>{html_content}", 200    # return await render_template("runs/create_two.html")
+
     # return await render_template("runs/create_two.html")
 
 
