@@ -77,25 +77,12 @@ async def createRunStep2():
     session.pop("run_desc")
     session.pop("tests")
 
-    form_data = await request.form
-    files = await request.files
-
-    # Parsing user input for formula A and consent pass forward flow
-    formula_a_value = float(form_data.get('formula-a', 0))
-    consent_flow_value = float(form_data.get('consent-flow', 0))
-    
-    baseline_stats_file = files.get('Baseline Stats Report')
-
-    # Processing the Baseline Stats Report
-    df_pff = pd.read_excel(baseline_stats_file.stream, sheet_name="Summary", header=1)
-    
-    df_pff['Compliance Status'] = df_pff.apply(lambda row: test3.check_compliance(row, formula_a_value, consent_flow_value), axis=1)
-    
-    print(df_pff[['Year', 'Compliance Status']])
-
-
     files = await request.files
     print(files)
+
+    form_data = await request.form
+
+    
 
     runs_tracker[str(run["id"])] = run
 
@@ -141,13 +128,15 @@ async def createRunStep2():
             test3thread = Thread(
                 target=test3callback,
                 args=(
-                    run
-                ),
-            )
+                    float(form_data.get('formula-a', 0)),
+                    float(form_data.get('consent-flow', 0)),
+                    files["Baseline Stats Report"],
+                run
+            ),
+        )
             test3thread.start()
 
-    html_content = df_pff[['Year', 'Compliance Status']].to_html()
-    return f"hello<br>{html_content}", 200    # return await render_template("runs/create_two.html")
+    return f"hello", 200    # return await render_template("runs/create_two.html")
 
     # return await render_template("runs/create_two.html")
 
@@ -176,12 +165,11 @@ def test1and2callback(rainfall_file, spills_baseline, run):
     return
 
 
-def test3callback(run):
+def test3callback(formula_a_value, consent_flow_value, baseline_stats_file, run):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
 
-    # loop.run_until_complete(createTests1andor2(rainfall_file, spills_baseline, tests))
-    loop.run_until_complete(createTest3(run))
+    loop.run_until_complete(createTest3(formula_a_value, consent_flow_value, baseline_stats_file, run))
     loop.close()
 
 
@@ -249,11 +237,25 @@ async def createTests1andor2(rainfall_file, spills_baseline, run):
     # csvWriter.writeCSV(df, summary, all_spill_classification)
 
 
-async def createTest3(run):
+async def createTest3(formula_a_value, consent_flow_value, baseline_stats_file, run):
     global runs_tracker
 
-    runs_tracker[str(run["id"])]["progress"]["test-3"] = 100
-    return
+    # Processing the Baseline Stats Report
+    df_pff = pd.read_excel(baseline_stats_file.stream, sheet_name="Summary", header=1)
+    
+    df_pff['Compliance Status'] = df_pff.apply(lambda row: test3.check_compliance(row, formula_a_value, consent_flow_value), axis=1)
+    
+    print(df_pff[['Year', 'Compliance Status']])
+    
+    run_id = str(run["id"])
+    if "progress" not in runs_tracker[run_id]:
+        runs_tracker[run_id]["progress"] = {}
+    
+    if "test-3" not in runs_tracker[run_id]["progress"]:
+        runs_tracker[run_id]["progress"]["test-3"] = 0
+
+    runs_tracker[run_id]["progress"]["test-3"] += 100    
+    
 
 
 async def saveSummaryToDB(db, run, summary):
