@@ -13,7 +13,7 @@ async def initializeDB():
 
 
 async def getPaginatedLocations(page, limit):
-    skip = (page - 1) * limit  
+    skip = (page - 1) * limit
     locations = await db.location.find_many(skip=skip, take=limit)
     return locations
 
@@ -72,6 +72,7 @@ async def docs_three():
 async def setting_page():
     return await render_template("settings.html")
 
+
 @app.delete("/api/location/<int:locid>")
 async def delete_location(locid):
     try:
@@ -81,9 +82,9 @@ async def delete_location(locid):
     except Exception as e:
         return {"success": False, "error": str(e)}, 500
 
+
 @app.route("/<int:locid>")
 async def showRuns(locid):
-
 
     # Fetch the location details from the database
     location = await db.location.find_unique(where={"id": locid})
@@ -152,8 +153,7 @@ async def view_run(location_id, run_id):
         include={
             "test": True,
             "spillEvent": True,
-            "timeSeries": True,
-            "summary": True,
+            "summary": {"where": {"year": "Whole Time Series"}},
         },
     )
     print(location)
