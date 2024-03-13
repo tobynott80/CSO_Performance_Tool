@@ -156,9 +156,12 @@ async def view_run(location_id, run_id):
             "summary": {"where": {"year": "Whole Time Series"}},
         },
     )
-    print(location)
-    print(run)
-    print(runTest)
+    if not (runTest):
+        return await render_template_string(
+            "Run not found or in progess. Try again later"
+        )
+    elif runTest.status != "COMPLETED":
+        return await render_template_string("Run in progress. Please try again later")
     return await render_template(
         "runs/results/results_root.html", location=location, run=run, runTest=runTest
     )
