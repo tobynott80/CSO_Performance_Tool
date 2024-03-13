@@ -30,7 +30,7 @@
                     <h2
                       class="text-xl font-semibold text-gray-800 dark:text-gray-200"
                     >
-                      Location Tests
+                      Locations
                     </h2>
                     <p class="text-sm text-gray-600 dark:text-gray-400">
                       Manage tests for different locations.
@@ -224,7 +224,7 @@
                     <th scope="col" class="px-6 py-3 text-start">
                       <div class="flex items-center gap-x-2 justify-center">
                         <span class="text-xs text-center font-semibold uppercase tracking-wide text-gray-800 dark:text-gray-200">
-                          Last updated
+                          Runs
                         </span>
                       </div>
                     </th>
@@ -285,8 +285,11 @@
                     <td class="size-px whitespace-nowrap">
                       <button type="button" class="block w-full">
                         <span class="block px-6 py-2">
-                          <span class="text-sm text-gray-600 dark:text-gray-400">{{ location.runs if location.runs is
-                            not none else '0' }}</span>
+                          <span class="text-sm text-gray-600 dark:text-gray-400">{% if location.runs %}
+                            {{ location.runs|length }}
+                          {% else %}
+                            0
+                          {% endif %}</span>
                         </span>
                       </button>
                     </td>
@@ -471,7 +474,8 @@
             method: 'DELETE',
           })
             .then(response => {
-              
+              // Remove the deleted elements from the table
+              document.querySelector(`tr[data-locid="${locId}"]`).remove();
             })
             .catch(error => console.error('Error deleting location:', error));
         });

@@ -27,7 +27,7 @@
                     <h2
                       class="text-xl font-semibold text-gray-800 dark:text-gray-200"
                     >
-                      Location_name_var
+                      {{location.name}}
                     </h2>
                     <p class="text-sm text-gray-600 dark:text-gray-400">
                       Add Runs, edit and more.
@@ -129,16 +129,6 @@
                           <span
                             class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-gray-200"
                           >
-                            Time
-                          </span>
-                        </div>
-                      </th>
-
-                      <th scope="col" class="px-6 py-3 text-start">
-                        <div class="flex items-center gap-x-2 justify-center">
-                          <span
-                            class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-gray-200"
-                          >
                             Results
                           </span>
                         </div>
@@ -165,7 +155,7 @@
                       </th>
                     </tr>
                   </thead>
-
+                  {% for run in location.runs  %}
                   <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                     <tr
                       class="cursor-pointer bg-white hover:bg-gray-200 dark:bg-slate-900 dark:hover:bg-slate-800"
@@ -179,7 +169,7 @@
                           <span class="block px-6 py-2">
                             <span
                               class="font-mono text-sm text-blue-600 dark:text-blue-500"
-                              >Location_Testname_Variable</span
+                              >{{ run.name }}</span
                             >
                           </span>
                         </button>
@@ -239,7 +229,8 @@
                           <span class="block px-6 py-2">
                             <span
                               class="text-sm text-gray-600 dark:text-gray-400"
-                              >14/08/2003</span
+                              >{{ run.date.strftime('%d %B
+                              %Y | %H:%M:%S') }}</span
                             >
                           </span>
                         </button>
@@ -252,22 +243,24 @@
                           data-hs-overlay="#hs-ai-invoice-modal"
                         >
                           <span class="block px-6 py-2">
-                            <span
-                              class="text-sm text-gray-600 dark:text-gray-400"
-                              >13:03:57</span
-                            >
-                          </span>
-                        </button>
-                      </td>
+                            <span class="text-bold text-green-600">
+                              {% set completed_count = 0 %}
+                              {% set total_count = run.runsTests|length %}                               
+                              
+                              {% if run.runsTests %}  
+                                
+                                {% for runTest in run.runsTests %}
+                                  {% set testString = runTest.status %}
+                                  {% if runTest.status == "COMPLETED" %}
+                                    {% set completed_count = completed_count + 1 %}
+                                  {% endif %} 
+                                {% endfor %}
+                                {% set completion_ratio = completed_count / total_count %}
 
-                      <td class="size-px whitespace-nowrap">
-                        <button
-                          type="button"
-                          class="block w-full"
-                          data-hs-overlay="#hs-ai-invoice-modal"
-                        >
-                          <span class="block px-6 py-2">
-                            <span class="text-bold text-orange-600">2/3</span>
+                              {% endif %}
+                            
+                              {{ total_count }}/{{ total_count }}
+                            </span> 
                           </span>
                         </button>
                       </td>
@@ -335,6 +328,7 @@
                       </td>
                     </tr>
                   </tbody>
+                  {% endfor %}
                 </table>
                 <!-- End Table -->
 

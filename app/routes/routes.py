@@ -1,4 +1,5 @@
 from quart import render_template, render_template_string, request, redirect, session
+from pprint import pprint
 from app import app
 from app.helper.database import initDB
 from math import ceil
@@ -12,9 +13,12 @@ async def initializeDB():
     db = await initDB()
 
 
-async def getPaginatedLocations(page, limit):
+async def getPaginatedLocations(page, limit, include_runs=False):
     skip = (page - 1) * limit  
-    locations = await db.location.find_many(skip=skip, take=limit)
+    if include_runs:
+        locations = await db.location.find_many(skip=skip, take=limit, include={"runs": True})
+    else:
+        locations = await db.location.find_many(skip=skip, take=limit)
     return locations
 
 
@@ -27,12 +31,22 @@ async def index():
     if query:
         total = await db.location.count(where={"name": {"contains": query}})
         locations = await db.location.find_many(
-            where={"name": {"contains": query}}, skip=(page - 1) * limit, take=limit
+            where={"name": {"contains": query}}, 
+            skip=(page - 1) * limit, 
+            take=limit,
+            include={"runs": True}
         )
     else:
         total = await db.location.count()
-        locations = await getPaginatedLocations(page, limit)
+        locations = await getPaginatedLocations(page, limit, include_runs=True)
 
+
+    for location in locations:
+        print(f"Location: {location.name}")
+        print("Runs:")
+        pprint(location.runs)
+        print("-" * 20)
+        
     total_pages = ceil(total / limit)
     return await render_template(
         "index.html",
@@ -86,7 +100,7 @@ async def showRuns(locid):
 
 
     # Fetch the location details from the database
-    location = await db.location.find_unique(where={"id": locid})
+    location = await db.location.find_unique(where={"id": locid},include={"runs": {"include": {"runsTests": True}}})
 
     # Add location details to session
     if "visited_locations" not in session:
