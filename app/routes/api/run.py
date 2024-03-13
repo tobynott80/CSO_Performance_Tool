@@ -123,17 +123,16 @@ async def createRunStep2():
                 ),
             )
             test12thread.start()
-        if (test == "test-3"):
-            # Do checks to ensure the appropriate files are here
+        if test == "test-3":
             test3thread = Thread(
                 target=test3callback,
                 args=(
                     float(form_data.get('formula-a', 0)),
                     float(form_data.get('consent-flow', 0)),
                     files["Baseline Stats Report"],
-                run
-            ),
-        )
+                    run
+                ),
+            )
             test3thread.start()
 
     return f"hello", 200    # return await render_template("runs/create_two.html")
@@ -247,14 +246,14 @@ async def createTest3(formula_a_value, consent_flow_value, baseline_stats_file, 
     
     print(df_pff[['Year', 'Compliance Status']])
     
-    run_id = str(run["id"])
-    if "progress" not in runs_tracker[run_id]:
-        runs_tracker[run_id]["progress"] = {}
+    # run_id = str(run["id"])
+    # if "progress" not in runs_tracker[run_id]:
+    #     runs_tracker[run_id]["progress"] = {}
     
-    if "test-3" not in runs_tracker[run_id]["progress"]:
-        runs_tracker[run_id]["progress"]["test-3"] = 0
+    # if "test-3" not in runs_tracker[run_id]["progress"]:
+    #     runs_tracker[run_id]["progress"]["test-3"] = 0
 
-    runs_tracker[run_id]["progress"]["test-3"] += 100    
+    runs_tracker[str(run["id"])]["progress"]["test-2"] = 100
     
 
 
