@@ -243,15 +243,14 @@ async def createTest3(formula_a_value, consent_flow_value, baseline_stats_file, 
     df_pff = pd.read_excel(baseline_stats_file.stream, sheet_name="Summary", header=1)
     
     df_pff['Compliance Status'] = df_pff.apply(lambda row: test3.check_compliance(row, formula_a_value, consent_flow_value), axis=1)
+
+
+    df_pff['Just Formula A'] = df_pff.apply(lambda row: test3.check_formula_a(row, formula_a_value), axis=1)
+    df_pff['Just Consent FPF'] = df_pff.apply(lambda row: test3.check_consent_fpf(row, consent_flow_value), axis=1)
     
     print(df_pff[['Year', 'Compliance Status']])
-    
-    # run_id = str(run["id"])
-    # if "progress" not in runs_tracker[run_id]:
-    #     runs_tracker[run_id]["progress"] = {}
-    
-    # if "test-3" not in runs_tracker[run_id]["progress"]:
-    #     runs_tracker[run_id]["progress"]["test-3"] = 0
+    print(df_pff[['Year', 'Just Formula A']])
+    print(df_pff[['Year', 'Just Consent FPF']])
 
     runs_tracker[str(run["id"])]["progress"]["test-2"] = 100
     
