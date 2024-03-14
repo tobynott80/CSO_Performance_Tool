@@ -17,11 +17,20 @@ run_blueprint = Blueprint("run", __name__)
 db = None
 runs_tracker = {}
 
+def safe_float_conversion(value, default=None):
+    """Attempt to convert a value to float. Return default if conversion fails or value is not provided."""
+    try:
+        if value in (None, '', 'None'):  # Checks if the input value is empty or None
+            return default
+        return float(value)
+    except ValueError:
+        return default
 
 @run_blueprint.before_app_serving
 async def initializeDB():
     global db
     db = await initDB()
+
 
 
 @run_blueprint.route("/create/step1", methods=["POST"])
@@ -82,8 +91,10 @@ async def createRunStep2():
 
     form_data = await request.form
 
-    
+    formula_a_value = safe_float_conversion(form_data.get('formula-a'), default=None)
+    consent_flow_value = safe_float_conversion(form_data.get('consent-flow'), default=None)
 
+    
     runs_tracker[str(run["id"])] = run
 
     onlyOnce = False
@@ -123,12 +134,15 @@ async def createRunStep2():
                 ),
             )
             test12thread.start()
+
+        
+
         if test == "test-3":
             test3thread = Thread(
                 target=test3callback,
                 args=(
-                    float(form_data.get('formula-a', 0)),
-                    float(form_data.get('consent-flow', 0)),
+                    formula_a_value,
+                    consent_flow_value,
                     files["Baseline Stats Report"],
                     run
                 ),

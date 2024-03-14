@@ -78,6 +78,7 @@
                   />
 
                   <form
+                    id="createrun"
                     enctype="multipart/form-data"
                     action="/api/run/create/step2"
                     method="post"
@@ -141,7 +142,7 @@
                             >Formula A (I/s)</label
                           >
                           <input
-                            type="text"
+                            type="number"
                             id="formula-a"
                             name="formula-a"
                             class="py-3 px-4 block max-w-80 w-5/6 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:focus:ring-gray-600"
@@ -155,7 +156,7 @@
                             >Consent Pass Forward Flow (I/s)</label
                           >
                           <input
-                            type="text"
+                            type="number"
                             id="consent-flow"
                             name="consent-flow"
                             class="py-3 px-4 block max-w-80 w-5/6 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:focus:ring-gray-600"
@@ -188,7 +189,8 @@
                         Back
                       </a>
                       <button
-                        type="submit"
+                        type="button"
+                        onclick="submitForm()"
                         class="py-2 px-3 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
                       >
                         <svg
@@ -224,8 +226,16 @@
   </body>
 
   <script>
-    const now = new Date();
-    const formatted = now.toLocaleString();
-    document.querySelector("#date").value = formatted;
+    function submitForm() {
+      const form = document.forms["createrun"];
+      const formulaA = document.getElementById("formula-a");
+      const consentFlow = document.getElementById("consent-flow");
+      console.log(formulaA.value.trim(), consentFlow.value.trim());
+
+      if (formulaA.value.trim() === "" && consentFlow.value.trim() === "") {
+        return alert("Please input at least Formula A or Consent Flow.");
+      }
+      form.submit();
+    }
   </script>
 </html>
