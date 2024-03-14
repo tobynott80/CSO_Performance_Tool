@@ -46,6 +46,7 @@ model RunTests {
   summary    Summary[]    @relation("RunTestToSummary")
   timeSeries TimeSeries[] @relation("RunTestToTimeSeries")
   spillEvent SpillEvent[] @relation("RunTestToSpillEvent")
+  testThree  TestThree[]  @relation("RunTestToTestThree")
 }
 
 model Summary {
@@ -89,4 +90,16 @@ model SpillEvent {
   classification String
   runTestID      Int
   runTest        RunTests @relation("RunTestToSpillEvent", fields: [runTestID], references: [id])
+}
+
+model TestThree {
+  id        Int      @id @default(autoincrement())
+  year     String
+  formulaAInput Float?
+  consentFPFInput Float?
+  complianceStatus String
+  formulaAStatus String
+  consentFPFStatus String
+  runTestID      Int
+  runTest        RunTests @relation("RunTestToTestThree", fields: [runTestID], references: [id])
 }

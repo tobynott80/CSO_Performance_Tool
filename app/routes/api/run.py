@@ -138,6 +138,21 @@ async def createRunStep2():
         
 
         if test == "test-3":
+            if "Baseline Stats Report" not in files:
+                return redirect(url_for(f"createRun", locid=session["loc"], step=2))
+            # Connect Tests in DB to frontend tests
+            testid = await db.tests.find_first(where={
+                "name": "Test 3"
+            })
+
+            runtest = await db.runtests.create(data={
+                "runID": run["id"],
+                "testID": testid.id,
+                "status": "PROGRESS"
+            })
+
+            # Store RunTest ID for when running thread
+            run["runids"].append(runtest.id)
             test3thread = Thread(
                 target=test3callback,
                 args=(
@@ -266,7 +281,12 @@ async def createTest3(formula_a_value, consent_flow_value, baseline_stats_file, 
     print(df_pff[['Year', 'Just Formula A']])
     print(df_pff[['Year', 'Just Consent FPF']])
 
-    runs_tracker[str(run["id"])]["progress"]["test-2"] = 100
+    from prisma import Prisma
+    db = Prisma()
+    await db.connect()
+    await saveTest3ToDB(db, run, df_pff, formula_a_value, consent_flow_value)
+
+    runs_tracker[str(run["id"])]["progress"]["test-3"] = 100
     
 
 
@@ -315,3 +335,21 @@ async def saveSpillToDB(db, run, all_spill_classification):
             "classification": row["Classification"],
             "runTestID": run["runids"][0]
         })
+
+async def saveTest3ToDB(db, run, df_pff, formula_a, consent_fpf):
+    for index, row in df_pff.iterrows():
+        print(row)
+        await db.testthree.create(data={
+            "year": str(row['Year']),
+            "formulaAInput": (formula_a),
+            "consentFPFInput": (consent_fpf),
+            "complianceStatus": row['Compliance Status'],
+            "formulaAStatus": row['Just Formula A'],
+            "consentFPFStatus": row['Just Consent FPF'],
+            "runTestID": run["runids"][0]
+        })
+
+
+
+     
+
