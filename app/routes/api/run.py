@@ -70,15 +70,17 @@ async def createRunStep2():
         "description": session["run_desc"],
         "tests": session["tests"],
         "progress": {},
-        "runids": []
+        "runids": [],
     }
 
-    await db.runs.create(data={
-        "id": run["id"],
-        "locationID": run["locationID"],
-        "name": run["name"],
-        "description": run["description"],
-    })
+    await db.runs.create(
+        data={
+            "id": run["id"],
+            "locationID": run["locationID"],
+            "name": run["name"],
+            "description": run["description"],
+        }
+    )
 
     files = await request.files
     print(files)
@@ -97,21 +99,19 @@ async def createRunStep2():
         if test == "test-1" or test == "test-2":
 
             # Connect Tests in DB to frontend tests
-            testid = await db.tests.find_first(where={
-                "name": "Test 1" if test == "test-1" else "Test 2"
-            })
+            testid = await db.tests.find_first(
+                where={"name": "Test 1" if test == "test-1" else "Test 2"}
+            )
 
-            runtest = await db.runtests.create(data={
-                "runID": run["id"],
-                "testID": testid.id,
-                "status": "PROGRESS"
-            })
+            runtest = await db.runtests.create(
+                data={"runID": run["id"], "testID": testid.id, "status": "PROGRESS"}
+            )
 
             # Store RunTest ID for when running thread
             run["runids"].append(runtest.id)
 
             # If both Test 1 & 2 selected, ensure thread is only ran once
-            if (onlyOnce == True):
+            if onlyOnce == True:
                 continue
 
             onlyOnce = True
@@ -124,10 +124,11 @@ async def createRunStep2():
                 args=(
                     files["rainfall-stats"],
                     (files["spill-stats"], "None", run["name"]),
-                    run
+                    run,
                 ),
             )
             test12thread.start()
+<<<<<<< app/routes/api/run.py
 
         
 
@@ -187,10 +188,8 @@ async def createRunStep2():
             session.pop("run_desc")
             session.pop("tests")
 
-    return f"hello", 200    # return await render_template("runs/create_two.html")
 
-    # return await render_template("runs/create_two.html")
-
+    return redirect(f"/{run['locationID']}/{run['id']}")
 
 @run_blueprint.route("/status", methods=["GET"])
 async def checkStatus():
@@ -210,8 +209,7 @@ def test1and2callback(rainfall_file, spills_baseline, run):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
 
-    loop.run_until_complete(createTests1andor2(
-        rainfall_file, spills_baseline, run))
+    loop.run_until_complete(createTests1andor2(rainfall_file, spills_baseline, run))
     loop.close()
     return
 
@@ -247,8 +245,7 @@ async def createTests1andor2(rainfall_file, spills_baseline, run):
     runs_tracker[str(run["id"])]["progress"]["test-1"] += 20
     runs_tracker[str(run["id"])]["progress"]["test-2"] += 20
 
-    vis.timeline_visual(spills_baseline, df,
-                        vis.timeline_start, vis.timeline_end)
+    vis.timeline_visual(spills_baseline, df, vis.timeline_start, vis.timeline_end)
     perc_data = timeStats.time_stats(df, spills_baseline)
 
     runs_tracker[str(run["id"])]["progress"]["test-1"] += 10
@@ -274,13 +271,7 @@ async def createTests1andor2(rainfall_file, spills_baseline, run):
     runs_tracker[str(run["id"])]["progress"]["test-2"] += 20
 
     for test in run["runids"]:
-        await db.runtests.update(
-            where={
-                'id': test
-            },
-            data={
-                "status": "COMPLETED"
-            })
+        await db.runtests.update(where={"id": test}, data={"status": "COMPLETED"})
 
     # Saves 300k worth of rows - can be done in background?
     await saveTimeSeriesToDB(db, run, df)
@@ -312,49 +303,59 @@ async def createTest3(formula_a_value, consent_flow_value, baseline_stats_file, 
 
 async def saveSummaryToDB(db, run, summary):
     for index, row in summary.iterrows():
-        await db.summary.create(data={
-            "year": str(row['Year']),
-            "dryPerc": row["Percentage of dry days (%)"],
-            "heavyPerc": row["Percentage of year spills are allowed to start (%)"],
-            "spillPerc": row[f"{run['name']} - Percentage of year spilling (%)"],
-            "unsatisfactorySpills": row[f"{run['name']} - Unsatisfactory Spills"],
-            "substandardSpills": row[f"{run['name']} - Substandard Spills"],
-            "satisfactorySpills": row[f"{run['name']} - Satisfactory Spills"],
-            "runTestID": run["runids"][0]
-        })
+        await db.summary.create(
+            data={
+                "year": str(row["Year"]),
+                "dryPerc": row["Percentage of dry days (%)"],
+                "heavyPerc": row["Percentage of year spills are allowed to start (%)"],
+                "spillPerc": row[f"{run['name']} - Percentage of year spilling (%)"],
+                "unsatisfactorySpills": row[f"{run['name']} - Unsatisfactory Spills"],
+                "substandardSpills": row[f"{run['name']} - Substandard Spills"],
+                "satisfactorySpills": row[f"{run['name']} - Satisfactory Spills"],
+                "runTestID": run["runids"][0],
+            }
+        )
 
 
 async def saveTimeSeriesToDB(db, run, df):
     for index, row in df.iterrows():
-        await db.timeseries.create(data={
-            "dateTime": index,
-            "intensity": row["Intensity"],
-            "depth": row["Depth_x"],
-            "rollingDepth": row["Rolling 1hr depth"],
-            "classification": row["Classification"],
-            "spillAllowed": row["Spill_allowed?"],
-            "dayType": row["Day Type"],
-            "result": row[run["name"]],
-            "runTestID": run["runids"][0]
-        })
+        await db.timeseries.create(
+            data={
+                "dateTime": index,
+                "intensity": row["Intensity"],
+                "depth": row["Depth_x"],
+                "rollingDepth": row["Rolling 1hr depth"],
+                "classification": row["Classification"],
+                "spillAllowed": row["Spill_allowed?"],
+                "dayType": row["Day Type"],
+                "result": row[run["name"]],
+                "runTestID": run["runids"][0],
+            }
+        )
 
 
 async def saveSpillToDB(db, run, all_spill_classification):
     print(all_spill_classification)
     for index, row in all_spill_classification.iterrows():
-        await db.spillevent.create(data={
-            "start": row["Start of Spill (absolute)"],
-            "end": row["End of Spill (absolute)"],
-            "volume": row["Spill Volume (m3)"],
-            "runName": run["name"],
-            "maxIntensity": row["Max intensity in 24hrs preceding spill start (mm/hr)"],
-            "maxDepthInHour": row["Max depth in an hour in 24hrs preceding spill start (mm/hr)"],
-            "totalDepth": row["Total depth in 24hrs preceding spill start (mm)"],
-            "test1": row["Test 1 Status"],
-            "test2": row["Test 2 Status"],
-            "classification": row["Classification"],
-            "runTestID": run["runids"][0]
-        })
+        await db.spillevent.create(
+            data={
+                "start": row["Start of Spill (absolute)"],
+                "end": row["End of Spill (absolute)"],
+                "volume": row["Spill Volume (m3)"],
+                "runName": run["name"],
+                "maxIntensity": row[
+                    "Max intensity in 24hrs preceding spill start (mm/hr)"
+                ],
+                "maxDepthInHour": row[
+                    "Max depth in an hour in 24hrs preceding spill start (mm/hr)"
+                ],
+                "totalDepth": row["Total depth in 24hrs preceding spill start (mm)"],
+                "test1": row["Test 1 Status"],
+                "test2": row["Test 2 Status"],
+                "classification": row["Classification"],
+                "runTestID": run["runids"][0],
+            }
+        )
 
 async def saveTest3ToDB(db, run, df_pff, formula_a, consent_fpf):
     for index, row in df_pff.iterrows():
@@ -367,3 +368,4 @@ async def saveTest3ToDB(db, run, df_pff, formula_a, consent_fpf):
             "consentFPFStatus": row['Just Consent FPF'],
             "runTestID": run["runids"][0]
         })
+
