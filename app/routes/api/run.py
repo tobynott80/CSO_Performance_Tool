@@ -128,9 +128,6 @@ async def createRunStep2():
                 ),
             )
             test12thread.start()
-<<<<<<< app/routes/api/run.py
-
-        
 
         if test == "test-3":
 
