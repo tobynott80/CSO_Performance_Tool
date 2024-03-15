@@ -67,10 +67,26 @@
                     </div>
                   </div>
 
-                  <div
-                    class="text-xl font-semibold text-gray-800 dark:text-gray-200 mt-8"
-                  >
-                    Configure Tests
+                  <div class="flex justify-between items-center mt-8">
+                    <div
+                      class="text-xl font-semibold text-gray-800 dark:text-gray-200"
+                    >
+                      Configure Tests
+                    </div>
+
+                    <!-- Flash Messages -->
+                    <div class="flex-1 text-center px-10">
+                      {% with messages = get_flashed_messages() %} {% if
+                      messages %}
+                      <div
+                        class="bg-red-950 border border-red-500 text-white font-semibold py-3 rounded relative"
+                      >
+                        {% for message in messages %}
+                        <p>{{ message }}</p>
+                        {% endfor %}
+                      </div>
+                      {% endif %} {% endwith %}
+                    </div>
                   </div>
 
                   <hr
@@ -78,6 +94,7 @@
                   />
 
                   <form
+                    id="createrun"
                     enctype="multipart/form-data"
                     action="/api/run/create/step2"
                     method="post"
@@ -121,17 +138,31 @@
                       <div class="flex-1 space-y-4">
                         <div>
                           <label
+                            for="spill-stats"
+                            class="block text-sm font-medium mb-2 dark:text-white"
+                            >Baseline Stats Report</label
+                          >
+                          <input
+                            type="file"
+                            name="Baseline Stats Report"
+                            id="Baseline Stats Report"
+                            required
+                            accept=".xlsx,.csv"
+                            class="block w-auto border border-gray-200 shadow-sm rounded-lg text-sm focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600 file:bg-gray-50 file:border-0 file:me-4 file:py-3 file:px-4 dark:file:bg-gray-700 dark:file:text-gray-400"
+                          />
+                        </div>
+                        <div>
+                          <label
                             for="formula-a"
                             class="block text-sm font-medium mb-2 dark:text-white"
                             >Formula A (I/s)</label
                           >
                           <input
-                            type="text"
+                            type="number"
                             id="formula-a"
                             name="formula-a"
                             class="py-3 px-4 block max-w-80 w-5/6 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:focus:ring-gray-600"
                             placeholder="Enter Value"
-                            required
                           />
                         </div>
                         <div>
@@ -141,12 +172,11 @@
                             >Consent Pass Forward Flow (I/s)</label
                           >
                           <input
-                            type="text"
+                            type="number"
                             id="consent-flow"
                             name="consent-flow"
                             class="py-3 px-4 block max-w-80 w-5/6 border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200 dark:focus:ring-gray-600"
                             placeholder="Enter Value"
-                            required
                           />
                         </div>
                       </div>
@@ -175,7 +205,8 @@
                         Back
                       </a>
                       <button
-                        type="submit"
+                        type="button"
+                        onclick="submitForm()"
                         class="py-2 px-3 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
                       >
                         <svg
@@ -211,8 +242,16 @@
   </body>
 
   <script>
-    const now = new Date();
-    const formatted = now.toLocaleString();
-    document.querySelector("#date").value = formatted;
+    function submitForm() {
+      const form = document.forms["createrun"];
+      const formulaA = document.getElementById("formula-a");
+      const consentFlow = document.getElementById("consent-flow");
+      console.log(formulaA.value.trim(), consentFlow.value.trim());
+
+      if (formulaA.value.trim() === "" && consentFlow.value.trim() === "") {
+        return alert("Please input at least Formula A or Consent Flow.");
+      }
+      form.submit();
+    }
   </script>
 </html>
