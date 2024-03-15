@@ -1,4 +1,4 @@
-from quart import Blueprint, render_template, request, redirect, session, url_for
+from quart import Blueprint, render_template, request, redirect, session, url_for, flash
 from app.helper.database import initDB
 import asyncio
 
@@ -80,12 +80,6 @@ async def createRunStep2():
         "description": run["description"],
     })
 
-    # Delete session data since not needed in client side
-    session.pop("loc")
-    session.pop("run_name")
-    session.pop("run_desc")
-    session.pop("tests")
-
     files = await request.files
     print(files)
 
@@ -138,8 +132,31 @@ async def createRunStep2():
         
 
         if test == "test-3":
+
+            # Check if Baseline Stats Report is present
             if "Baseline Stats Report" not in files:
-                return redirect(url_for(f"createRun", locid=session["loc"], step=2))
+                await flash("Baseline Stats Report is required for Test 3")
+                return redirect (url_for(f"createRun", locid=session["loc"], step=2))
+
+            # Correct format check
+            if not files["Baseline Stats Report"].filename.endswith(('.xlsx', '.csv', '.xls')):
+                await flash("Invalid file format. Only '.xlsx', '.csv', and '.xls' files are supported.")
+                return redirect (url_for(f"createRun", locid=session["loc"], step=2))
+
+            # Load the Excel file and checks whether sheet "Summary" exists
+            try:
+                df_pff = pd.read_excel(files["Baseline Stats Report"].stream, sheet_name="Summary", header=1)
+            except Exception as e:
+                await flash("Error reading file, Please Input a valid Excel file. Error: " + str(e))
+                return redirect (url_for(f"createRun", locid=session["loc"], step=2))
+
+            #Check if required columns are present
+            required_columns = ['Peak PFF (l/s)', 'Avg Initial PFF (l/s)', 'Year'] 
+            missing_columns = [column for column in required_columns if column not in df_pff.columns]
+            if missing_columns:
+                await flash("Missing required columns: " + ", ".join(missing_columns))
+                return redirect (url_for(f"createRun", locid=session["loc"], step=2))
+            
             # Connect Tests in DB to frontend tests
             testid = await db.tests.find_first(where={
                 "name": "Test 3"
@@ -163,6 +180,12 @@ async def createRunStep2():
                 ),
             )
             test3thread.start()
+
+            # Delete session data since not needed in client side
+            session.pop("loc")
+            session.pop("run_name")
+            session.pop("run_desc")
+            session.pop("tests")
 
     return f"hello", 200    # return await render_template("runs/create_two.html")
 
@@ -268,12 +291,9 @@ async def createTests1andor2(rainfall_file, spills_baseline, run):
 async def createTest3(formula_a_value, consent_flow_value, baseline_stats_file, run):
     global runs_tracker
 
-    # Processing the Baseline Stats Report
     df_pff = pd.read_excel(baseline_stats_file.stream, sheet_name="Summary", header=1)
     
     df_pff['Compliance Status'] = df_pff.apply(lambda row: test3.check_compliance(row, formula_a_value, consent_flow_value), axis=1)
-
-
     df_pff['Just Formula A'] = df_pff.apply(lambda row: test3.check_formula_a(row, formula_a_value), axis=1)
     df_pff['Just Consent FPF'] = df_pff.apply(lambda row: test3.check_consent_fpf(row, consent_flow_value), axis=1)
     
@@ -338,7 +358,6 @@ async def saveSpillToDB(db, run, all_spill_classification):
 
 async def saveTest3ToDB(db, run, df_pff, formula_a, consent_fpf):
     for index, row in df_pff.iterrows():
-        print(row)
         await db.testthree.create(data={
             "year": str(row['Year']),
             "formulaAInput": (formula_a),
@@ -348,8 +367,3 @@ async def saveTest3ToDB(db, run, df_pff, formula_a, consent_fpf):
             "consentFPFStatus": row['Just Consent FPF'],
             "runTestID": run["runids"][0]
         })
-
-
-
-     
-

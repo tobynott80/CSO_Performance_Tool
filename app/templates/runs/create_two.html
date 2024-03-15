@@ -67,10 +67,26 @@
                     </div>
                   </div>
 
-                  <div
-                    class="text-xl font-semibold text-gray-800 dark:text-gray-200 mt-8"
-                  >
-                    Configure Tests
+                  <div class="flex justify-between items-center mt-8">
+                    <div
+                      class="text-xl font-semibold text-gray-800 dark:text-gray-200"
+                    >
+                      Configure Tests
+                    </div>
+
+                    <!-- Flash Messages -->
+                    <div class="flex-1 text-center px-10">
+                      {% with messages = get_flashed_messages() %} {% if
+                      messages %}
+                      <div
+                        class="bg-red-950 border border-red-500 text-white font-semibold py-3 rounded relative"
+                      >
+                        {% for message in messages %}
+                        <p>{{ message }}</p>
+                        {% endfor %}
+                      </div>
+                      {% endif %} {% endwith %}
+                    </div>
                   </div>
 
                   <hr
