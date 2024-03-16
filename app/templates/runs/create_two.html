@@ -246,11 +246,50 @@
       const form = document.forms["createrun"];
       const formulaA = document.getElementById("formula-a");
       const consentFlow = document.getElementById("consent-flow");
-      console.log(formulaA.value.trim(), consentFlow.value.trim());
+      const rainfallStats = document.getElementById("rainfall-stats");
+      const spillStats = document.getElementById("spill-stats");
 
-      if (formulaA.value.trim() === "" && consentFlow.value.trim() === "") {
-        return alert("Please input at least Formula A or Consent Flow.");
+      // Check which page we are on
+      const hasRainfallStats = rainfallStats && rainfallStats.files.length > 0;
+      const hasSpillStats = spillStats && spillStats.files.length > 0;
+      const hasFormulaA = formulaA && formulaA.value.trim() !== "";
+      const hasConsentFlow = consentFlow && consentFlow.value.trim() !== "";
+
+      // 1) We're on the page with all the inputs
+      if (
+        rainfallStats !== null &&
+        spillStats !== null &&
+        formulaA !== null &&
+        consentFlow !== null
+      ) {
+        if (
+          !hasRainfallStats ||
+          !hasSpillStats ||
+          (!hasFormulaA && !hasConsentFlow)
+        ) {
+          alert(
+            "Please upload both Spill Stats and Rainfall Stats, and input at least Formula A or Consent Flow."
+          );
+          return;
+        }
+      } else {
+        // Were on just test 1 or 2.
+        if (rainfallStats !== null && spillStats !== null) {
+          if (!hasRainfallStats || !hasSpillStats) {
+            alert("Please upload both Spill Stats and Rainfall Stats.");
+            return; // Prevent form submission
+          }
+        }
+
+        // Were on just test 3.
+        if (formulaA !== null && consentFlow !== null) {
+          if (!hasFormulaA && !hasConsentFlow) {
+            alert("Please input at least Formula A or Consent Flow.");
+            return; // Prevent form submission
+          }
+        }
       }
+      // No errors, submit the form
       form.submit();
     }
   </script>
