@@ -1,3 +1,4 @@
+from typing import Optional
 from quart import Blueprint, request
 from app.helper.database import initDB
 import datetime
@@ -52,3 +53,45 @@ async def getTimeSeries():
             "error": "No timeseries data found for the provided run test ID or given time"
         }, 404
     return [timeseries.model_dump() for timeseries in timeseries_list], 200
+
+
+@results_blueprint.route("/timeseries/range", methods=["GET"])
+async def getTimesSeriesRange():
+    run_test_ID = request.args.get("runTestID")
+    if run_test_ID is None:
+        return {"error": "No run test ID provided"}, 400
+
+    try:
+        run_test_ID = int(run_test_ID)
+    except ValueError:
+        return {"error": "Invalid run test ID provided"}, 400
+
+    earliest_datetime, latest_datetime = await get_datetime_range(run_test_ID)
+
+    if earliest_datetime is None or latest_datetime is None:
+        return {"error": "No timeseries data found for the provided run test ID"}, 404
+
+    return {
+        "earliest_datetime": earliest_datetime.isoformat(),
+        "latest_datetime": latest_datetime.isoformat(),
+    }, 200
+
+
+async def get_datetime_range(
+    run_test_ID: int,
+) -> tuple[Optional[datetime.datetime], Optional[datetime.datetime]]:
+    earliest_datetime = await db.timeseries.find_first(
+        where={"runTestID": int(run_test_ID)},
+        order={"dateTime": "asc"},
+    )
+    if earliest_datetime:
+        earliest_datetime = earliest_datetime.dateTime
+
+    latest_datetime = await db.timeseries.find_first(
+        where={"runTestID": int(run_test_ID)},
+        order={"dateTime": "desc"},
+    )
+    if latest_datetime:
+        latest_datetime = latest_datetime.dateTime
+
+    return earliest_datetime, latest_datetime

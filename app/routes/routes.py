@@ -184,5 +184,8 @@ async def view_visualisation(location_id, run_id):
     elif runTest.status != "COMPLETED":
         return await render_template_string("Run in progress. Please try again later")
     return await render_template(
-        "runs/results/visualisation.html", location=location, run=run, runTest=runTest
+        "runs/results/visualisation.html",
+        location=location,
+        run=run,
+        runTest=runTest,
     )
