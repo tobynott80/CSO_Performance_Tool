@@ -51,4 +51,4 @@ async def getTimeSeries():
         return {
             "error": "No timeseries data found for the provided run test ID or given time"
         }, 404
-    return [timeseries.dict() for timeseries in timeseries_list], 200
+    return [timeseries.model_dump() for timeseries in timeseries_list], 200
