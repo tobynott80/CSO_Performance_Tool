@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  {% include 'head.html' %}
+
+  <body class="bg-gray-50 dark:bg-slate-900">
+    <!-- ========== HEADER ========== -->
+    {% include 'header.html' %} {% include 'sidebar.html' %}
+
+    <!-- Content -->
+    <div class="max-w-[90rem] px-4 py-4 sm:px-6 lg:px-8 lg:ps-64 mx-auto">
+      <!-- Table Section -->
+      <div class="max-w-[85rem] px-4 sm:px-6 lg:px-8 lg:py-14 mx-auto">
+        <!-- Card -->
+        <div class="flex flex-col">
+          <div class="-m-1.5 overflow-x-auto">
+            <div class="p-1.5 min-w-full inline-block align-middle">
+              <div
+                class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden dark:bg-slate-900 dark:border-gray-700"
+              >
+                <!-- Header -->
+                <div
+                  class="px-6 py-4 flex justify-between items-center border-b border-gray-200 dark:border-gray-700"
+                >
+                  <div>
+                    <h2
+                      class="text-xl font-semibold text-gray-800 dark:text-gray-200"
+                    >
+                      {{ location.name }} - {{ run.name }} - Test 3 Results
+                    </h2>
+                    <br />
+                    <p
+                      class="text-sm text-gray-600 dark:text-gray-400 font-medium"
+                    >
+                      {% if test3_results|length > 0 %} Formula A Input: {{
+                      test3_results[0].formulaAInput }} | Consent FPF Input: {{
+                      test3_results[0].consentFPFInput }} {% else %} No Test 3
+                      Results Found. {% endif %}
+                    </p>
+                  </div>
+                  <a
+                    href="/{{ location.id }}/{{ run.id }}"
+                    class="py-2 px-3 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke-width="1.5"
+                      stroke="currentColor"
+                      class="w-4 h-4"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M15.75 19.5 8.25 12l7.5-7.5"
+                      />
+                    </svg>
+                    Back
+                  </a>
+                </div>
+                <!-- End Header -->
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- End Card -->
+      </div>
+    </div>
+    <!-- End Table Section -->
+  </body>
+</html>
