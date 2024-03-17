@@ -75,13 +75,13 @@
         }
         async function populatePage(){
           const [earliest, latest] = await getRange();
-          const dateRange = [];
+          const monthRange = [];
           var currentDate = new Date(earliest);
           while (currentDate <= latest) {
-            dateRange.push(new Date(currentDate));
+            monthRange.push(new Date(currentDate));
             currentDate.setMonth(currentDate.getMonth() + 1);
           }
-          dateRange.forEach((date) => {
+          monthRange.forEach((date) => {
             const dateElement = document.createElement('button');
             dateElement.textContent = `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`;
             dateElement.classList.add('whitespace-nowrap','min-w-full','gap-x-2', 'text-sm', 'font-semibold', 'rounded-lg', 'py-2', 'px-4', 'border', 'border-transparent', 'bg-blue-600', 'text-white', 'hover:bg-blue-700', 'disabled:opacity-50', 'disabled:pointer-events-none', 'dark:focus:outline-none', 'dark:focus:ring-1', 'dark:focus:ring-gray-600');
