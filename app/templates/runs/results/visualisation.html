@@ -28,11 +28,124 @@
                   Run created on : {{run.date.strftime('%d %B %Y | %H:%M:%S')}}
                 </p>
               </div>
+              <div class="flex flex-row mt-4">
+                <div
+                  class="flex flex-col shrink space-y-2 items-center mx-2"
+                  id="date-button-div"
+                ></div>
+                <div
+                  class="bg-white grow border rounded-lg"
+                  id="vis-container"
+                ></div>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-    <script></script>
+    <script type="module">
+        import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
+
+        let runTestID = {{ runTest.id }};
+        let dateButtonDiv = document.getElementById('date-button-div');
+        let visContainer = document.getElementById('vis-container');
+        let colorMap = {
+          "Substandard": "orange",
+          "Satisfactory": "green",
+          "Unsatisfactory": "red"
+      }
+        let earliest;
+        let latest;
+        // Get range of dates for the visualisation
+        async function getRange() {
+          if (earliest !== undefined || latest !== undefined) {
+            return [earliest, latest];
+          }
+          try {
+            const response = await fetch(`/api/results/timeseries/range?runTestID=${runTestID}`);
+            const range = await response.json();
+            // get earliest and latest date from range
+            earliest = new Date(range.earliest_datetime);
+            latest = new Date(range.latest_datetime);
+            return [earliest, latest];
+
+          } catch (error) {
+            console.error('Error fetching data:', error);
+          }
+        }
+        async function populatePage(){
+          const [earliest, latest] = await getRange();
+          const dateRange = [];
+          var currentDate = new Date(earliest);
+          while (currentDate <= latest) {
+            dateRange.push(new Date(currentDate));
+            currentDate.setMonth(currentDate.getMonth() + 1);
+          }
+          dateRange.forEach((date) => {
+            const dateElement = document.createElement('button');
+            dateElement.textContent = `${date.toLocaleString('default', { month: 'long' })} ${date.getFullYear()}`;
+            dateElement.classList.add('whitespace-nowrap','min-w-full','gap-x-2', 'text-sm', 'font-semibold', 'rounded-lg', 'py-2', 'px-4', 'border', 'border-transparent', 'bg-blue-600', 'text-white', 'hover:bg-blue-700', 'disabled:opacity-50', 'disabled:pointer-events-none', 'dark:focus:outline-none', 'dark:focus:ring-1', 'dark:focus:ring-gray-600');
+            dateElement.addEventListener('click', async () => {
+              visContainer.innerHTML = '';
+              await generatePlot(Math.floor(date.getTime() / 1000));
+            });
+            dateButtonDiv.appendChild(dateElement);
+          });
+        }
+        async function generatePlot(startDate){
+          // If start date is not provided, use the earliest date and convert it to unix timestamp
+          if (startDate === undefined) {
+            if (earliest == undefined){
+              await getRange();
+            }
+            startDate = Math.floor(earliest.getTime() / 1000);
+          }
+          // set end date to start date plus one month
+          let endDate = startDate + 2678400;
+          let data = await fetch(`/api/results/timeseries?runTestID=${runTestID}&startTime=${startDate}&endTime=${endDate}`)
+          data = await data.json();
+          data.forEach(d => {
+            d.dateTime = new Date(d.dateTime);
+            d.intensity = parseFloat(d.intensity)
+          });
+          const plot = Plot.plot({
+            x: { type: "utc" },
+            y: { label: "Intensity(mm)" },
+            marks: [
+              Plot.lineY(data, {
+                x: "dateTime",
+                y: "intensity",
+                stroke: "blue",
+                channels: {
+                  Classification: "classification",
+                  dateTime: d => d.dateTime.toLocaleString(),
+                  Spill_Allowed: d => (d.spillAllowed === "YES" ? "Yes" : "No")
+                },
+                tip: true
+              }),
+              Plot.ruleX(data, {
+                x: "dateTime",
+                y: -1,
+                stroke: d => colorMap[d.classification],
+                title: d => d.classification
+              }),
+              Plot.ruleX(data, {
+                x: "dateTime",
+                y1: -1,
+                y2: -2,
+                stroke: d => (d.spillAllowed === "YES" ? "purple" : "white")
+              })
+            ],
+          });
+        const div = document.querySelector("#vis-container");
+        plot.classList.add('w-10/12');
+        div.appendChild(plot);
+        }
+        window.addEventListener("load", (event) => {
+          getRange();
+          populatePage();
+          generatePlot();
+        });
+    </script>
   </body>
 </html>
