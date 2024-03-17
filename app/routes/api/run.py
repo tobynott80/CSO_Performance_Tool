@@ -295,6 +295,9 @@ async def createTest3(formula_a_value, consent_flow_value, baseline_stats_file, 
     await saveTest3ToDB(db, run, df_pff, formula_a_value, consent_flow_value)
 
     runs_tracker[str(run["id"])]["progress"]["test-3"] = 100
+
+    for test in run["runids"]:
+        await db.runtests.update(where={"id": test}, data={"status": "COMPLETED"})
     
 
 
