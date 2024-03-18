@@ -99,7 +99,6 @@
             acc[year][month] = date;
             return acc;
           }, []);
-          console.log(yearMonthRange);
           yearMonthRange.forEach((year)=>{
             const yearHeader = document.createElement('h2')
             {# yearHeader.classList.add('') #}
@@ -109,22 +108,20 @@
             yearPanel.classList.add('bg-transparent', 'border-none', 'h-min')
 
             year.forEach((month) => {
-              console.log(month)
               const dateElement = document.createElement('button');
               dateElement.textContent = `${month.toLocaleString('default', { month: 'long' })} ${month.getFullYear()}`;
-              dateElement.classList.add('whitespace-nowrap','min-w-full','gap-x-2', 'text-sm', 'font-semibold', 'rounded-lg', 'py-2', 'px-4', 'border', 'border-transparent', 'bg-blue-600', 'text-white', 'hover:bg-blue-700', 'disabled:opacity-50', 'disabled:pointer-events-none', 'dark:focus:outline-none', 'dark:focus:ring-1', 'dark:focus:ring-gray-600');
+              dateElement.classList.add('font-mono','whitespace-nowrap','min-w-full','gap-x-2', 'text-sm', 'rounded-lg', 'py-1', 'px-2', 'border', 'border-transparent', 'bg-blue-600', 'text-white', 'hover:bg-blue-700', 'disabled:opacity-50', 'disabled:pointer-events-none', 'dark:focus:outline-none', 'dark:focus:ring-1', 'dark:focus:ring-gray-600');
               dateElement.addEventListener('click', async () => {
                 visContainer.innerHTML = '';
                 await generatePlot(Math.floor(month.getTime() / 1000));
               });
               yearPanel.appendChild(dateElement);
             })
-
             dateButtonDiv.appendChild(yearHeader)
             dateButtonDiv.appendChild(yearPanel)
-              $( function() {
+            $( function() {
               $( "#accordion" ).accordion();
-            } );
+              });
             });
         }
         async function generatePlot(startDate){
