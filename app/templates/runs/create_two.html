@@ -67,10 +67,26 @@
                     </div>
                   </div>
 
-                  <div
-                    class="text-xl font-semibold text-gray-800 dark:text-gray-200 mt-8"
-                  >
-                    Configure Tests
+                  <div class="flex justify-between items-center mt-8">
+                    <div
+                      class="text-xl font-semibold text-gray-800 dark:text-gray-200"
+                    >
+                      Configure Tests
+                    </div>
+
+                    <!-- Flash Messages -->
+                    <div class="flex-1 text-center px-10">
+                      {% with messages = get_flashed_messages() %} {% if
+                      messages %}
+                      <div
+                        class="bg-red-950 border border-red-500 text-white font-semibold py-3 rounded relative"
+                      >
+                        {% for message in messages %}
+                        <p>{{ message }}</p>
+                        {% endfor %}
+                      </div>
+                      {% endif %} {% endwith %}
+                    </div>
                   </div>
 
                   <hr
@@ -176,6 +192,7 @@
                       </a>
                       <button
                         type="submit"
+                        onclick="submitForm()"
                         class="py-2 px-3 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
                       >
                         <svg
@@ -214,5 +231,56 @@
     const now = new Date();
     const formatted = now.toLocaleString();
     document.querySelector("#date").value = formatted;
+
+    function submitForm() {
+      const form = document.forms["createrun"];
+      const formulaA = document.getElementById("formula-a");
+      const consentFlow = document.getElementById("consent-flow");
+      const rainfallStats = document.getElementById("rainfall-stats");
+      const spillStats = document.getElementById("spill-stats");
+
+      // Check which page we are on
+      const hasRainfallStats = rainfallStats && rainfallStats.files.length > 0;
+      const hasSpillStats = spillStats && spillStats.files.length > 0;
+      const hasFormulaA = formulaA && formulaA.value.trim() !== "";
+      const hasConsentFlow = consentFlow && consentFlow.value.trim() !== "";
+
+      // 1) We're on the page with all the inputs
+      if (
+        rainfallStats !== null &&
+        spillStats !== null &&
+        formulaA !== null &&
+        consentFlow !== null
+      ) {
+        if (
+          !hasRainfallStats ||
+          !hasSpillStats ||
+          (!hasFormulaA && !hasConsentFlow)
+        ) {
+          alert(
+            "Please upload both Spill Stats and Rainfall Stats, and input at least Formula A or Consent Flow."
+          );
+          return;
+        }
+      } else {
+        // Were on just test 1 or 2.
+        if (rainfallStats !== null && spillStats !== null) {
+          if (!hasRainfallStats || !hasSpillStats) {
+            alert("Please upload both Spill Stats and Rainfall Stats.");
+            return; // Prevent form submission
+          }
+        }
+
+        // Were on just test 3.
+        if (formulaA !== null && consentFlow !== null) {
+          if (!hasFormulaA && !hasConsentFlow) {
+            alert("Please input at least Formula A or Consent Flow.");
+            return; // Prevent form submission
+          }
+        }
+      }
+      // No errors, submit the form
+      form.submit();
+    }
   </script>
 </html>

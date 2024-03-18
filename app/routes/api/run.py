@@ -1,4 +1,4 @@
-from quart import Blueprint, render_template, request, redirect, session, url_for
+from quart import Blueprint, render_template, request, redirect, session, url_for, flash
 from app.helper.database import initDB
 import asyncio
 
@@ -70,11 +70,7 @@ async def createRunStep2():
         "description": run["description"],
     })
 
-    # Delete session data since not needed in client side
-    session.pop("loc")
-    session.pop("run_name")
-    session.pop("run_desc")
-    session.pop("tests")
+
 
     files = await request.files
     print(files)
@@ -85,6 +81,16 @@ async def createRunStep2():
 
     for test in run["tests"]:
         if test == "test-1" or test == "test-2":
+
+            # Check if appropriate files are uploaded
+            if "rainfall-stats" not in files or "spill-stats" not in files:
+                await flash("Missing required files. Please upload both Rainfall Stats and Spill Stats.", "error")
+                return redirect(url_for(f"createRun", locid=session["loc"], step=2))
+            
+            # Check correct format
+            if not files["rainfall-stats"].filename.endswith(('.xlsx', '.csv')) or not files["spill-stats"].filename.endswith(('.xlsx', '.csv')):
+                await flash('Invalid file format. Please upload files in .xlsx or .csv format.', 'error')
+                return redirect(url_for(f"createRun", locid=session["loc"], step=2))
 
             # Connect Tests in DB to frontend tests
             testid = await db.tests.find_first(where={
@@ -105,19 +111,22 @@ async def createRunStep2():
                 continue
 
             onlyOnce = True
-            # Do checks to ensure the appropriate files are here
-            if "rainfall-stats" not in files or "spill-stats" not in files:
-                # TODO: Add a flash message to notify user of issue
-                return redirect(url_for(f"createRun", locid=session["loc"], step=2))
-            test12thread = Thread(
-                target=test1and2callback,
-                args=(
-                    files["rainfall-stats"],
-                    (files["spill-stats"], "None", run["name"]),
-                    run
-                ),
-            )
-            test12thread.start()
+
+            try:
+                test12thread = Thread(
+                    target=test1and2callback,
+                    args=(
+                        files["rainfall-stats"],
+                        files["spill-stats"],
+                        run
+                    ),
+                )
+                test12thread.start()
+                flash("Test 1 and 2 started successfully.", "success")
+            except Exception as e:
+                print("Error starting Test 1 and 2:", e)  # Log the error
+                flash(f"Error starting Test 1 and 2: {e}", "error")
+
         if (test == "test-3"):
             # Do checks to ensure the appropriate files are here
             test3thread = Thread(
@@ -127,6 +136,13 @@ async def createRunStep2():
                 ),
             )
             test3thread.start()
+
+
+    # Delete session data since not needed in client side
+    session.pop("loc")
+    session.pop("run_name")
+    session.pop("run_desc")
+    session.pop("tests")
 
     return "helo", 200
     # return await render_template("runs/create_two.html")
