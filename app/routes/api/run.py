@@ -91,6 +91,32 @@ async def createRunStep2():
             if not files["rainfall-stats"].filename.endswith(('.xlsx', '.csv')) or not files["spill-stats"].filename.endswith(('.xlsx', '.csv')):
                 await flash('Invalid file format. Please upload files in .xlsx or .csv format.', 'error')
                 return redirect(url_for(f"createRun", locid=session["loc"], step=2))
+            
+             # Rainfall Data Validation
+            try:
+                rainfall_data = pd.read_csv(files["rainfall-stats"].stream, skiprows=13)
+                if "P_DATETIME" not in rainfall_data.columns:
+                    await flash("Invalid Rainfall Stats file: 'P_DATETIME' column missing.", "error")
+                    return redirect(url_for(f"createRun", locid=session["loc"], step=2))
+                # Convert P_DATETIME to datetime
+                rainfall_data["P_DATETIME"] = pd.to_datetime(rainfall_data["P_DATETIME"], format="%d/%m/%Y %H:%M:%S")
+                rainfall_data = rainfall_data.set_index("P_DATETIME", drop=False)
+            except Exception as e:
+                await flash(f"Error reading Rainfall Stats file: {e}", "error")
+                return redirect(url_for(f"createRun", locid=session["loc"], step=2))
+
+            # Spill Stats Data Validation
+            try:
+                spill_data = pd.read_excel(files["spill-stats"].stream)
+                required_columns = ["Start of Spill (absolute)", "End of Spill (absolute)"]
+                missing_columns = [column for column in required_columns if column not in spill_data.columns]
+                if missing_columns:
+                    await flash("Missing required columns in Spill Stats file: " + ", ".join(missing_columns), "error")
+                    return redirect(url_for(f"createRun", locid=session["loc"], step=2))
+            except Exception as e:
+                await flash(f"Error reading Spill Stats file: {e}", "error")
+                return redirect(url_for(f"createRun", locid=session["loc"], step=2))
+
 
             # Connect Tests in DB to frontend tests
             testid = await db.tests.find_first(where={
@@ -116,8 +142,8 @@ async def createRunStep2():
                 test12thread = Thread(
                     target=test1and2callback,
                     args=(
-                        files["rainfall-stats"],
-                        files["spill-stats"],
+                        rainfall_data,
+                        (files["spill-stats"], "None", run["name"]),
                         run
                     ),
                 )
@@ -162,12 +188,12 @@ async def getNextRunID():
     return nextID
 
 
-def test1and2callback(rainfall_file, spills_baseline, run):
+def test1and2callback(rainfall_data, spills_baseline, run):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
 
     loop.run_until_complete(createTests1andor2(
-        rainfall_file, spills_baseline, run))
+        rainfall_data, spills_baseline, run))
     loop.close()
     return
 
@@ -181,7 +207,7 @@ def test3callback(run):
     loop.close()
 
 
-async def createTests1andor2(rainfall_file, spills_baseline, run):
+async def createTests1andor2(rainfall_data, spills_baseline, run):
     from prisma import Prisma
 
     global runs_tracker
@@ -190,7 +216,8 @@ async def createTests1andor2(rainfall_file, spills_baseline, run):
     heavy_rain = 4
 
     # Read CSV and Reformat
-    df_rain_dtindex = csvReader.init(rainfall_file)
+    df_rain_dtindex = rainfall_data
+    # df_rain_dtindex = csvReader.init(rainfall_file)
 
     runs_tracker[str(run["id"])]["progress"]["test-1"] = 20
     runs_tracker[str(run["id"])]["progress"]["test-2"] = 20
