@@ -69,7 +69,16 @@ async def createRunStep2():
         "progress": {},
         "runids": [],   
     }
-        
+
+    await db.runs.create(data={
+        "id": run["id"],
+        "locationID": run["locationID"],
+        "name": run["name"],
+        "description": run["description"],
+    })
+
+
+
     files = await request.files
 
     run['baselineStatsFile'] = files['Baseline Stats Report'].filename if 'Baseline Stats Report' in files else None
@@ -103,6 +112,47 @@ async def createRunStep2():
     for test in run["tests"]:
         if test == "test-1" or test == "test-2":
 
+            # Check if appropriate files are uploaded
+            if "rainfall-stats" not in files or "spill-stats" not in files:
+                await flash("Missing required files. Please upload both Rainfall Stats and Spill Stats.", "error")
+                return redirect(url_for(f"createRun", locid=session["loc"], step=2))
+            
+            # Check correct format
+            if not files["rainfall-stats"].filename.endswith(('.xlsx','.csv')) or not files["spill-stats"].filename.endswith(('.xlsx', '.csv')):
+                await flash('Invalid file format. Please upload files in .xlsx or .csv format.', 'error')
+                return redirect(url_for(f"createRun", locid=session["loc"], step=2))
+            
+            # Rainfall Stats Data Validation
+            try:
+                # Read the necessary rows for validation
+                df_temp = pd.read_csv(files["rainfall-stats"].stream, skiprows=13, nrows=10, encoding='utf-8-sig')  
+
+                # Check for the 'P_DATETIME' column
+                if 'P_DATETIME' not in df_temp.columns:
+                    await flash("Invalid Rainfall Stats file: 'P_DATETIME' column missing.", "error")
+                    return redirect(url_for(f"createRun", locid=session["loc"], step=2))                
+
+            except Exception as e:
+                await flash(f"Error reading Rainfall Stats file: {e}", "error")
+                return redirect(url_for(f"createRun", locid=session["loc"], step=2))  
+
+            # Reset file pointer to the beginning of the file
+            files["rainfall-stats"].seek(0)               
+
+
+            # Spill Stats Data Validation
+            try:
+                 spill_data = pd.read_excel(files["spill-stats"].stream)
+                 required_columns = ["Start of Spill (absolute)", "End of Spill (absolute)"]
+                 missing_columns = [column for column in required_columns if column not in spill_data.columns]
+                 if missing_columns:
+                     await flash("Missing required columns in Spill Stats file: " + ", ".join(missing_columns), "error")
+                     return redirect(url_for(f"createRun", locid=session["loc"], step=2))
+            except Exception as e:
+                 await flash(f"Error reading Spill Stats file: {e}", "error")
+                 return redirect(url_for(f"createRun", locid=session["loc"], step=2))
+
+
             # Connect Tests in DB to frontend tests
             testid = await db.tests.find_first(
                 where={"name": "Test 1" if test == "test-1" else "Test 2"}
@@ -120,10 +170,7 @@ async def createRunStep2():
                 continue
 
             onlyOnce = True
-            # Do checks to ensure the appropriate files are here
-            if "rainfall-stats" not in files or "spill-stats" not in files:
-                # TODO: Add a flash message to notify user of issue
-                return redirect(url_for(f"createRun", locid=session["loc"], step=2))
+            
             test12thread = Thread(
                 target=test1and2callback,
                 args=(
