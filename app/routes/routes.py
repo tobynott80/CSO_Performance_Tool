@@ -98,8 +98,17 @@ async def delete_location(locid):
         return {"success": True}
     except Exception as e:
         return {"success": False, "error": str(e)}, 500
+    
+@app.delete("/api/run/<int:runid>")
+async def delete_run(runid):
+    try:
+        # Delete the run from the database
+        await db.runs.delete(where={"id": runid})
+        return {"success": True}
+    except Exception as e:
+        return {"success": False, "error": str(e)}, 500
 
-
+    
 @app.route("/<int:locid>")
 async def showRuns(locid):
 
