@@ -165,3 +165,34 @@ async def view_run(location_id, run_id):
     return await render_template(
         "runs/results/results_root.html", location=location, run=run, runTest=runTest
     )
+
+@app.get("/<int:location_id>/<int:run_id>/results_test3")
+async def test3_results(location_id, run_id):
+    location = await db.location.find_first(where={"id": location_id})
+    run = await db.runs.find_first(where={"id": run_id})
+    tests = await db.tests.find_first(
+        where={"name": "Test 3"},
+        include={
+            "runsTests": {"where": {"runID": run_id}, "include": {"testThree": True}},
+        },
+    )
+
+    if not (tests):
+        return await render_template_string(
+            "Run not found or in progess. Try again later"
+        )
+    
+    elif tests.runsTests[0].status != "COMPLETED":
+        return await render_template_string("Run in progress. Please try again later")
+    
+    # Handling the case where there are no Test 3 results found for the run
+    if not tests.runsTests[0].testThree:
+        message = "No Test 3 results found for this run."
+        return await render_template_string(
+            "Message: {{message}}", message=message
+        )
+
+    # If Test 3 results are found, pass them to your template
+    return await render_template(
+        "/runs/results/results_test3.html", location=location, run=run, test3_results=tests.runsTests[0].testThree 
+    )
