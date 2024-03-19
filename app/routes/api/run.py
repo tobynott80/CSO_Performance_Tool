@@ -31,8 +31,6 @@ async def initializeDB():
     global db
     db = await initDB()
 
-
-
 @run_blueprint.route("/create/step1", methods=["POST"])
 async def createRunStep1():
     # Use sessions to save step 1 data and then use it when submitting step 2 to create a run
@@ -54,7 +52,6 @@ async def createRunStep1():
     print(session)
     return redirect(url_for(f"createRun", locid=session["loc"], step=2))
 
-
 @run_blueprint.route("/create/step2", methods=["POST"])
 async def createRunStep2():
     global runs_tracker
@@ -70,8 +67,7 @@ async def createRunStep2():
         "description": session["run_desc"],
         "tests": session["tests"],
         "progress": {},
-        "runids": [],
-        
+        "runids": [],   
     }
         
     files = await request.files
@@ -100,7 +96,6 @@ async def createRunStep2():
     formula_a_value = safe_float_conversion(form_data.get('formula-a'), default=None)
     consent_flow_value = safe_float_conversion(form_data.get('consent-flow'), default=None)
 
-    
     runs_tracker[str(run["id"])] = run
 
     onlyOnce = False
@@ -203,14 +198,12 @@ async def checkStatus():
     global runs_tracker
     return runs_tracker
 
-
 async def getNextRunID():
     result = await db.runs.find_first(order={"id": "desc"})
     nextID = 1
     if result:
         nextID = result.id + 1
     return nextID
-
 
 def test1and2callback(rainfall_file, spills_baseline, run):
     loop = asyncio.new_event_loop()
@@ -220,14 +213,12 @@ def test1and2callback(rainfall_file, spills_baseline, run):
     loop.close()
     return
 
-
 def test3callback(formula_a_value, consent_flow_value, baseline_stats_file, run):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
 
     loop.run_until_complete(createTest3(formula_a_value, consent_flow_value, baseline_stats_file, run))
     loop.close()
-
 
 async def createTests1andor2(rainfall_file, spills_baseline, run):
     from prisma import Prisma
