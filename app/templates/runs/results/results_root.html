@@ -28,13 +28,33 @@
                   {{run.date.strftime('%d %B %Y | %H:%M:%S')}}
                 </p>
               </div>
-              {% with runTest=runTest, so_performance=so_performance %} {%
-              include 'runs/results/components/test1_bubble.html' %} {% endwith
-              %} {% with runTest=runTest, so_performance=so_performance %} {%
-              include 'runs/results/components/test2_bubble.html' %} {% endwith
-              %} {% with runTest=runTest, so_performance=so_performance %} {%
-              include 'runs/results/components/test3_bubble.html' %} {% endwith
-              %}
+              {% for tr in data %} 
+              {% if "Test 1" in data %}
+              {% with runTest=data["Test 1"], so_performance=so_performance %}
+              {% include 'runs/results/components/test1_bubble.html' %}
+              {% endwith %}
+              {% endif %}
+
+              {% if "Test 2" in data %}
+              {% with runTest=data["Test 2"], so_performance=so_performance %}
+              {% include 'runs/results/components/test2_bubble.html' %}
+              {% endwith %}
+              {% endif %}
+
+              {% if "Test 3" in data %}
+              {% with runTest=data["Test 3"], so_performance=so_performance %}
+              {% include 'runs/results/components/test3_bubble.html' %}
+              {% endwith %}
+              {% endif %}
+              
+              
+              {% endfor %} 
+              
+              {% with runTest=runTest,
+              so_performance=so_performance %} {% include
+              'runs/results/components/test2_bubble.html' %} {% endwith %} {%
+              with runTest=runTest, so_performance=so_performance %} {% include
+              'runs/results/components/test3_bubble.html' %} {% endwith %}
             </div>
           </div>
         </div>

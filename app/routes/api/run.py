@@ -179,12 +179,11 @@ async def createRunStep2():
             )
             test3thread.start()
 
-            # Delete session data since not needed in client side
-            session.pop("loc")
-            session.pop("run_name")
-            session.pop("run_desc")
-            session.pop("tests")
-
+    # Delete session data since not needed in client side
+    session.pop("loc")
+    session.pop("run_name")
+    session.pop("run_desc")
+    session.pop("tests")
 
     return redirect(f"/{run['locationID']}/{run['id']}")
 

@@ -89,6 +89,9 @@ async def showRuns(locid):
     # Fetch the location details from the database
     location = await db.location.find_unique(where={"id": locid})
 
+    if (not location):
+        return redirect("/")
+
     # Add location details to session
     if "visited_locations" not in session:
         session["visited_locations"] = []
@@ -143,27 +146,53 @@ async def createRun(locid):
 
 @app.get("/<int:location_id>/<int:run_id>")
 async def view_run(location_id, run_id):
+    
     location = await db.location.find_first(where={"id": location_id})
+    if (not location):
+        return redirect("/")
+    
     run = await db.runs.find_first(where={"id": run_id})
+    if (not run):
+        return redirect(f"/{location_id}")
 
-    runTest = await db.runtests.find_first(
+    runTest = await db.runtests.find_many(
         where={
             "runID": run_id,
         },
-        include={
-            "test": True,
-            "spillEvent": True,
-            "summary": {"where": {"year": "Whole Time Series"}},
-        },
     )
-    if not (runTest):
-        return await render_template_string(
-            "Run not found or in progess. Try again later"
-        )
-    elif runTest.status != "COMPLETED":
-        return await render_template_string("Run in progress. Please try again later")
+    if (not runTest or len(runTest) < 1):
+        return redirect(f"/{location_id}")
+    
+    print(runTest)
+    
+    data = []
+
+    for rt in runTest:
+        if (rt.status == "COMPLETED"):
+            res = await db.runtests.find_first(
+                where={
+                    "id": rt.id
+                },
+                include={
+                    "test": True,
+                    "spillEvent": True,
+                    "summary": True,
+                    # "summary": {"where": {"year": "Whole Time Series"}},
+                    "testThree": True
+                },
+            )
+            print(res.keys())
+            if ("summary" in res):
+                val = filter(lambda v: v["year"] == "Whole Time Series", res.summary)
+                print(val)
+            print(res.test)
+            test = {}
+            test[res.test.name] = res
+            data.append(test)
+    
+    # print(data)
     return await render_template(
-        "runs/results/results_root.html", location=location, run=run, runTest=runTest
+        "runs/results/results_root.html", location=location, run=run, runTest=runTest, data=data
     )
 
 
