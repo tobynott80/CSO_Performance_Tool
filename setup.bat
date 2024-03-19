@@ -21,6 +21,9 @@ pipenv run prisma generate
 REM Create db file and push schema to db
 pipenv run prisma db push
 
+REM Preload the database with tests
+pipenv run py ./scripts/load-db.py
+
 REM Notify use to use ./run.bat to run the web app in the future
 msg * "Dependencies have been installed and the database has been setup. Please use ./run.bat to start the program" 
 pause
