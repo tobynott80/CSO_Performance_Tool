@@ -188,6 +188,7 @@ async def view_visualisation(location_id, run_id):
         location=location,
         run=run,
         runTest=runTest,
+    )
 
 @app.get("/<int:location_id>/<int:run_id>/results_test3")
 async def test3_results(location_id, run_id):
