@@ -71,7 +71,14 @@ async def createRunStep2():
         "tests": session["tests"],
         "progress": {},
         "runids": [],
+        
     }
+        
+    files = await request.files
+
+    run['baselineStatsFile'] = files['Baseline Stats Report'].filename if 'Baseline Stats Report' in files else None
+    run['rainfallStatsFile'] = files['rainfall-stats'].filename if 'rainfall-stats' in files else None
+    run['spillStatsFile'] = files['spill-stats'].filename if 'spill-stats' in files else None
 
     await db.runs.create(
         data={
@@ -79,10 +86,13 @@ async def createRunStep2():
             "locationID": run["locationID"],
             "name": run["name"],
             "description": run["description"],
+            "baselineStatsFile": run["baselineStatsFile"],  
+            "rainfallStatsFile": run["rainfallStatsFile"],  
+            "spillStatsFile": run["spillStatsFile"],        
+            
         }
     )
 
-    files = await request.files
     print(files)
 
     form_data = await request.form
