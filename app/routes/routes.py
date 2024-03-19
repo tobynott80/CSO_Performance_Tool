@@ -90,6 +90,9 @@ async def setting_page():
 @app.delete("/api/location/<int:locid>")
 async def delete_location(locid):
     try:
+        # Delete the runs associated with the location
+        await db.runs.delete_many(where={"locationID": locid})
+
         # Delete the location from the database
         await db.location.delete(where={"id": locid})
         return {"success": True}
@@ -140,7 +143,6 @@ async def createRun(locid):
             session.pop("loc")
             session.pop("run_name")
             session.pop("run_desc")
-            session.pop("run_date")
             session.pop("tests")
             step = 1
     elif "loc" not in session:

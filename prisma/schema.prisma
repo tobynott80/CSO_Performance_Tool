@@ -24,7 +24,7 @@ model Runs {
   name        String
   description String
   runsTests   RunTests[]
-  location    Location   @relation(fields: [locationID], references: [id])
+  location    Location   @relation(fields: [locationID], references: [id], onDelete: Cascade)
 }
 
 // Tests Table
@@ -41,7 +41,7 @@ model RunTests {
   runID      Int
   testID     Int
   status     String
-  run        Runs         @relation(fields: [runID], references: [id])
+  run        Runs         @relation(fields: [runID], references: [id], onDelete: Cascade)
   test       Tests        @relation(fields: [testID], references: [id])
   summary    Summary[]    @relation("RunTestToSummary")
   timeSeries TimeSeries[] @relation("RunTestToTimeSeries")
@@ -59,7 +59,7 @@ model Summary {
   substandardSpills    Int
   satisfactorySpills   Int
   runTestID            Int
-  runTest              RunTests @relation("RunTestToSummary", fields: [runTestID], references: [id])
+  runTest              RunTests @relation("RunTestToSummary", fields: [runTestID], references: [id], onDelete: Cascade)
 }
 
 model TimeSeries {
@@ -73,7 +73,7 @@ model TimeSeries {
   dayType        String
   result         String?
   runTestID      Int
-  runTest        RunTests @relation("RunTestToTimeSeries", fields: [runTestID], references: [id])
+  runTest        RunTests @relation("RunTestToTimeSeries", fields: [runTestID], references: [id], onDelete: Cascade)
 }
 
 model SpillEvent {
@@ -89,7 +89,7 @@ model SpillEvent {
   test2          String
   classification String
   runTestID      Int
-  runTest        RunTests @relation("RunTestToSpillEvent", fields: [runTestID], references: [id])
+  runTest        RunTests @relation("RunTestToSpillEvent", fields: [runTestID], references: [id], onDelete: Cascade)
 }
 
 model TestThree {
@@ -101,5 +101,5 @@ model TestThree {
   formulaAStatus String
   consentFPFStatus String
   runTestID      Int
-  runTest        RunTests @relation("RunTestToTestThree", fields: [runTestID], references: [id])
+  runTest        RunTests @relation("RunTestToTestThree", fields: [runTestID], references: [id], onDelete: Cascade)
 }

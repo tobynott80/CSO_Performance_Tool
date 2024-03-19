@@ -208,7 +208,7 @@
                     <th scope="col" class="px-6 py-3 text-start">
                       <div class="flex items-center gap-x-2 justify-center">
                         <span class="text-xs text-center font-semibold uppercase tracking-wide text-gray-800 dark:text-gray-200">
-                          Number of Runs
+                          Locid
                         </span>
                       </div>
                     </th>
@@ -469,16 +469,20 @@
     
       if (confirm(`Are you sure you want to delete ${selectedLocations.length} locations?`)) {
         // Send a DELETE request to the server for each selected location
-        selectedLocations.forEach(locId => {
+        Promise.all(selectedLocations.map(locId =>
           fetch(`/api/location/${locId}`, {
             method: 'DELETE',
           })
-            .then(response => {
-              // Remove the deleted elements from the table
+          .then(response => {
+            // Remove the deleted elements from the table
+            if (response.ok) {
               document.querySelector(`tr[data-locid="${locId}"]`).remove();
-            })
-            .catch(error => console.error('Error deleting location:', error));
-        });
+            } else {
+              console.error('Error deleting location:', response.statusText);
+            }
+          })
+          .catch(error => console.error('Error deleting location:', error))
+        ));
       }
     }
 
