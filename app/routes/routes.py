@@ -166,6 +166,30 @@ async def view_run(location_id, run_id):
         "runs/results/results_root.html", location=location, run=run, runTest=runTest
     )
 
+
+@app.get("/<int:location_id>/<int:run_id>/visualisation")
+async def view_visualisation(location_id, run_id):
+    location = await db.location.find_first(where={"id": location_id})
+    run = await db.runs.find_first(where={"id": run_id})
+
+    runTest = await db.runtests.find_first(
+        where={
+            "runID": run_id,
+        }
+    )
+    if not (runTest):
+        return await render_template_string(
+            "Run not found or in progess. Try again later"
+        )
+    elif runTest.status != "COMPLETED":
+        return await render_template_string("Run in progress. Please try again later")
+    return await render_template(
+        "runs/results/visualisation.html",
+        location=location,
+        run=run,
+        runTest=runTest,
+    )
+
 @app.get("/<int:location_id>/<int:run_id>/results_test3")
 async def test3_results(location_id, run_id):
     location = await db.location.find_first(where={"id": location_id})

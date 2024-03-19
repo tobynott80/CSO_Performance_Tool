@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+  {% include 'head.html' %}
+  <link
+    rel="stylesheet"
+    href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css"
+  />
+  <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+  <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+
+  <body class="bg-gray-50 dark:bg-slate-900">
+    {% include 'header.html' %} {% include 'sidebar.html' %}
+    <div class="mx-auto max-w-[90rem] px-1 py-1 sm:px-6 lg:px-0 lg:ps-64">
+      <div class="mx-auto max-w-[85rem] px-4 sm:px-6 lg:px-8 lg:py-10">
+        <div class="-m-1.5 overflow-x-auto">
+          <div class="inline-block align-middle min-w-full">
+            <div
+              id="outer-parent"
+              class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden px-6 py-4 dark:bg-slate-900 dark:border-gray-700"
+            >
+              <div>
+                <h2
+                  class="text-xl font-semibold text-gray-800 dark:text-gray-200"
+                >
+                  Run Results
+                  <span class="text-gray-400 dark:text-gray-400"
+                    >- Run {{run.id}} ({{location.name}})</span
+                  >
+                </h2>
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                  TODO: Write Visualisation Description
+                </p>
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                  Run created on : {{run.date.strftime('%d %B %Y | %H:%M:%S')}}
+                </p>
+              </div>
+
+              <div class="flex flex-row mt-4">
+                <div
+                  class="flex flex-col shrink items-center mr-1 max-w-min"
+                  id="accordion"
+                ></div>
+                <div
+                  class="bg-white grow border rounded-lg"
+                  id="vis-container"
+                ></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script type="module">
+        import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
+
+
+        let runTestID = {{ runTest.id }};
+        let dateButtonDiv = document.getElementById('accordion');
+        let visContainer = document.getElementById('vis-container');
+        let colorMap = {
+          "Substandard": "orange",
+          "Satisfactory": "green",
+          "Unsatisfactory": "red"
+      }
+        let earliest;
+        let latest;
+        // Get range of dates for the visualisation
+        async function getRange() {
+          if (earliest !== undefined || latest !== undefined) {
+            return [earliest, latest];
+          }
+          try {
+            const response = await fetch(`/api/results/timeseries/range?runTestID=${runTestID}`);
+            const range = await response.json();
+            // get earliest and latest date from range
+            earliest = new Date(range.earliest_datetime);
+            latest = new Date(range.latest_datetime);
+            return [earliest, latest];
+
+          } catch (error) {
+            console.error('Error fetching data:', error);
+          }
+        }
+        async function populatePage(){
+          const [earliest, latest] = await getRange();
+          const monthRange = [];
+          var currentDate = new Date(earliest);
+          while (currentDate <= latest) {
+            monthRange.push(new Date(currentDate));
+            currentDate.setMonth(currentDate.getMonth() + 1);
+          }
+          // create 2d array of years containing months
+          const yearMonthRange = monthRange.reduce((acc, date) => {
+            const year = date.getFullYear();
+            const month = date.getMonth();
+            if (!acc[year]) {
+              acc[year] = [];
+            }
+            acc[year][month] = date;
+            return acc;
+          }, []);
+          yearMonthRange.forEach((year)=>{
+            const yearHeader = document.createElement('h2')
+            {# yearHeader.classList.add('') #}
+            yearHeader.textContent = year.at(-1).getFullYear()
+
+            const yearPanel = document.createElement('div')
+            yearPanel.classList.add('bg-transparent', 'border-none', 'h-min')
+
+            year.forEach((month) => {
+              const dateElement = document.createElement('button');
+              dateElement.textContent = `${month.toLocaleString('default', { month: 'long' })} ${month.getFullYear()}`;
+              dateElement.classList.add('font-mono','whitespace-nowrap','min-w-full','gap-x-2', 'text-sm', 'rounded-lg', 'py-1', 'px-2', 'border', 'border-transparent', 'bg-blue-600', 'text-white', 'hover:bg-blue-700', 'disabled:opacity-50', 'disabled:pointer-events-none', 'dark:focus:outline-none', 'dark:focus:ring-1', 'dark:focus:ring-gray-600');
+              dateElement.addEventListener('click', async () => {
+                visContainer.innerHTML = '';
+                await generatePlot(Math.floor(month.getTime() / 1000));
+              });
+              yearPanel.appendChild(dateElement);
+            })
+            dateButtonDiv.appendChild(yearHeader)
+            dateButtonDiv.appendChild(yearPanel)
+            $( function() {
+              $( "#accordion" ).accordion();
+              });
+            });
+        }
+        async function generatePlot(startDate){
+          // If start date is not provided, use the earliest date and convert it to unix timestamp
+          if (startDate === undefined) {
+            if (earliest == undefined){
+              await getRange();
+            }
+            startDate = Math.floor(earliest.getTime() / 1000);
+          }
+          // set end date to start date plus one month
+          let endDate = startDate + 2678400;
+          let data = await fetch(`/api/results/timeseries?runTestID=${runTestID}&startTime=${startDate}&endTime=${endDate}`)
+          data = await data.json();
+          data.forEach(d => {
+            d.dateTime = new Date(d.dateTime);
+            d.intensity = parseFloat(d.intensity)
+          });
+          const plot = Plot.plot({
+            x: { type: "utc" },
+            y: { label: "Intensity(mm)" },
+            marks: [
+              Plot.lineY(data, {
+                x: "dateTime",
+                y: "intensity",
+                stroke: "blue",
+                channels: {
+                  Classification: "classification",
+                  dateTime: d => d.dateTime.toLocaleString(),
+                  Spill_Allowed: d => (d.spillAllowed === "YES" ? "Yes" : "No")
+                },
+                tip: true
+              }),
+              Plot.ruleX(data, {
+                x: "dateTime",
+                y: -1,
+                stroke: d => colorMap[d.classification],
+                title: d => d.classification
+              }),
+              Plot.ruleX(data, {
+                x: "dateTime",
+                y1: -1,
+                y2: -2,
+                stroke: d => (d.spillAllowed === "YES" ? "purple" : "white")
+              })
+            ],
+          });
+        const div = document.querySelector("#vis-container");
+        plot.classList.add('w-10/12');
+        div.appendChild(plot);
+        }
+        window.addEventListener("load", (event) => {
+          getRange();
+          populatePage();
+          generatePlot();
+        });
+    </script>
+  </body>
+</html>
