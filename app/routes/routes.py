@@ -126,7 +126,6 @@ async def createRun(locid):
             session.pop("loc")
             session.pop("run_name")
             session.pop("run_desc")
-            session.pop("run_date")
             session.pop("tests")
             step = 1
     elif "loc" not in session:
