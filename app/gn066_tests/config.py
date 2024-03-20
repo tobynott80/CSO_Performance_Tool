@@ -14,6 +14,7 @@ runs =[]
 outfolder = Path(r"./output")
 test_three_outputs = outfolder / "test_three_outputs"
 exists = outfolder.mkdir(exist_ok=True)
+test_three_outputs.mkdir(exist_ok=True)
 
 # Definition of heavy rain (depth recorded in an hour)
 heavy_rain = 4  
