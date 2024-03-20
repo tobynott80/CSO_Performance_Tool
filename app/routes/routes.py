@@ -1,7 +1,9 @@
-from quart import render_template, render_template_string, request, redirect, session
+from quart import render_template, render_template_string, request, redirect, session, send_file, abort
 from app import app
 from app.helper.database import initDB
 from math import ceil
+import os
+import app.gn066_tests.config as config
 
 db = None
 
@@ -220,3 +222,19 @@ async def test3_results(location_id, run_id):
     return await render_template(
         "/runs/results/results_test3.html", location=location, run=run, test3_results=tests.runsTests[0].testThree 
     )
+
+@app.route('/download/<filename>')
+async def download_file(filename):
+    file_directory = config.test_three_outputs
+
+    if '..' in filename or '/' in filename or '\\' in filename:
+        abort(404)
+    
+    file_path = os.path.join(file_directory, filename)
+
+    if not os.path.exists(file_path):
+        abort(404)
+
+    return await send_file(file_path, attachment_filename=filename)
+
+
