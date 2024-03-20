@@ -8,7 +8,7 @@
         'runs/results/components/completed_icon.html' %} {% else %} {% include
         'runs/results/components/pending_icon.html' %} {% endif %}
       </div>
-      <span class="text-gray-400 dark:text-gray-400 text-sm"
+      <span class="text-gray-600 dark:text-gray-400 text-sm"
         >GN066 Test 1: Analysing dry day discharges in SOs due to hydraulic
         reasons</span
       >
@@ -22,29 +22,50 @@
           >Dry Day (WHT)</span
         >
         {% if runTest.status == "COMPLETED" %}
-        <span class="border rounded-lg bg-green-700 text-white px-1">
-          {{'%0.2f'| format(runTest.summary.dryPerc|float)}}%
+        <span class="rounded-lg bg-green-700 text-white px-1">
+          {{'%.*g' | format(3, runTest.summary.dryPerc)}}%
         </span>
         {% endif %}
       </a>
 
-      <a class=""
-        ><span
+      <a>
+        <span
           class="underline text-base text-blue-600 dark:text-blue-400 cursor-pointer"
-          >Unsatisfactory Spills (WHT)</span
+          >Unsatisfactory Spills (WHT/Y)</span
         >
         {% if runTest.status == "COMPLETED" %}
-        <span class="border rounded-lg bg-green-700 text-white px-1">
-          {{ runTest.summary.unsatisfactorySpills }}
+        <span
+          class="rounded-lg {{'bg-green-700' if runTest.summary.unsatisfactorySpills  == 0 else 'bg-red-700'}} text-white px-1"
+        >
+          {% if runTest.summary.unsatisfactorySpills > 0 %} {{ '%.*g' |
+          format(3,
+          runTest.summary.unsatisfactorySpills/runTest.summary.yearsCount)}} {%
+          else %} {{runTest.summary.unsatisfactorySpills}} {% endif %}
+        </span>
+        {% endif %}
+      </a>
+      <a>
+        <span
+          class="underline text-base text-blue-600 dark:text-blue-400 cursor-pointer"
+          >Substandard Spills (WHT/Y)</span
+        >
+        {% if runTest.status == "COMPLETED" %}
+        <span
+          class="rounded-lg {{'bg-green-700' if runTest.summary.substandardSpills  == 0 else 'bg-orange-500'}} text-white px-1"
+        >
+          {% if runTest.summary.substandardSpills > 0 %} {{ '%.*g' | format(3,
+          runTest.summary.substandardSpills/runTest.summary.yearsCount)}} {%
+          else %} {{runTest.summary.substandardSpills}} {% endif %}
         </span>
         {% endif %}
       </a>
       {% if show_so %}
-      <a class="underline text-base text-blue-600 dark:text-blue-400 cursor-pointer"
+      <a
+        class="underline text-base text-blue-600 dark:text-blue-400 cursor-pointer"
         >Storm Overflow Performance</a
       >
       {% else %}
-      <p class="text-sm text-gray-400 dark:text-gray-400">
+      <p class="text-sm text-gray-600 dark:text-gray-400">
         Run Both Dry Day Discharge and Heavy Rainfall Spills to view Storm
         Overflow Performance
       </p>

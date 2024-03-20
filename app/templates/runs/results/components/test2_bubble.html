@@ -8,7 +8,7 @@
         'runs/results/components/completed_icon.html' %} {% else %} {% include
         'runs/results/components/pending_icon.html' %} {% endif %}
       </div>
-      <span class="text-gray-400 dark:text-gray-400 text-sm">
+      <span class="text-gray-600 dark:text-gray-400 text-sm">
         GN066 Test 2: Analysing SO spills due to heavy rainfall
       </span>
     </h2>
@@ -21,8 +21,8 @@
           >Allowed Spill Start (WHT)</span
         >
         {% if runTest.status == "COMPLETED" %}
-        <span class="border rounded-lg bg-green-700 text-white px-1">
-          {{'%0.2f'| format(runTest.summary.spillPerc|float)}}%
+        <span class="rounded-lg bg-green-700 text-white px-1">
+          {{'%.*g' | format(3, runTest.summary.spillPerc)}}%
         </span>
         {% endif %}
       </a>
@@ -33,8 +33,8 @@
           >Year Spilling (WHT)</span
         >
         {% if runTest.status == "COMPLETED" %}
-        <span class="border rounded-lg bg-green-700 text-white px-1">
-          {{'%0.2f'| format(runTest.summary.heavyPerc|float)}}%
+        <span class="rounded-lg bg-green-700 text-white px-1">
+          {{'%.*g' | format(3, runTest.summary.heavyPerc)}}%
         </span>
         {% endif %}
       </a>
@@ -45,7 +45,7 @@
         >Storm Overflow Performance</a
       >
       {% else %}
-      <p class="text-sm text-gray-400 dark:text-gray-400">
+      <p class="text-sm text-gray-600 dark:text-gray-400">
         Run Both Dry Day Discharge and Heavy Rainfall Spills to view Storm
         Overflow Performance
       </p>

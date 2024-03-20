@@ -89,7 +89,7 @@ async def showRuns(locid):
     # Fetch the location details from the database
     location = await db.location.find_unique(where={"id": locid})
 
-    if (not location):
+    if not location:
         return redirect("/")
 
     # Add location details to session
@@ -98,15 +98,13 @@ async def showRuns(locid):
 
     # Check if location is already in visited locations and if not add it to the list
     existing_location = next(
-        (item for item in session["visited_locations"]
-         if item["id"] == locid), None
+        (item for item in session["visited_locations"] if item["id"] == locid), None
     )
     if existing_location:
         session["visited_locations"] = [
             loc for loc in session["visited_locations"] if loc["id"] != locid
         ]
-    session["visited_locations"].insert(
-        0, {"id": locid, "name": location.name})
+    session["visited_locations"].insert(0, {"id": locid, "name": location.name})
     session["visited_locations"] = session["visited_locations"][:5]
 
     # Render the specific location page
@@ -131,7 +129,6 @@ async def createRun(locid):
             session.pop("loc")
             session.pop("run_name")
             session.pop("run_desc")
-            session.pop("run_date")
             session.pop("tests")
             step = 1
     elif "loc" not in session:
@@ -150,11 +147,11 @@ async def createRun(locid):
 async def view_run(location_id, run_id):
 
     location = await db.location.find_first(where={"id": location_id})
-    if (not location):
+    if not location:
         return redirect("/")
 
     run = await db.runs.find_first(where={"id": run_id})
-    if (not run):
+    if not run:
         return redirect(f"/{location_id}")
 
     runTest = await db.runtests.find_many(
@@ -162,38 +159,41 @@ async def view_run(location_id, run_id):
             "runID": run_id,
         },
     )
-    if (not runTest or len(runTest) < 1):
+    if not runTest or len(runTest) < 1:
         return redirect(f"/{location_id}")
 
     data = {}
 
     for rt in runTest:
         res = await db.runtests.find_first(
-            where={
-                "id": rt.id
-            },
-            include={
-                "test": True,
-                "summary": True,
-                "testThree": True
-            },
+            where={"id": rt.id},
+            include={"test": True, "summary": True, "testThree": True},
         )
-        if (rt.status == "COMPLETED"):
-            if (len(res.summary) > 0):
+        if rt.status == "COMPLETED":
+            if len(res.summary) > 0:
                 val = {}
+                count = 0
                 for x in res.summary:
-                    if (x.year == "Whole Time Series"):
+                    if x.year == "Whole Time Series":
                         val = x
-                res.summary = val
+                    else:
+                        count += 1
+                # setattr(val, "yearsCount", count)
+                res.summary = dict(val)
+                res.summary["yearsCount"] = count
             data[res.test.name] = res
-            if (res.test.name == "Test 2" and "Test 1" in data):
+            if res.test.name == "Test 2" and "Test 1" in data:
                 # Test 1 data is made so duplicate all data for it aswell
                 res.summary = data["Test 1"].summary
         else:
             data[res.test.name] = res
 
     return await render_template(
-        "runs/results/results_root.html", location=location, run=run, runTest=runTest, data=data
+        "runs/results/results_root.html",
+        location=location,
+        run=run,
+        runTest=runTest,
+        data=data,
     )
 
 
@@ -224,11 +224,11 @@ async def view_visualisation(location_id, run_id):
 @app.get("/<int:location_id>/<int:run_id>/results_test3")
 async def test3_results(location_id, run_id):
     location = await db.location.find_first(where={"id": location_id})
-    if (not location):
+    if not location:
         return redirect("/")
 
     run = await db.runs.find_first(where={"id": run_id})
-    if (not run):
+    if not run:
         return redirect(f"/{location_id}")
 
     tests = await db.tests.find_first(
@@ -238,7 +238,7 @@ async def test3_results(location_id, run_id):
         },
     )
 
-    if (not tests):
+    if not tests:
         return redirect(f"/{location_id}/{run_id}")
 
     if tests.runsTests[0].status != "COMPLETED":
@@ -247,11 +247,12 @@ async def test3_results(location_id, run_id):
     # Handling the case where there are no Test 3 results found for the run
     if not tests.runsTests[0].testThree:
         message = "No Test 3 results found for this run."
-        return await render_template_string(
-            "Message: {{message}}", message=message
-        )
+        return await render_template_string("Message: {{message}}", message=message)
 
     # If Test 3 results are found, pass them to your template
     return await render_template(
-        "/runs/results/results_test3.html", location=location, run=run, test3_results=tests.runsTests[0].testThree
+        "/runs/results/results_test3.html",
+        location=location,
+        run=run,
+        test3_results=tests.runsTests[0].testThree,
     )
