@@ -1,10 +1,5 @@
 from quart import Quart, session
 
-# Import any DB stuff here when needed
-# db = Prisma()
-# db.connect()
-# register(db)
-
 app = Quart(__name__)
 
 
