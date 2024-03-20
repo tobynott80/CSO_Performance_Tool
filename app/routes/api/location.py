@@ -26,3 +26,13 @@ async def location():
         }
     )
     return dict(location)
+
+
+@location_blueprint.route("<int:locid>", methods=["DELETE"])
+async def delete_location(locid):
+    try:
+        # Delete the location from the database
+        await db.location.delete(where={"id": locid})
+        return {"success": True}
+    except Exception as e:
+        return {"success": False, "error": str(e)}, 500
