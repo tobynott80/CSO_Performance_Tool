@@ -18,11 +18,29 @@ db = None
 
 @app.before_serving
 async def initializeDB():
+    """
+    Initializes the database connection.
+
+    This function is called before serving the application and initializes a global prisma variable to access the database.
+
+    Returns:
+        None
+    """
     global db
     db = await initDB()
 
 
 async def getPaginatedLocations(page, limit):
+    """
+    Retrieves a paginated list of locations from the database.
+
+    Args:
+        page (int): The page number to retrieve.
+        limit (int): The maximum number of locations per page.
+
+    Returns:
+        list: A list of locations retrieved from the database.
+    """
     skip = (page - 1) * limit
     locations = await db.location.find_many(skip=skip, take=limit)
     return locations
@@ -30,6 +48,19 @@ async def getPaginatedLocations(page, limit):
 
 @app.route("/")
 async def index():
+    """
+    Renders the index.html template with paginated locations with support for a search query.
+
+    Args:
+        None
+
+    Returns:
+        The rendered index.html template with the following variables:
+        - locations: A list of locations based on the search query or all locations if no query is provided.
+        - total_pages: The total number of pages based on the number of locations and the limit per page.
+        - current_page: The current page number.
+        - search: The search query.
+    """
     query = request.args.get("search")
     page = int(request.args.get("page", 1))
     limit = int(request.args.get("limit", 10))
@@ -55,6 +86,12 @@ async def index():
 
 @app.route("/docs")
 async def documentation_page():
+    """
+    Renders the documentation page.
+
+    Returns:
+        The rendered documentation page as a response.
+    """
     return await render_template("/docs.html")
 
 
@@ -80,7 +117,15 @@ async def setting_page():
 
 @app.route("/<int:locid>")
 async def showRuns(locid):
+    """
+    Display the details of a specific location and update the visited locations list.
 
+    Parameters:
+    locid (int): The ID of the location to display.
+
+    Returns:
+    Response: The rendered template of the specific location page.
+    """
     # Fetch the location details from the database
     location = await db.location.find_unique(where={"id": locid})
 
@@ -105,6 +150,16 @@ async def showRuns(locid):
 
 @app.get("/<locid>/create")
 async def createRun(locid):
+    """
+    Handler function for the '/<locid>/create' route. Renders the first step of
+    the create runs routine.
+
+    Args:
+        locid (str): The location ID.
+
+    Returns:
+        Response: The rendered template for creating a run.
+    """
     # Redirect if no number
     if not locid.isnumeric():
         return redirect("/")
@@ -137,6 +192,20 @@ async def createRun(locid):
 
 @app.get("/<int:location_id>/<int:run_id>")
 async def view_run(location_id, run_id):
+    """
+    View the details of a specific run. Gathers the run details from the DB and
+    renders the results summary.
+
+    Args:
+        location_id (str): The ID of the location.
+        run_id (str): The ID of the run.
+
+    Returns:
+        A template with the details of the run, including the location, run, and runTest.
+
+    Raises:
+        None.
+    """
     location = await db.location.find_first(where={"id": location_id})
     run = await db.runs.find_first(where={"id": run_id})
 
@@ -163,6 +232,17 @@ async def view_run(location_id, run_id):
 
 @app.get("/<int:location_id>/<int:run_id>/visualisation")
 async def view_visualisation(location_id, run_id):
+    """
+    View the visualization for a specific location and run.
+
+    Args:
+        location_id (str): The ID of the location.
+        run_id (str): The ID of the run.
+
+    Returns:
+        The rendered visualization template for the specified location and run.
+        If the run is not found or in progress, an error message is displayed.
+    """
     location = await db.location.find_first(where={"id": location_id})
     run = await db.runs.find_first(where={"id": run_id})
 
@@ -187,6 +267,16 @@ async def view_visualisation(location_id, run_id):
 
 @app.get("/<int:location_id>/<int:run_id>/results_test3")
 async def test3_results(location_id, run_id):
+    """
+    Retrieve and render Test 3 results for a specific location and run.
+
+    Args:
+        location_id (str): The ID of the location.
+        run_id (str): The ID of the run.
+
+    Returns:
+        str: The rendered template with Test 3 results, or an error message if the run or results are not found.
+    """
     location = await db.location.find_first(where={"id": location_id})
     run = await db.runs.find_first(where={"id": run_id})
     tests = await db.tests.find_first(
@@ -196,9 +286,9 @@ async def test3_results(location_id, run_id):
         },
     )
 
-    if not (tests):
+    if not tests:
         return await render_template_string(
-            "Run not found or in progess. Try again later"
+            "Run not found or in progress. Try again later"
         )
 
     elif tests.runsTests[0].status != "COMPLETED":
@@ -220,6 +310,16 @@ async def test3_results(location_id, run_id):
 
 @app.route("/download/test3/<filename>")
 async def download_test3(filename):
+    """
+    Download test 3 results if available.
+
+    Args:
+        filename (str): The name of the test 3 file to be downloaded.
+
+    Returns:
+        Response: The file to be downloaded as a response object. If unavailable
+        raises a 404 for not found.
+    """
     file_directory = config.test_three_outputs
 
     if ".." in filename or "/" in filename or "\\" in filename:
