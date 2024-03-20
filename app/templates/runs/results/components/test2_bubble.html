@@ -1,11 +1,12 @@
 <div
-  class="bg-grey-200 border border-gray-200 rounded-xl shadow-sm overflow-hidden px-4 py-4 my-4 dark:bg-slate-900 dark:border-gray-700"
+  class="bg-grey-200 border border-gray-200 rounded-xl shadow-sm overflow-hidden px-4 py-4 my-4 dark:bg-gray-800 dark:border-gray-700 space-y-2"
 >
   <div class="flex flex-row">
     <h2 class="flex-grow text-l font-semibold text-gray-800 dark:text-gray-200">
       <div>
-        Heavy Rainfall Spills {% include
-        'runs/results/components/pending_icon.html' %}
+        Heavy Rainfall Spills {% if runTest.status == "COMPLETED" %} {% include
+        'runs/results/components/completed_icon.html' %} {% else %} {% include
+        'runs/results/components/pending_icon.html' %} {% endif %}
       </div>
       <span class="text-gray-400 dark:text-gray-400 text-sm">
         GN066 Test 2: Analysing SO spills due to heavy rainfall
@@ -13,33 +14,38 @@
     </h2>
   </div>
   <div class="flex flex-row">
-    <div class="flex flex-col flex-grow">
+    <div class="flex flex-col flex-grow space-y-2">
       <a class=""
         ><span
-          class="underline font-mono text-base text-blue-600 dark:text-blue-500"
+          class="underline text-base text-blue-600 dark:text-blue-400 cursor-pointer"
           >Allowed Spill Start (WHT)</span
         >
-        <span class="border rounded-lg bg-green-700 text-white px-1"
-          >{{runTest.summary[0].spillPerc}} %</span
-        ></a
-      >
+        {% if runTest.status == "COMPLETED" %}
+        <span class="border rounded-lg bg-green-700 text-white px-1">
+          {{'%0.2f'| format(runTest.summary.spillPerc|float)}}%
+        </span>
+        {% endif %}
+      </a>
 
       <a class=""
         ><span
-          class="underline font-mono text-base text-blue-600 dark:text-blue-500"
+          class="underline text-base text-blue-600 dark:text-blue-400 cursor-pointer"
           >Year Spilling (WHT)</span
         >
-        <span class="border rounded-lg bg-green-700 text-white px-1"
-          >{{runTest.summary[0].heavyPerc}} %</span
-        ></a
-      >
+        {% if runTest.status == "COMPLETED" %}
+        <span class="border rounded-lg bg-green-700 text-white px-1">
+          {{'%0.2f'| format(runTest.summary.heavyPerc|float)}}%
+        </span>
+        {% endif %}
+      </a>
 
-      {% if so_performance %}
-      <a class="underline font-mono text-base text-blue-600 dark:text-blue-500"
+      {% if show_so %}
+      <a
+        class="underline text-base text-blue-600 dark:text-blue-400 cursor-pointer"
         >Storm Overflow Performance</a
       >
       {% else %}
-      <p class="font-mono text-base text-gray-400 dark:text-gray-400">
+      <p class="text-sm text-gray-400 dark:text-gray-400">
         Run Both Dry Day Discharge and Heavy Rainfall Spills to view Storm
         Overflow Performance
       </p>
