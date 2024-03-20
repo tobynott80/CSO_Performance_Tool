@@ -1,3 +1,4 @@
+import io
 from quart import Blueprint, render_template, request, redirect, session, url_for, flash
 from app.helper.database import initDB
 import asyncio
@@ -256,7 +257,8 @@ def test1and2callback(rainfall_file, spills_baseline, run):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
 
-    loop.run_until_complete(createTests1andor2(rainfall_file, spills_baseline, run))
+    loop.run_until_complete(createTests1andor2(
+        rainfall_file, spills_baseline, run))
     loop.close()
     return
 
