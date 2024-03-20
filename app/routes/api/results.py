@@ -12,12 +12,32 @@ db = None
 
 @results_blueprint.before_app_serving
 async def initializeDB():
+    """
+    Initializes the database connection.
+
+    This function is called before serving the application and initializes a global prisma variable to access the database.
+
+    Returns:
+        None
+    """
     global db
     db = await initDB()
 
 
 @results_blueprint.route("/timeseries", methods=["GET"])
 async def getTimeSeries():
+    """
+    Retrieves time series data based on the provided parameters.
+
+    Parameters:
+    - runTestID (int): The ID of the run test.
+    - startTime (int): The start time of the time series data (in epoch time).
+    - endTime (int): The end time of the time series data (in epoch time).
+
+    Returns:
+    - If no start or end time is provided, returns the entire time series data for the provided run test ID.
+    - If start and end time are provided, returns the time series data within that range for the provided run test ID.
+    """
     run_test_ID = request.args.get("runTestID")
     if run_test_ID is None:
         return {"error": "No run test ID provided"}, 400
@@ -57,6 +77,13 @@ async def getTimeSeries():
 
 @results_blueprint.route("/timeseries/range", methods=["GET"])
 async def getTimesSeriesRange():
+    """
+    Retrieves the earliest and latest datetime for a given run test ID.
+
+    Returns:
+        A dictionary containing the earliest and latest datetime in ISO format if successful.
+        Otherwise, returns an error message and status code.
+    """
     run_test_ID = request.args.get("runTestID")
     if run_test_ID is None:
         return {"error": "No run test ID provided"}, 400
@@ -80,6 +107,17 @@ async def getTimesSeriesRange():
 async def get_datetime_range(
     run_test_ID: int,
 ) -> tuple[Optional[datetime.datetime], Optional[datetime.datetime]]:
+    """
+    Helper function to retrieve the earliest and latest datetime values for a given run test ID.
+
+    Args:
+        run_test_ID (int): The ID of the run test.
+
+    Returns:
+        tuple: A tuple containing the earliest and latest datetime values.
+            If no datetime values are found, None is returned for both.
+
+    """
     earliest_datetime = await db.timeseries.find_first(
         where={"runTestID": int(run_test_ID)},
         order={"dateTime": "asc"},
