@@ -71,15 +71,6 @@ async def createRunStep2():
         "runids": [],   
     }
 
-    await db.runs.create(data={
-        "id": run["id"],
-        "locationID": run["locationID"],
-        "name": run["name"],
-        "description": run["description"],
-    })
-
-
-
     files = await request.files
 
     run['baselineStatsFile'] = files['Baseline Stats Report'].filename if 'Baseline Stats Report' in files else None
@@ -119,8 +110,8 @@ async def createRunStep2():
                 return redirect(url_for(f"createRun", locid=session["loc"], step=2))
             
             # Check correct format
-            if not files["rainfall-stats"].filename.endswith(('.xlsx','.csv')) or not files["spill-stats"].filename.endswith(('.xlsx', '.csv')):
-                await flash('Invalid file format. Please upload files in .xlsx or .csv format.', 'error')
+            if not files["rainfall-stats"].filename.endswith(('.csv')) or not files["spill-stats"].filename.endswith(('.xlsx')):
+                await flash('Invalid file format. Please upload files the rainfall-stats as a .csv and spill-stats as a .xlsx.', 'error')
                 return redirect(url_for(f"createRun", locid=session["loc"], step=2))
             
             # Rainfall Stats Data Validation
@@ -144,7 +135,7 @@ async def createRunStep2():
             # Spill Stats Data Validation
             try:
                  spill_data = pd.read_excel(files["spill-stats"].stream)
-                 required_columns = ["Start of Spill (absolute)", "End of Spill (absolute)"]
+                 required_columns = ["Start of Spill (absolute)", "End of Spill (absolute)", "Sim", "ID", "Spill Volume (m3)" ]
                  missing_columns = [column for column in required_columns if column not in spill_data.columns]
                  if missing_columns:
                      await flash("Missing required columns in Spill Stats file: " + ", ".join(missing_columns), "error")
