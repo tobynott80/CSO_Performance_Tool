@@ -37,26 +37,52 @@
                       Results Found. {% endif %}
                     </p>
                   </div>
-                  <a
-                    href="/{{ location.id }}/{{ run.id }}"
-                    class="py-2 px-3 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke-width="1.5"
-                      stroke="currentColor"
-                      class="w-4 h-4"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M15.75 19.5 8.25 12l7.5-7.5"
-                      />
-                    </svg>
-                    Back
-                  </a>
+                  <div>
+                    <div class="inline-flex gap-x-2">
+                      <a
+                        href="/{{ location.id }}/{{ run.id }}"
+                        class="py-2 px-3 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke-width="1.5"
+                          stroke="currentColor"
+                          class="flex-shrink-0 size-4"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M15.75 19.5 8.25 12l7.5-7.5"
+                          />
+                        </svg>
+                        Back
+                      </a>
+
+                      <a
+                        href="{{ url_for('download_file', filename=run.name + '-' + run.id|string + ' - Test 3 Summary.xlsx') if run.name else url_for('download_file', filename='Run-' + run.id|string + ' - Test 3 Summary.xlsx') }}"
+                        class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+                      >
+                        <svg
+                          class="flex-shrink-0 size-3"
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 16 16"
+                          fill="none"
+                        >
+                          <path
+                            d="M2.63452 7.50001L13.6345 7.5M8.13452 13V2"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                          />
+                        </svg>
+                        Export
+                      </a>
+                    </div>
+                  </div>
                 </div>
                 <!-- End Header -->
                 <!-- Table -->
