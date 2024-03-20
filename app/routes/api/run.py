@@ -9,7 +9,7 @@ from app.gn066_tests import analysis
 from app.gn066_tests import visualisation as vis
 from app.gn066_tests.stats import timeStats, spillStats
 from threading import Thread
-from app.gn066_tests.tests import test3 
+from app.gn066_tests.tests import test3
 from app.gn066_tests import config
 
 pd.options.mode.chained_assignment = None  # default='warn'
@@ -19,23 +19,37 @@ run_blueprint = Blueprint("run", __name__)
 db = None
 runs_tracker = {}
 
+
 def safe_float_conversion(value, default=None):
     """Attempt to convert a value to float. Return default if conversion fails or value is not provided."""
     try:
-        if value in (None, '', 'None'):  # Checks if the input value is empty or None
+        if value in (None, "", "None"):  # Checks if the input value is empty or None
             return default
         return float(value)
     except ValueError:
         return default
 
+
 @run_blueprint.before_app_serving
 async def initializeDB():
+    """
+    Initializes the database connection.
+
+    This function is called before serving the application and initializes a global prisma variable to access the database.
+    """
     global db
     db = await initDB()
 
+
 @run_blueprint.route("/create/step1", methods=["POST"])
 async def createRunStep1():
-    # Use sessions to save step 1 data and then use it when submitting step 2 to create a run
+    """
+    API route for step 1 of run creation. Saves the given run name, description
+    and tests picked to the session and redirects to step 2.
+
+    Returns:
+        A redirect response to step 2.
+    """
     data = (await request.form).to_dict()
     if data is None:
         return redirect("/")
@@ -54,8 +68,16 @@ async def createRunStep1():
     print(session)
     return redirect(url_for(f"createRun", locid=session["loc"], step=2))
 
+
 @run_blueprint.route("/create/step2", methods=["POST"])
 async def createRunStep2():
+    """
+    API route for step 2, the final step of the runs creation routine. Validates
+    all user input and dispatches the job to the thread handler.
+
+    Returns:
+        A redirect response to the created run page.
+    """
     global runs_tracker
 
     if "loc" not in session:
@@ -69,14 +91,22 @@ async def createRunStep2():
         "description": session["run_desc"],
         "tests": session["tests"],
         "progress": {},
-        "runids": [],   
+        "runids": [],
     }
 
     files = await request.files
 
-    run['baselineStatsFile'] = files['Baseline Stats Report'].filename if 'Baseline Stats Report' in files else None
-    run['rainfallStatsFile'] = files['rainfall-stats'].filename if 'rainfall-stats' in files else None
-    run['spillStatsFile'] = files['spill-stats'].filename if 'spill-stats' in files else None
+    run["baselineStatsFile"] = (
+        files["Baseline Stats Report"].filename
+        if "Baseline Stats Report" in files
+        else None
+    )
+    run["rainfallStatsFile"] = (
+        files["rainfall-stats"].filename if "rainfall-stats" in files else None
+    )
+    run["spillStatsFile"] = (
+        files["spill-stats"].filename if "spill-stats" in files else None
+    )
 
     await db.runs.create(
         data={
@@ -84,10 +114,9 @@ async def createRunStep2():
             "locationID": run["locationID"],
             "name": run["name"],
             "description": run["description"],
-            "baselineStatsFile": run["baselineStatsFile"],  
-            "rainfallStatsFile": run["rainfallStatsFile"],  
-            "spillStatsFile": run["spillStatsFile"],        
-            
+            "baselineStatsFile": run["baselineStatsFile"],
+            "rainfallStatsFile": run["rainfallStatsFile"],
+            "spillStatsFile": run["spillStatsFile"],
         }
     )
 
@@ -95,8 +124,10 @@ async def createRunStep2():
 
     form_data = await request.form
 
-    formula_a_value = safe_float_conversion(form_data.get('formula-a'), default=None)
-    consent_flow_value = safe_float_conversion(form_data.get('consent-flow'), default=None)
+    formula_a_value = safe_float_conversion(form_data.get("formula-a"), default=None)
+    consent_flow_value = safe_float_conversion(
+        form_data.get("consent-flow"), default=None
+    )
 
     runs_tracker[str(run["id"])] = run
 
@@ -107,44 +138,72 @@ async def createRunStep2():
 
             # Check if appropriate files are uploaded
             if "rainfall-stats" not in files or "spill-stats" not in files:
-                await flash("Missing required files. Please upload both Rainfall Stats and Spill Stats.", "error")
+                await flash(
+                    "Missing required files. Please upload both Rainfall Stats and Spill Stats.",
+                    "error",
+                )
                 return redirect(url_for(f"createRun", locid=session["loc"], step=2))
-            
+
             # Check correct format
-            if not files["rainfall-stats"].filename.endswith(('.csv')) or not files["spill-stats"].filename.endswith(('.xlsx')):
-                await flash('Invalid file format. Please upload files the rainfall-stats as a .csv and spill-stats as a .xlsx.', 'error')
+            if not files["rainfall-stats"].filename.endswith((".csv")) or not files[
+                "spill-stats"
+            ].filename.endswith((".xlsx")):
+                await flash(
+                    "Invalid file format. Please upload files the rainfall-stats as a .csv and spill-stats as a .xlsx.",
+                    "error",
+                )
                 return redirect(url_for(f"createRun", locid=session["loc"], step=2))
-            
+
             # Rainfall Stats Data Validation
             try:
                 # Read the necessary rows for validation
-                df_temp = pd.read_csv(files["rainfall-stats"].stream, skiprows=13, nrows=10, encoding='utf-8-sig')  
+                df_temp = pd.read_csv(
+                    files["rainfall-stats"].stream,
+                    skiprows=13,
+                    nrows=10,
+                    encoding="utf-8-sig",
+                )
 
                 # Check for the 'P_DATETIME' column
-                if 'P_DATETIME' not in df_temp.columns:
-                    await flash("Invalid Rainfall Stats file: 'P_DATETIME' column missing.", "error")
-                    return redirect(url_for(f"createRun", locid=session["loc"], step=2))                
+                if "P_DATETIME" not in df_temp.columns:
+                    await flash(
+                        "Invalid Rainfall Stats file: 'P_DATETIME' column missing.",
+                        "error",
+                    )
+                    return redirect(url_for(f"createRun", locid=session["loc"], step=2))
 
             except Exception as e:
                 await flash(f"Error reading Rainfall Stats file: {e}", "error")
-                return redirect(url_for(f"createRun", locid=session["loc"], step=2))  
+                return redirect(url_for(f"createRun", locid=session["loc"], step=2))
 
             # Reset file pointer to the beginning of the file
-            files["rainfall-stats"].seek(0)               
-
+            files["rainfall-stats"].seek(0)
 
             # Spill Stats Data Validation
             try:
-                 spill_data = pd.read_excel(files["spill-stats"].stream)
-                 required_columns = ["Start of Spill (absolute)", "End of Spill (absolute)", "Sim", "ID", "Spill Volume (m3)" ]
-                 missing_columns = [column for column in required_columns if column not in spill_data.columns]
-                 if missing_columns:
-                     await flash("Missing required columns in Spill Stats file: " + ", ".join(missing_columns), "error")
-                     return redirect(url_for(f"createRun", locid=session["loc"], step=2))
+                spill_data = pd.read_excel(files["spill-stats"].stream)
+                required_columns = [
+                    "Start of Spill (absolute)",
+                    "End of Spill (absolute)",
+                    "Sim",
+                    "ID",
+                    "Spill Volume (m3)",
+                ]
+                missing_columns = [
+                    column
+                    for column in required_columns
+                    if column not in spill_data.columns
+                ]
+                if missing_columns:
+                    await flash(
+                        "Missing required columns in Spill Stats file: "
+                        + ", ".join(missing_columns),
+                        "error",
+                    )
+                    return redirect(url_for(f"createRun", locid=session["loc"], step=2))
             except Exception as e:
-                 await flash(f"Error reading Spill Stats file: {e}", "error")
-                 return redirect(url_for(f"createRun", locid=session["loc"], step=2))
-
+                await flash(f"Error reading Spill Stats file: {e}", "error")
+                return redirect(url_for(f"createRun", locid=session["loc"], step=2))
 
             # Connect Tests in DB to frontend tests
             testid = await db.tests.find_first(
@@ -163,7 +222,7 @@ async def createRunStep2():
                 continue
 
             onlyOnce = True
-            
+
             test12thread = Thread(
                 target=test1and2callback,
                 args=(
@@ -179,37 +238,46 @@ async def createRunStep2():
             # Check if Baseline Stats Report is present
             if "Baseline Stats Report" not in files:
                 await flash("Baseline Stats Report is required for Test 3")
-                return redirect (url_for(f"createRun", locid=session["loc"], step=2))
+                return redirect(url_for(f"createRun", locid=session["loc"], step=2))
 
             # Correct format check
-            if not files["Baseline Stats Report"].filename.endswith(('.xlsx', '.csv', '.xls')):
-                await flash("Invalid file format. Only '.xlsx', '.csv', and '.xls' files are supported.")
-                return redirect (url_for(f"createRun", locid=session["loc"], step=2))
+            if not files["Baseline Stats Report"].filename.endswith(
+                (".xlsx", ".csv", ".xls")
+            ):
+                await flash(
+                    "Invalid file format. Only '.xlsx', '.csv', and '.xls' files are supported."
+                )
+                return redirect(url_for(f"createRun", locid=session["loc"], step=2))
 
             # Load the Excel file and checks whether sheet "Summary" exists
             try:
-                df_pff = pd.read_excel(files["Baseline Stats Report"].stream, sheet_name="Summary", header=1)
+                df_pff = pd.read_excel(
+                    files["Baseline Stats Report"].stream,
+                    sheet_name="Summary",
+                    header=1,
+                )
             except Exception as e:
-                await flash("Error reading file, Please Input a valid Excel file. Error: " + str(e))
-                return redirect (url_for(f"createRun", locid=session["loc"], step=2))
+                await flash(
+                    "Error reading file, Please Input a valid Excel file. Error: "
+                    + str(e)
+                )
+                return redirect(url_for(f"createRun", locid=session["loc"], step=2))
 
-            #Check if required columns are present
-            required_columns = ['Peak PFF (l/s)', 'Avg Initial PFF (l/s)', 'Year'] 
-            missing_columns = [column for column in required_columns if column not in df_pff.columns]
+            # Check if required columns are present
+            required_columns = ["Peak PFF (l/s)", "Avg Initial PFF (l/s)", "Year"]
+            missing_columns = [
+                column for column in required_columns if column not in df_pff.columns
+            ]
             if missing_columns:
                 await flash("Missing required columns: " + ", ".join(missing_columns))
-                return redirect (url_for(f"createRun", locid=session["loc"], step=2))
-            
-            # Connect Tests in DB to frontend tests
-            testid = await db.tests.find_first(where={
-                "name": "Test 3"
-            })
+                return redirect(url_for(f"createRun", locid=session["loc"], step=2))
 
-            runtest = await db.runtests.create(data={
-                "runID": run["id"],
-                "testID": testid.id,
-                "status": "PROGRESS"
-            })
+            # Connect Tests in DB to frontend tests
+            testid = await db.tests.find_first(where={"name": "Test 3"})
+
+            runtest = await db.runtests.create(
+                data={"runID": run["id"], "testID": testid.id, "status": "PROGRESS"}
+            )
 
             # Store RunTest ID for when running thread
             run["runids"].append(runtest.id)
@@ -219,7 +287,7 @@ async def createRunStep2():
                     formula_a_value,
                     consent_flow_value,
                     files["Baseline Stats Report"],
-                    run
+                    run,
                 ),
             )
             test3thread.start()
@@ -230,38 +298,80 @@ async def createRunStep2():
             session.pop("run_desc")
             session.pop("tests")
 
-
     return redirect(f"/{run['locationID']}/{run['id']}")
+
 
 @run_blueprint.route("/status", methods=["GET"])
 async def checkStatus():
+    """
+    Returns the current status of the runs_tracker.
+
+    Returns:
+        The current value of the runs_tracker.
+    """
     global runs_tracker
     return runs_tracker
 
+
 async def getNextRunID():
+    """
+    Helper function to retrieve the next available run ID.
+
+    Returns:
+        int: The next available run ID.
+    """
     result = await db.runs.find_first(order={"id": "desc"})
     nextID = 1
     if result:
         nextID = result.id + 1
     return nextID
 
+
 def test1and2callback(rainfall_file, spills_baseline, run):
+    """
+    Callback function to execute tests 1 and 2.
+
+    Args:
+        rainfall_file (str): The path to the rainfall file.
+        spills_baseline (str): The path to the spills baseline file.
+        run (str): The run database information.
+    """
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
 
-    loop.run_until_complete(createTests1andor2(
-        rainfall_file, spills_baseline, run))
+    loop.run_until_complete(createTests1andor2(rainfall_file, spills_baseline, run))
     loop.close()
     return
 
+
 def test3callback(formula_a_value, consent_flow_value, baseline_stats_file, run):
+    """
+    Callback function to execute test 3.
+
+    Args:
+        formula_a_value (float): The value of formula A.
+        consent_flow_value (float): The value of consent flow.
+        baseline_stats_file (str): The file path of the baseline statistics file.
+        run (str): The run database information.
+    """
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
 
-    loop.run_until_complete(createTest3(formula_a_value, consent_flow_value, baseline_stats_file, run))
+    loop.run_until_complete(
+        createTest3(formula_a_value, consent_flow_value, baseline_stats_file, run)
+    )
     loop.close()
 
+
 async def createTests1andor2(rainfall_file, spills_baseline, run):
+    """
+    Perform tests 1 and/or 2 on the given rainfall data and spills baseline.
+
+    Args:
+        rainfall_file (str): The path to the rainfall data file.
+        spills_baseline (str): The path to the spills baseline data file.
+        run (dict): The run database information.
+    """
     from prisma import Prisma
 
     global runs_tracker
@@ -319,36 +429,66 @@ async def createTests1andor2(rainfall_file, spills_baseline, run):
 
 
 async def createTest3(formula_a_value, consent_flow_value, baseline_stats_file, run):
+    """
+    Perform Test 3 analysis and save the results to the database and an Excel file.
+
+    Args:
+        formula_a_value (float): The value of Formula A.
+        consent_flow_value (float): The value of Consent FPF.
+        baseline_stats_file (FileStorage): The baseline statistics file.
+        run (dict): The run database information.
+    """
     global runs_tracker
 
     df_pff = pd.read_excel(baseline_stats_file.stream, sheet_name="Summary", header=1)
-    
-    df_pff['Compliance Status'] = df_pff.apply(lambda row: test3.check_compliance(row, formula_a_value, consent_flow_value), axis=1)
-    df_pff['Just Formula A'] = df_pff.apply(lambda row: test3.check_formula_a(row, formula_a_value), axis=1)
-    df_pff['Just Consent FPF'] = df_pff.apply(lambda row: test3.check_consent_fpf(row, consent_flow_value), axis=1)
-    
-    print(df_pff[['Year', 'Compliance Status']])
-    print(df_pff[['Year', 'Just Formula A']])
-    print(df_pff[['Year', 'Just Consent FPF']])
+
+    df_pff["Compliance Status"] = df_pff.apply(
+        lambda row: test3.check_compliance(row, formula_a_value, consent_flow_value),
+        axis=1,
+    )
+    df_pff["Just Formula A"] = df_pff.apply(
+        lambda row: test3.check_formula_a(row, formula_a_value), axis=1
+    )
+    df_pff["Just Consent FPF"] = df_pff.apply(
+        lambda row: test3.check_consent_fpf(row, consent_flow_value), axis=1
+    )
+
+    print(df_pff[["Year", "Compliance Status"]])
+    print(df_pff[["Year", "Just Formula A"]])
+    print(df_pff[["Year", "Just Consent FPF"]])
 
     from prisma import Prisma
+
     db = Prisma()
     await db.connect()
     await saveTest3ToDB(db, run, df_pff, formula_a_value, consent_flow_value)
 
-    df_pff['Formula A Value'] = formula_a_value
-    df_pff['Consent FPF Value'] = consent_flow_value
-    df_pff = df_pff.drop(columns=['Spill Count', 'Spill Duration (days)', 'Spill Volume'])
-    filename = f"{run['name']}-{run['id']} - Test 3 Summary.xlsx" if run['name'] else f"Run-{run['id']} - Test 3 Summary.xlsx"
+    df_pff["Formula A Value"] = formula_a_value
+    df_pff["Consent FPF Value"] = consent_flow_value
+    df_pff = df_pff.drop(
+        columns=["Spill Count", "Spill Duration (days)", "Spill Volume"]
+    )
+    filename = (
+        f"{run['name']}-{run['id']} - Test 3 Summary.xlsx"
+        if run["name"]
+        else f"Run-{run['id']} - Test 3 Summary.xlsx"
+    )
     df_pff.to_excel(config.test_three_outputs / filename, index=False)
     runs_tracker[str(run["id"])]["progress"]["test-3"] = 100
 
     for test in run["runids"]:
         await db.runtests.update(where={"id": test}, data={"status": "COMPLETED"})
-    
 
 
 async def saveSummaryToDB(db, run, summary):
+    """
+    Helper function to save given summary data to the database.
+
+    Args:
+        db: The prisma db object.
+        run: The run database information.
+        summary: The summary data to be saved.
+    """
     for index, row in summary.iterrows():
         await db.summary.create(
             data={
@@ -365,6 +505,14 @@ async def saveSummaryToDB(db, run, summary):
 
 
 async def saveTimeSeriesToDB(db, run, df):
+    """
+    Helper function to save a given time series DataFrame to the database.
+
+    Args:
+        db (Database): The primsa database object.
+        run (dict): The run database information.
+        df (DataFrame): The time series DataFrame to be saved.
+    """
     for index, row in df.iterrows():
         await db.timeseries.create(
             data={
@@ -382,6 +530,14 @@ async def saveTimeSeriesToDB(db, run, df):
 
 
 async def saveSpillToDB(db, run, all_spill_classification):
+    """
+    Helper function to save spill event data to the database.
+
+    Args:
+        db (Database): The prisma database object.
+        run (dict): The run database information.
+        all_spill_classification (DataFrame): The DataFrame containing spill event data.
+    """
     print(all_spill_classification)
     for index, row in all_spill_classification.iterrows():
         await db.spillevent.create(
@@ -404,15 +560,27 @@ async def saveSpillToDB(db, run, all_spill_classification):
             }
         )
 
-async def saveTest3ToDB(db, run, df_pff, formula_a, consent_fpf):
-    for index, row in df_pff.iterrows():
-        await db.testthree.create(data={
-            "year": str(row['Year']),
-            "formulaAInput": (formula_a),
-            "consentFPFInput": (consent_fpf),
-            "complianceStatus": row['Compliance Status'],
-            "formulaAStatus": row['Just Formula A'],
-            "consentFPFStatus": row['Just Consent FPF'],
-            "runTestID": run["runids"][0]
-        })
 
+async def saveTest3ToDB(db, run, df_pff, formula_a, consent_fpf):
+    """
+    Helper function to save test 3 data to the database.
+
+    Parameters:
+    - db: The prisma database object.
+    - run: The run database information.
+    - df_pff: The DataFrame containing the test 3 data.
+    - formula_a: The formula A input.
+    - consent_fpf: The consent FPF input.
+    """
+    for index, row in df_pff.iterrows():
+        await db.testthree.create(
+            data={
+                "year": str(row["Year"]),
+                "formulaAInput": (formula_a),
+                "consentFPFInput": (consent_fpf),
+                "complianceStatus": row["Compliance Status"],
+                "formulaAStatus": row["Just Formula A"],
+                "consentFPFStatus": row["Just Consent FPF"],
+                "runTestID": run["runids"][0],
+            }
+        )
