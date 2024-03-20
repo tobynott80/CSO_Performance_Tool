@@ -1,16 +1,13 @@
 from quart import Quart, session
 
-# Import any DB stuff here when needed
-# db = Prisma()
-# db.connect()
-# register(db)
-
 app = Quart(__name__)
 
 
 # Load configuration from your config.py
 app.config.from_object("config.DevelopmentConfig")
 app.secret_key = "7ec9428e6d245eb89afd19dc82d30f1cb9b74ecddf02eae87bf05f38effc07ed"
+app.config["MAX_CONTENT_LENGTH"] = 1.5 * 1000 * 1000 * 1000
+
 
 # Import routes after initializing app to avoid circular dependencies
 from app.routes import routes
