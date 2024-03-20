@@ -12,6 +12,7 @@ runs =[]
 
 # Define where outputs should be saved 
 outfolder = Path(r"./output")
+test_three_outputs = outfolder / "test_three_outputs"
 exists = outfolder.mkdir(exist_ok=True)
 
 # Definition of heavy rain (depth recorded in an hour)
