@@ -10,6 +10,7 @@ from app.gn066_tests import visualisation as vis
 from app.gn066_tests.stats import timeStats, spillStats
 from threading import Thread
 from app.gn066_tests.tests import test3 
+from app.gn066_tests import config
 
 pd.options.mode.chained_assignment = None  # default='warn'
 
@@ -335,6 +336,11 @@ async def createTest3(formula_a_value, consent_flow_value, baseline_stats_file, 
     await db.connect()
     await saveTest3ToDB(db, run, df_pff, formula_a_value, consent_flow_value)
 
+    df_pff['Formula A Value'] = formula_a_value
+    df_pff['Consent FPF Value'] = consent_flow_value
+    df_pff = df_pff.drop(columns=['Spill Count', 'Spill Duration (days)', 'Spill Volume'])
+    filename = f"{run['name']}-{run['id']} - Test 3 Summary.xlsx" if run['name'] else f"Run-{run['id']} - Test 3 Summary.xlsx"
+    df_pff.to_excel(config.test_three_outputs / filename, index=False)
     runs_tracker[str(run["id"])]["progress"]["test-3"] = 100
 
     for test in run["runids"]:
