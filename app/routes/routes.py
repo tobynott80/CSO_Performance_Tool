@@ -223,8 +223,8 @@ async def test3_results(location_id, run_id):
         "/runs/results/results_test3.html", location=location, run=run, test3_results=tests.runsTests[0].testThree 
     )
 
-@app.route('/download/<filename>')
-async def download_file(filename):
+@app.route('/download/test3/<filename>')
+async def download_test3(filename):
     file_directory = config.test_three_outputs
 
     if '..' in filename or '/' in filename or '\\' in filename:
