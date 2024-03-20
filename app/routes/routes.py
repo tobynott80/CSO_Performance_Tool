@@ -44,12 +44,6 @@ async def index():
         search=query,
     )
 
-
-@app.route("/add_run")
-async def add_run():
-    return await render_template("add_run.html")
-
-
 @app.route("/docs")
 async def documentation_page():
     return await render_template("/docs.html")
