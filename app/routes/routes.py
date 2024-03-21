@@ -366,3 +366,42 @@ async def download_test3(filename):
         abort(404)
 
     return await send_file(file_path, attachment_filename=filename)
+
+
+@app.get("/<int:location_id>/<int:run_id>/results_dry_day")
+async def dry_day_results(location_id, run_id):
+    
+    location = await db.location.find_first(where={"id": location_id})
+    if not location:
+        return redirect("/")
+
+    run = await db.runs.find_first(where={"id": run_id})
+    if not run:
+        return redirect(f"/{location_id}")
+
+    tests = await db.tests.find_first(
+        where={"name": "Test 1"},
+        include={
+            "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+        },
+    )
+
+    if not tests:
+        return redirect(f"/{location_id}/{run_id}")
+
+    if tests.runsTests[0].status != "COMPLETED":
+        return redirect(f"/{location_id}/{run_id}")
+
+    # Handling the case where there are no Test 1 results found for the run
+    if not tests.runsTests[0].summary:
+        message = "No Test 1 results found for this run."
+        return await render_template_string("Message: {{message}}", message=message)
+
+    # If Test 1 results are found, pass them to your template
+    return await render_template(
+        "/runs/results/results_dry_day.html",
+        location=location,
+        run=run,
+        dry_day_results=tests.runsTests[0].summary,
+    )
+
