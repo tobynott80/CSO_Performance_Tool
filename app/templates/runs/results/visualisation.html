@@ -36,10 +36,7 @@
                     class="font-semibold text-gray-800 dark:text-gray-200 mr-4"
                     >Start:</label
                   >
-                  <select
-                    id="start-selector"
-                    class="border rounded-lg font-mono"
-                  >
+                  <select id="start-selector" class="border rounded-lg">
                     <option id="start-option-loading" value="0">
                       Loading...
                     </option>
@@ -49,10 +46,7 @@
                     class="font-semibold text-gray-800 dark:text-gray-200 mx-4"
                     >End:</label
                   >
-                  <select
-                    id="end-selector"
-                    class="border rounded-lg font-mono mr-4"
-                  >
+                  <select id="end-selector" class="border rounded-lg mr-4">
                     <option id="end-option-loading" value="0">
                       Loading...
                     </option>
@@ -141,7 +135,6 @@
             const monthOption = document.createElement('option')
             monthOption.innerHTML = `${month.toLocaleString('default', { month: 'long' })} ${month.getFullYear()}`;
             monthOption.value = (month.getTime()/1000);
-            monthOption.classList.add('font-mono')
             const startOption = monthOption.cloneNode(true);
             start_selector.appendChild(startOption);
 
