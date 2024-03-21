@@ -27,7 +27,7 @@
                     <h2
                       class="text-xl font-semibold text-gray-800 dark:text-gray-200"
                     >
-                      Location_name_var
+                      {{location.name}}
                     </h2>
                     <p class="text-sm text-gray-600 dark:text-gray-400">
                       Add Runs, edit and more.
@@ -60,7 +60,6 @@
                       <a
                         href="/{{location.id}}/create"
                         class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
-                        href="#"
                       >
                         <svg
                           class="flex-shrink-0 size-3"
@@ -79,6 +78,26 @@
                         </svg>
                         New Run
                       </a>
+                      <button
+                        class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+                        onclick="deleteRuns();"
+                      >
+                        <svg
+                          class="flex-shrink-0 size-4"
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                        </svg>
+                        Delete
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -91,6 +110,19 @@
                   <!-- Table Heading -->
                   <thead class="bg-gray-50 dark:bg-slate-800">
                     <tr>
+                      <th
+                        scope="col"
+                        class="ps-6 lg:ps-6 xl:px-6 pe-6 py-3 text-start"
+                      >
+                        <div class="flex items-center gap-x-2 justify-center">
+                          <span
+                            class="text-center text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-gray-200"
+                          >
+                            
+                          </span>
+                        </div>
+                      </th>
+
                       <th
                         scope="col"
                         class="ps-6 lg:ps-6 xl:px-6 pe-6 py-3 text-start"
@@ -129,16 +161,6 @@
                           <span
                             class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-gray-200"
                           >
-                            Time
-                          </span>
-                        </div>
-                      </th>
-
-                      <th scope="col" class="px-6 py-3 text-start">
-                        <div class="flex items-center gap-x-2 justify-center">
-                          <span
-                            class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-gray-200"
-                          >
                             Results
                           </span>
                         </div>
@@ -152,24 +174,20 @@
                             Download
                           </span>
                         </div>
-                      </th>
-
-                      <th scope="col" class="px-6 py-3 text-start">
-                        <div class="flex items-center gap-x-2 justify-center">
-                          <span
-                            class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-gray-200"
-                          >
-                            Remove
-                          </span>
-                        </div>
-                      </th>
+                      </th>        
                     </tr>
                   </thead>
-
+                  {% for run in location.runs  %}
                   <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                    <tr
-                      class="cursor-pointer bg-white hover:bg-gray-200 dark:bg-slate-900 dark:hover:bg-slate-800"
-                    >
+                    <tr class="cursor-pointer bg-white hover:bg-gray-200 dark:bg-slate-900 dark:hover:bg-slate-800" data-runid="{{ run.id }}">
+
+                      <td class="size-px whitespace-nowrap">
+                        <button type="button" class="block w-full">
+                          <span class="px-1 py-2 flex items-center justify-center">
+                            <input type="checkbox" class="runs-checkbox form-checkbox h-5 w-5 text-blue-600 checkbox-hidden" data-runid="{{ run.id }}">
+                          </span>
+                        </button>
+                      </td>
                       <td class="size-px whitespace-nowrap">
                         <button
                           type="button"
@@ -179,7 +197,7 @@
                           <span class="block px-6 py-2">
                             <span
                               class="font-mono text-sm text-blue-600 dark:text-blue-500"
-                              >Location_Testname_Variable</span
+                              >{{ run.name }}</span
                             >
                           </span>
                         </button>
@@ -213,7 +231,7 @@
                                 class="stroke-current text-blue-600 dark:text-blue-500"
                                 stroke-width="4"
                                 stroke-dasharray="100"
-                                stroke-dashoffset="28"
+                                stroke-dashoffset="2"
                               ></circle>
                             </g>
                           </svg>
@@ -223,7 +241,7 @@
                           >
                             <span
                               class="text-center text-sm text-gray-800 dark:text-white"
-                              >72%</span
+                              >99%</span
                             >
                           </div>
                         </div>
@@ -239,7 +257,8 @@
                           <span class="block px-6 py-2">
                             <span
                               class="text-sm text-gray-600 dark:text-gray-400"
-                              >14/08/2003</span
+                              >{{ run.date.strftime('%d %B
+                              %Y | %H:%M:%S') }}</span
                             >
                           </span>
                         </button>
@@ -252,22 +271,24 @@
                           data-hs-overlay="#hs-ai-invoice-modal"
                         >
                           <span class="block px-6 py-2">
-                            <span
-                              class="text-sm text-gray-600 dark:text-gray-400"
-                              >13:03:57</span
-                            >
-                          </span>
-                        </button>
-                      </td>
+                            <span class="text-bold text-green-600">
+                              {% set completed_count = 0 %}
+                              {% set total_count = run.runsTests|length %}                               
+                                
+                              {% if run.runsTests %}  
+                                
+                                {% for runTest in run.runsTests %}
+                                  {% set testString = runTest.status %}
+                                  {% if runTest.status == "COMPLETED" %}
+                                    {% set completed_count = completed_count + 1 %}
+                                  {% endif %} 
+                                {% endfor %}
+                                {% set completion_ratio = completed_count / total_count %}
 
-                      <td class="size-px whitespace-nowrap">
-                        <button
-                          type="button"
-                          class="block w-full"
-                          data-hs-overlay="#hs-ai-invoice-modal"
-                        >
-                          <span class="block px-6 py-2">
-                            <span class="text-bold text-orange-600">2/3</span>
+                              {% endif %}
+                            
+                              {{ total_count }}/{{ total_count }}
+                            </span> 
                           </span>
                         </button>
                       </td>
@@ -302,57 +323,13 @@
                           </span>
                         </button>
                       </td>
-
-                      <td class="size-px whitespace-nowrap">
-                        <button
-                          type="button"
-                          class="block w-full"
-                          data-hs-overlay="#hs-ai-invoice-modal"
-                        >
-                          <span
-                            class="block px-6 py-2 flex text-red-500 items-center justify-center"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="18"
-                              height="18"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              stroke-width="2"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              class="lucide lucide-trash-2"
-                            >
-                              <path d="M3 6h18" />
-                              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" />
-                              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
-                              <line x1="10" x2="10" y1="11" y2="17" />
-                              <line x1="14" x2="14" y1="11" y2="17" />
-                            </svg>
-                          </span>
-                        </button>
-                      </td>
+                      
                     </tr>
                   </tbody>
+                  {% endfor %}
                 </table>
                 <!-- End Table -->
-
-                <!-- Footer -->
-                <div
-                  class="px-6 py-4 grid gap-3 md:flex md:justify-between md:items-center border-t border-gray-200 dark:border-gray-700"
-                >
-                  <div>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">
-                      <span
-                        class="font-semibold text-gray-800 dark:text-gray-200"
-                        >4</span
-                      >
-                      Runs
-                    </p>
-                  </div>
-                </div>
-                <!-- End Footer -->
+                
               </div>
             </div>
           </div>
@@ -364,5 +341,51 @@
   </body>
 
   <!-- Preline UI Library Script -->
-  <script src="https://cdn.jsdelivr.net/npm/preline@2.0.3/dist/preline.min.js"></script>
+  <script>
+
+    document.querySelectorAll('tr').forEach(row => {
+      row.addEventListener('click', (event) => {
+          if (event.target.tagName === 'INPUT') {
+              return; // Stop redirection if clicking on the checkbox
+          }
+  
+          const runId = row.getAttribute('data-runid');
+          window.location.href += `/${runId}`; 
+      });
+    });
+
+    function deleteRuns() {
+      const selectedRuns = Array.from(document.querySelectorAll('input.runs-checkbox:checked'))
+        .map(checkbox => checkbox.getAttribute('data-runid'));
+      if (selectedRuns.length === 0) {
+        alert('Please select at least one run to delete.');
+        return;
+      }
+    
+      // Add event listeners to checkboxes
+      document.querySelectorAll('input.runs-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('click', event => {
+          event.stopPropagation(); // Prevent event from propagating to parent row
+        });
+      });
+    
+      if (confirm(`Are you sure you want to delete ${selectedRuns.length} runs?`)) {
+        // Send a DELETE request to the server for each selected run
+        Promise.all(selectedRuns.map(runId =>
+          fetch(`/api/run/${runId}`, {
+            method: 'DELETE',
+          })
+          .then(response => {
+            // Remove the deleted elements from the table
+            if (response.ok) {
+              document.querySelector(`tr[data-runid="${runId}"]`).remove();
+            } else {
+              console.error('Error deleting run:', response.statusText);
+            }
+          })
+          .catch(error => console.error('Error deleting run:', error))
+        ));
+      }
+    }
+  </script>
 </html>

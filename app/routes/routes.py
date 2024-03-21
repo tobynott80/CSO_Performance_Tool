@@ -30,19 +30,24 @@ async def initializeDB():
     db = await initDB()
 
 
-async def getPaginatedLocations(page, limit):
+async def getPaginatedLocations(page, limit, include_runs=False):
     """
     Retrieves a paginated list of locations from the database.
 
     Args:
         page (int): The page number to retrieve.
         limit (int): The maximum number of locations per page.
-
+        include_runs (boolean): Include runs relationship data
     Returns:
         list: A list of locations retrieved from the database.
     """
     skip = (page - 1) * limit
-    locations = await db.location.find_many(skip=skip, take=limit)
+    if include_runs:
+        locations = await db.location.find_many(
+            skip=skip, take=limit, include={"runs": True}
+        )
+    else:
+        locations = await db.location.find_many(skip=skip, take=limit)
     return locations
 
 
@@ -68,11 +73,14 @@ async def index():
     if query:
         total = await db.location.count(where={"name": {"contains": query}})
         locations = await db.location.find_many(
-            where={"name": {"contains": query}}, skip=(page - 1) * limit, take=limit
+            where={"name": {"contains": query}},
+            skip=(page - 1) * limit,
+            take=limit,
+            include={"runs": True},
         )
     else:
         total = await db.location.count()
-        locations = await getPaginatedLocations(page, limit)
+        locations = await getPaginatedLocations(page, limit, include_runs=True)
 
     total_pages = ceil(total / limit)
     return await render_template(
@@ -115,6 +123,29 @@ async def setting_page():
     return await render_template("settings.html")
 
 
+@app.delete("/api/location/<int:locid>")
+async def delete_location(locid):
+    try:
+        # Delete the runs associated with the location
+        await db.runs.delete_many(where={"locationID": locid})
+
+        # Delete the location from the database
+        await db.location.delete(where={"id": locid})
+        return {"success": True}
+    except Exception as e:
+        return {"success": False, "error": str(e)}, 500
+
+
+@app.delete("/api/run/<int:runid>")
+async def delete_run(runid):
+    try:
+        # Delete the run from the database
+        await db.runs.delete(where={"id": runid})
+        return {"success": True}
+    except Exception as e:
+        return {"success": False, "error": str(e)}, 500
+
+
 @app.route("/<int:locid>")
 async def showRuns(locid):
     """
@@ -127,7 +158,9 @@ async def showRuns(locid):
     Response: The rendered template of the specific location page.
     """
     # Fetch the location details from the database
-    location = await db.location.find_unique(where={"id": locid})
+    location = await db.location.find_unique(
+        where={"id": locid}, include={"runs": {"include": {"runsTests": True}}}
+    )
 
     if not location:
         return redirect("/")

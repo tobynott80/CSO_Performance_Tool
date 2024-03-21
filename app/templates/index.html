@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
   {% include 'head.html' %}
-
   <body class="bg-gray-50 dark:bg-slate-900">
     <!-- ========== HEADER ========== -->
     {% include 'header.html' %}
-
     <!-- ========== MAIN CONTENT ========== -->
     {% include 'sidebar.html' %}
 
@@ -30,7 +28,7 @@
                     <h2
                       class="text-xl font-semibold text-gray-800 dark:text-gray-200"
                     >
-                      Location Tests
+                      Locations
                     </h2>
                     <p class="text-sm text-gray-600 dark:text-gray-400">
                       Manage tests for different locations.
@@ -185,7 +183,7 @@
                     </div>
                   </div>
                 </div>
-<!-- End Header -->
+                <!-- End Header -->
 
               <!-- Table -->
               <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700" id="dynamic_table">
@@ -208,7 +206,7 @@
                     <th scope="col" class="px-6 py-3 text-start">
                       <div class="flex items-center gap-x-2 justify-center">
                         <span class="text-xs text-center font-semibold uppercase tracking-wide text-gray-800 dark:text-gray-200">
-                          Number of Runs
+                          LocId
                         </span>
                       </div>
                     </th>
@@ -224,7 +222,7 @@
                     <th scope="col" class="px-6 py-3 text-start">
                       <div class="flex items-center gap-x-2 justify-center">
                         <span class="text-xs text-center font-semibold uppercase tracking-wide text-gray-800 dark:text-gray-200">
-                          Last updated
+                          Runs
                         </span>
                       </div>
                     </th>
@@ -246,12 +244,11 @@
 
                     <td class="size-px whitespace-nowrap">
                       <button type="button" class="block w-full">
-                        <span class="block px-1 py-2 flex items-center justify-center">
+                        <span class="px-1 py-2 flex items-center justify-center">
                           <input type="checkbox" class="location-checkbox form-checkbox h-5 w-5 text-blue-600 checkbox-hidden" data-locid="{{ location.id }}">
                         </span>
                       </button>
                     </td>
-
                     <td class="size-px whitespace-nowrap">
                       <button type="button" class="block w-full">
                         <span class="block px-1 py-2">
@@ -259,7 +256,6 @@
                         </span>
                       </button>
                     </td>
-
                     <td class="size-px whitespace-nowrap">
                       <button type="button" class="block w-full">
                         <span class="block px-1 py-2">
@@ -285,8 +281,11 @@
                     <td class="size-px whitespace-nowrap">
                       <button type="button" class="block w-full">
                         <span class="block px-6 py-2">
-                          <span class="text-sm text-gray-600 dark:text-gray-400">{{ location.runs if location.runs is
-                            not none else '0' }}</span>
+                          <span class="text-sm text-gray-600 dark:text-gray-400">{% if location.runs %}
+                            {{ location.runs|length }}
+                          {% else %}
+                            0
+                          {% endif %}</span>
                         </span>
                       </button>
                     </td>
@@ -365,7 +364,6 @@
       </div>
       <!-- End Table Section -->
   </div>
-  <!-- End Content -->
   <!-- ========== END MAIN CONTENT ========== -->
 
   <!-- ============= JavaScript ============= -->
@@ -466,15 +464,20 @@
     
       if (confirm(`Are you sure you want to delete ${selectedLocations.length} locations?`)) {
         // Send a DELETE request to the server for each selected location
-        selectedLocations.forEach(locId => {
+        Promise.all(selectedLocations.map(locId =>
           fetch(`/api/location/${locId}`, {
             method: 'DELETE',
           })
-            .then(response => {
-              
-            })
-            .catch(error => console.error('Error deleting location:', error));
-        });
+          .then(response => {
+            // Remove the deleted elements from the table
+            if (response.ok) {
+              document.querySelector(`tr[data-locid="${locId}"]`).remove();
+            } else {
+              console.error('Error deleting location:', response.statusText);
+            }
+          })
+          .catch(error => console.error('Error deleting location:', error))
+        ));
       }
     }
 
