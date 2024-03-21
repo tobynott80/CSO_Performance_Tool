@@ -29,52 +29,80 @@
                 </p>
               </div>
 
-              <div class="">
-                <div class="flex flex-row shrink align-center mb-1 max-w-min">
-                  <label
-                    for="start-selector"
-                    class="font-semibold text-gray-800 dark:text-gray-200 mr-4"
-                    >Start:</label
-                  >
-                  <select id="start-selector" class="border rounded-lg">
-                    <option id="start-option-loading" value="0">
-                      Loading...
-                    </option>
-                  </select>
-                  <label
-                    for="end-selector"
-                    class="font-semibold text-gray-800 dark:text-gray-200 mx-4"
-                    >End:</label
-                  >
-                  <select id="end-selector" class="border rounded-lg mr-4">
-                    <option id="end-option-loading" value="0">
-                      Loading...
-                    </option>
-                  </select>
-                  <button
-                    id="refresh-btn"
-                    class="px-1 inline-flex items-center gap-x-1 text-sm rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
-                  >
-                    <svg
-                      class="w-4 h-4 text-gray-800 dark:text-white"
-                      aria-hidden="true"
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      fill="none"
-                      viewBox="0 0 24 24"
+              <div>
+                <div class="flex flex-row align-center my-1">
+                  <div class="flex flex-row grow">
+                    <label
+                      for="start-selector"
+                      class="font-semibold text-gray-800 dark:text-gray-200 py-1 mr-4"
+                      >Start:</label
                     >
-                      <path
-                        stroke="currentColor"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M17.651 7.65a7.131 7.131 0 0 0-12.68 3.15M18.001 4v4h-4m-7.652 8.35a7.13 7.13 0 0 0 12.68-3.15M6 20v-4h4"
-                      />
-                    </svg>
+                    <select id="start-selector" class="border rounded-lg">
+                      <option id="start-option-loading" value="0">
+                        Loading...
+                      </option>
+                    </select>
+                    <label
+                      for="end-selector"
+                      class="font-semibold text-gray-800 dark:text-gray-200 py-1 mx-4"
+                      >End:</label
+                    >
+                    <select id="end-selector" class="border rounded-lg mr-4">
+                      <option id="end-option-loading" value="0">
+                        Loading...
+                      </option>
+                    </select>
+                  </div>
+                  <div class="flex flex-row">
+                    <button
+                      id="refresh-btn"
+                      class="px-1 py-1 mr-1 inline-flex items-center gap-x-1 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+                    >
+                      <svg
+                        class="w-4 h-4 text-gray-800 dark:text-white"
+                        aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke="currentColor"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M17.651 7.65a7.131 7.131 0 0 0-12.68 3.15M18.001 4v4h-4m-7.652 8.35a7.13 7.13 0 0 0 12.68-3.15M6 20v-4h4"
+                        />
+                      </svg>
 
-                    Refresh
-                  </button>
+                      Refresh
+                    </button>
+                    <button
+                      id="refresh-btn"
+                      class="py-1 px-1 inline-flex items-center gap-x-1 text-sm font-semibold rounded-lg border border-transparent bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+                    >
+                      <svg
+                        class="w-4 h-4 text-gray-800 dark:text-white"
+                        aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke="currentColor"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M17.651 7.65a7.131 7.131 0 0 0-12.68 3.15M18.001 4v4h-4m-7.652 8.35a7.13 7.13 0 0 0 12.68-3.15M6 20v-4h4"
+                        />
+                      </svg>
+
+                      Clear
+                    </button>
+                  </div>
                 </div>
                 <div
                   class="bg-white grow border rounded-lg"
@@ -193,12 +221,17 @@
                 y1: -1,
                 y2: -2,
                 stroke: d => (d.spillAllowed === "YES" ? "purple" : "white")
-              })
+              }),
+              Plot.crosshair(data, {
+                x: d => d.dateTime,
+                y: d => d.intensity,
+                stroke: d => colorMap[d.classification]
+              }),
             ],
           });
           const div = document.querySelector("#vis-container");
           div.innerHTML = '';
-          plot.classList.add('w-10/12');
+          plot.classList.add('w-full');
           div.appendChild(plot);
         }
         document.getElementById('refresh-btn').addEventListener('click', () => generatePlot())
