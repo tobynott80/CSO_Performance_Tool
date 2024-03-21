@@ -405,3 +405,40 @@ async def dry_day_results(location_id, run_id):
         dry_day_results=tests.runsTests[0].summary,
     )
 
+@app.get("/<int:location_id>/<int:run_id>/results_unsatisfactory_spills")
+async def unsatisfactory_spills_results(location_id, run_id):
+    
+    location = await db.location.find_first(where={"id": location_id})
+    if not location:
+        return redirect("/")
+
+    run = await db.runs.find_first(where={"id": run_id})
+    if not run:
+        return redirect(f"/{location_id}")
+
+    tests = await db.tests.find_first(
+        where={"name": "Test 1"},
+        include={
+            "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+        },
+    )
+
+    if not tests:
+        return redirect(f"/{location_id}/{run_id}")
+
+    if tests.runsTests[0].status != "COMPLETED":
+        return redirect(f"/{location_id}/{run_id}")
+
+    # Handling the case where there are no Test 1 results found for the run
+    if not tests.runsTests[0].summary:
+        message = "No Test 1 results found for this run."
+        return await render_template_string("Message: {{message}}", message=message)
+
+    # If Test 1 results are found, pass them to your template
+    return await render_template(
+        "/runs/results/results_unsatisfactory_spills.html",
+        location=location,
+        run=run,
+        unsatisfactory_spills_results=tests.runsTests[0].summary,
+    )
+
