@@ -129,6 +129,9 @@ async def showRuns(locid):
     # Fetch the location details from the database
     location = await db.location.find_unique(where={"id": locid})
 
+    if not location:
+        return redirect("/")
+
     # Add location details to session
     if "visited_locations" not in session:
         session["visited_locations"] = []
@@ -206,27 +209,55 @@ async def view_run(location_id, run_id):
     Raises:
         None.
     """
-    location = await db.location.find_first(where={"id": location_id})
-    run = await db.runs.find_first(where={"id": run_id})
 
-    runTest = await db.runtests.find_first(
+    location = await db.location.find_first(where={"id": location_id})
+    if not location:
+        return redirect("/")
+
+    run = await db.runs.find_first(where={"id": run_id})
+    if not run:
+        return redirect(f"/{location_id}")
+
+    runTest = await db.runtests.find_many(
         where={
             "runID": run_id,
         },
-        include={
-            "test": True,
-            "spillEvent": True,
-            "summary": {"where": {"year": "Whole Time Series"}},
-        },
     )
-    if not (runTest):
-        return await render_template_string(
-            "Run not found or in progess. Try again later"
+    if not runTest or len(runTest) < 1:
+        return redirect(f"/{location_id}")
+
+    data = {}
+
+    for rt in runTest:
+        res = await db.runtests.find_first(
+            where={"id": rt.id},
+            include={"test": True, "summary": True, "testThree": True},
         )
-    elif runTest.status != "COMPLETED":
-        return await render_template_string("Run in progress. Please try again later")
+        if rt.status == "COMPLETED":
+            if len(res.summary) > 0:
+                val = {}
+                count = 0
+                for x in res.summary:
+                    if x.year == "Whole Time Series":
+                        val = x
+                    else:
+                        count += 1
+                # setattr(val, "yearsCount", count)
+                res.summary = dict(val)
+                res.summary["yearsCount"] = count
+            data[res.test.name] = res
+            if res.test.name == "Test 2" and "Test 1" in data:
+                # Test 1 data is made so duplicate all data for it aswell
+                res.summary = data["Test 1"].summary
+        else:
+            data[res.test.name] = res
+
     return await render_template(
-        "runs/results/results_root.html", location=location, run=run, runTest=runTest
+        "runs/results/results_root.html",
+        location=location,
+        run=run,
+        runTest=runTest,
+        data=data,
     )
 
 
@@ -278,7 +309,13 @@ async def test3_results(location_id, run_id):
         str: The rendered template with Test 3 results, or an error message if the run or results are not found.
     """
     location = await db.location.find_first(where={"id": location_id})
+    if not location:
+        return redirect("/")
+
     run = await db.runs.find_first(where={"id": run_id})
+    if not run:
+        return redirect(f"/{location_id}")
+
     tests = await db.tests.find_first(
         where={"name": "Test 3"},
         include={
@@ -287,12 +324,10 @@ async def test3_results(location_id, run_id):
     )
 
     if not tests:
-        return await render_template_string(
-            "Run not found or in progress. Try again later"
-        )
+        return redirect(f"/{location_id}/{run_id}")
 
-    elif tests.runsTests[0].status != "COMPLETED":
-        return await render_template_string("Run in progress. Please try again later")
+    if tests.runsTests[0].status != "COMPLETED":
+        return redirect(f"/{location_id}/{run_id}")
 
     # Handling the case where there are no Test 3 results found for the run
     if not tests.runsTests[0].testThree:

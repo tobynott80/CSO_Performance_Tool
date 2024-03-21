@@ -61,9 +61,10 @@
                       <div class="text-sm mb-2 dark:text-white row-span-1">
                         {{ session.run_desc }}
                       </div>
-                      <div class="text-sm mb-2 dark:text-white row-span-1">
-                        {{ session.run_date }}
-                      </div>
+                      <div
+                        class="text-sm mb-2 dark:text-white row-span-1"
+                        id="date"
+                      ></div>
                     </div>
                   </div>
 
@@ -244,7 +245,7 @@
   <script>
     const now = new Date();
     const formatted = now.toLocaleString();
-    document.querySelector("#date").value = formatted;
+    document.querySelector("#date").innerHTML = formatted;
 
     function submitForm() {
       const form = document.forms["createrun"];
