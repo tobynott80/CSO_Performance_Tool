@@ -58,7 +58,7 @@
                     </option>
                   </select>
                   <button
-                    onclick="generatePlotCallback();"
+                    id="refresh-btn"
                     class="px-1 inline-flex items-center gap-x-1 text-sm rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
                   >
                     <svg
@@ -148,18 +148,26 @@
             const endOption = monthOption.cloneNode(true);
             end_selector.appendChild(endOption);
           })
-
+        generatePlot();
         }
-        async function generatePlot(startDate){
-          // If start date is not provided, use the earliest date and convert it to unix timestamp
-          if (startDate === undefined) {
-            if (earliest == undefined){
-              await getRange();
-            }
-            startDate = Math.floor(earliest.getTime() / 1000);
+        async function generatePlot(){
+          const start_selector = document.getElementById('start-selector')
+          const end_selector = document.getElementById('end-selector')
+          let startDate = parseInt(start_selector.value);
+          let endDate = parseInt(end_selector.value);
+          if (startDate > endDate) {
+            alert('Start date must be before end date');
+            return;
           }
-          // set end date to start date plus one month
-          let endDate = startDate + 2678400;
+          // if start date is equal to end date, set end date to start date plus one month
+          if (startDate === endDate) {
+            endDate = startDate + 2678400;
+          }
+          // if range is greater than 1 year, alert user and return
+          if (endDate - startDate > 31536000) {
+            alert('Date range must be less than 1 year');
+            return;
+          }
           let data = await fetch(`/api/results/timeseries?runTestID=${runTestID}&startTime=${startDate}&endTime=${endDate}`)
           data = await data.json();
           data.forEach(d => {
@@ -195,17 +203,15 @@
               })
             ],
           });
-        const div = document.querySelector("#vis-container");
-        plot.classList.add('w-10/12');
-        div.appendChild(plot);
+          const div = document.querySelector("#vis-container");
+          div.innerHTML = '';
+          plot.classList.add('w-10/12');
+          div.appendChild(plot);
         }
-        function generatePlotCallback(){
-          generatePlot();
-        }
+        document.getElementById('refresh-btn').addEventListener('click', () => generatePlot())
         window.addEventListener("load", (event) => {
           getRange();
           populatePage();
-          generatePlot();
         });
     </script>
   </body>
