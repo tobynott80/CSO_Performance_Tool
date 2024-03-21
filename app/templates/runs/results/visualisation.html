@@ -71,16 +71,15 @@
                         <path
                           stroke="currentColor"
                           stroke-linecap="round"
-                          stroke-linejoin="round"
                           stroke-width="2"
-                          d="M17.651 7.65a7.131 7.131 0 0 0-12.68 3.15M18.001 4v4h-4m-7.652 8.35a7.13 7.13 0 0 0 12.68-3.15M6 20v-4h4"
+                          d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"
                         />
                       </svg>
 
-                      Refresh
+                      Search
                     </button>
                     <button
-                      id="refresh-btn"
+                      id="clear-btn"
                       class="px-2 py-1 inline-flex items-center gap-x-1 text-sm font-semibold rounded-lg border border-transparent bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
                     >
                       <svg
@@ -235,6 +234,11 @@
           div.appendChild(plot);
         }
         document.getElementById('refresh-btn').addEventListener('click', () => generatePlot())
+        document.getElementById('clear-btn').addEventListener('click', () => {
+          document.getElementById('start-selector').selectedIndex  = 0;
+          document.getElementById('end-selector').selectedIndex  = 0;
+          generatePlot();
+        })
         window.addEventListener("load", (event) => {
           getRange();
           populatePage();
