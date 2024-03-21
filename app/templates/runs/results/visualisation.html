@@ -117,7 +117,7 @@
                     </button>
                     <button
                       id="clear-btn"
-                      class="px-2 py-1 inline-flex items-center gap-x-1 text-sm font-semibold rounded-lg border border-transparent bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+                      class="px-2 py-1 mr-1 inline-flex items-center gap-x-1 text-sm font-semibold rounded-lg border border-transparent bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
                     >
                       <svg
                         class="w-4 h-4 text-gray-800 dark:text-white"
@@ -139,6 +139,28 @@
 
                       Clear
                     </button>
+                    <button
+                      id="download-btn"
+                      class="px-2 py-1 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-gray-200 text-gray-500 hover:border-blue-600 hover:text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:border-gray-700 dark:text-gray-400 dark:hover:text-blue-500 dark:hover:border-blue-600 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+                    >
+                      <svg
+                        class="w-4 h-4 text-gray-800 dark:text-white"
+                        aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke="currentColor"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M12 13V4M7 14H5a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1h-2m-1-5-4 5-4-5m9 8h.01"
+                        />
+                      </svg>
+                    </button>
                   </div>
                 </div>
                 <div
@@ -153,9 +175,8 @@
     </div>
     <script type="module">
         import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
-
-
         let runTestID = {{ runTest.id }};
+        let locationName = "{{ location.name }}";
         let dateButtonDiv = document.getElementById('accordion');
         let visContainer = document.getElementById('vis-container');
         let colorMap = {
@@ -270,12 +291,44 @@
           plot.classList.add('w-full');
           div.appendChild(plot);
         }
+        // Button event listeners
         document.getElementById('refresh-btn').addEventListener('click', () => generatePlot())
         document.getElementById('clear-btn').addEventListener('click', () => {
           document.getElementById('start-selector').selectedIndex  = 0;
           document.getElementById('end-selector').selectedIndex  = 0;
           generatePlot();
         })
+        document.getElementById('download-btn').addEventListener('click', () => {
+          const start_selector = document.getElementById('start-selector')
+          const end_selector = document.getElementById('end-selector')
+          const vis_container = document.getElementById('vis-container');
+          const svg_element = vis_container.querySelector('svg');
+          let startDate = parseInt(start_selector.value);
+          let endDate = parseInt(end_selector.value);
+          if (startDate > endDate) {
+            alert('Start date must be before end date');
+            return;
+          }
+          // if start date is equal to end date, set end date to start date plus one month
+          if (startDate === endDate) {
+            endDate = startDate + 2678400;
+          }
+          // if range is greater than 1 year, alert user and return
+          if (endDate - startDate > 31536000) {
+            alert('Date range must be less than 1 year');
+            return;
+          }
+          // Create a Blob object with the SVG data
+          const svgData = new XMLSerializer().serializeToString(svg_element);
+          const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+          // Create a temporary link element
+          const tempLink = document.createElement('a');
+          tempLink.href = window.URL.createObjectURL(svgBlob);
+          tempLink.download = `${locationName}-${startDate}_to_${endDate}-rainfall_visualisation.svg`;
+          document.body.appendChild(tempLink);
+          tempLink.click();
+          document.body.removeChild(tempLink);
+          })
         window.addEventListener("load", (event) => {
           getRange();
           populatePage();
