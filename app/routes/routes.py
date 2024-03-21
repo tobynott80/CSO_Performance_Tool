@@ -31,9 +31,21 @@ async def initializeDB():
 
 
 async def getPaginatedLocations(page, limit, include_runs=False):
-    skip = (page - 1) * limit  
+    """
+    Retrieves a paginated list of locations from the database.
+
+    Args:
+        page (int): The page number to retrieve.
+        limit (int): The maximum number of locations per page.
+        include_runs (boolean): Include runs relationship data
+    Returns:
+        list: A list of locations retrieved from the database.
+    """
+    skip = (page - 1) * limit
     if include_runs:
-        locations = await db.location.find_many(skip=skip, take=limit, include={"runs": True})
+        locations = await db.location.find_many(
+            skip=skip, take=limit, include={"runs": True}
+        )
     else:
         locations = await db.location.find_many(skip=skip, take=limit)
     return locations
@@ -61,22 +73,15 @@ async def index():
     if query:
         total = await db.location.count(where={"name": {"contains": query}})
         locations = await db.location.find_many(
-            where={"name": {"contains": query}}, 
-            skip=(page - 1) * limit, 
+            where={"name": {"contains": query}},
+            skip=(page - 1) * limit,
             take=limit,
-            include={"runs": True}
+            include={"runs": True},
         )
     else:
         total = await db.location.count()
         locations = await getPaginatedLocations(page, limit, include_runs=True)
 
-
-    for location in locations:
-        print(f"Location: {location.name}")
-        print("Runs:")
-        pprint(location.runs)
-        print("-" * 20)
-        
     total_pages = ceil(total / limit)
     return await render_template(
         "index.html",
@@ -129,7 +134,8 @@ async def delete_location(locid):
         return {"success": True}
     except Exception as e:
         return {"success": False, "error": str(e)}, 500
-    
+
+
 @app.delete("/api/run/<int:runid>")
 async def delete_run(runid):
     try:
@@ -139,7 +145,7 @@ async def delete_run(runid):
     except Exception as e:
         return {"success": False, "error": str(e)}, 500
 
-    
+
 @app.route("/<int:locid>")
 async def showRuns(locid):
     """
@@ -152,7 +158,9 @@ async def showRuns(locid):
     Response: The rendered template of the specific location page.
     """
     # Fetch the location details from the database
-    location = await db.location.find_unique(where={"id": locid},include={"runs": {"include": {"runsTests": True}}})
+    location = await db.location.find_unique(
+        where={"id": locid}, include={"runs": {"include": {"runsTests": True}}}
+    )
 
     if not location:
         return redirect("/")

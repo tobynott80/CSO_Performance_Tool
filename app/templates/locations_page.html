@@ -60,7 +60,6 @@
                       <a
                         href="/{{location.id}}/create"
                         class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
-                        href="#"
                       >
                         <svg
                           class="flex-shrink-0 size-3"
@@ -343,6 +342,18 @@
 
   <!-- Preline UI Library Script -->
   <script>
+
+    document.querySelectorAll('tr').forEach(row => {
+      row.addEventListener('click', (event) => {
+          if (event.target.tagName === 'INPUT') {
+              return; // Stop redirection if clicking on the checkbox
+          }
+  
+          const runId = row.getAttribute('data-runid');
+          window.location.href += `/${runId}`; 
+      });
+    });
+
     function deleteRuns() {
       const selectedRuns = Array.from(document.querySelectorAll('input.runs-checkbox:checked'))
         .map(checkbox => checkbox.getAttribute('data-runid'));
