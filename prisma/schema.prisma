@@ -23,6 +23,9 @@ model Runs {
   locationID  Int
   name        String
   description String
+  rainfallStatsFile String?
+  spillStatsFile String?
+  baselineStatsFile String?
   runsTests   RunTests[]
   location    Location   @relation(fields: [locationID], references: [id], onDelete: Cascade)
 }
