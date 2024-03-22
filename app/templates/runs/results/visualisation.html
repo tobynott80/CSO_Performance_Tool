@@ -1,12 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
   {% include 'head.html' %}
-  <link
-    rel="stylesheet"
-    href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css"
-  />
-  <script src="https://code.jquery.com/jquery-3.6.0.js"></script>
-  <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
 
   <body class="bg-gray-50 dark:bg-slate-900">
     {% include 'header.html' %} {% include 'sidebar.html' %}
@@ -28,18 +22,147 @@
                   >
                 </h2>
                 <p class="text-sm text-gray-600 dark:text-gray-400">
-                  TODO: Write Visualisation Description
+                  Visualisation of rainfall intensity, day classification and
+                  spill permission.
                 </p>
                 <p class="text-sm text-gray-600 dark:text-gray-400">
                   Run created on : {{run.date.strftime('%d %B %Y | %H:%M:%S')}}
                 </p>
               </div>
 
-              <div class="flex flex-row mt-4">
-                <div
-                  class="flex flex-col shrink items-center mr-1 max-w-min"
-                  id="accordion"
-                ></div>
+              <div>
+                <div class="flex flex-row align-center my-1">
+                  <div class="flex flex-row grow">
+                    <label
+                      for="start-selector"
+                      class="inline-flex items-center gap-x-1 font-semibold text-gray-800 dark:text-gray-200 py-1 mr-4"
+                    >
+                      <svg
+                        class="w-6 h-6 text-gray-800 dark:text-white"
+                        aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke="currentColor"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M4 10h16m-8-3V4M7 7V4m10 3V4M5 20h14a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1Zm3-7h.01v.01H8V13Zm4 0h.01v.01H12V13Zm4 0h.01v.01H16V13Zm-8 4h.01v.01H8V17Zm4 0h.01v.01H12V17Zm4 0h.01v.01H16V17Z"
+                        />
+                      </svg>
+                      Start:</label
+                    >
+                    <select id="start-selector" class="my-1 border rounded-lg">
+                      <option id="start-option-loading" value="0">
+                        Loading...
+                      </option>
+                    </select>
+                    <label
+                      for="end-selector"
+                      class="inline-flex items-center gap-x-1 font-semibold text-gray-800 dark:text-gray-200 py-1 mx-4"
+                    >
+                      <svg
+                        class="w-6 h-6 text-gray-800 dark:text-white"
+                        aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          fill="currentColor"
+                          d="M4 9.05H3v2h1v-2Zm16 2h1v-2h-1v2ZM10 14a1 1 0 1 0 0 2v-2Zm4 2a1 1 0 1 0 0-2v2Zm-3 1a1 1 0 1 0 2 0h-2Zm2-4a1 1 0 1 0-2 0h2Zm-2-5.95a1 1 0 1 0 2 0h-2Zm2-3a1 1 0 1 0-2 0h2Zm-7 3a1 1 0 0 0 2 0H6Zm2-3a1 1 0 1 0-2 0h2Zm8 3a1 1 0 1 0 2 0h-2Zm2-3a1 1 0 1 0-2 0h2Zm-13 3h14v-2H5v2Zm14 0v12h2v-12h-2Zm0 12H5v2h14v-2Zm-14 0v-12H3v12h2Zm0 0H3a2 2 0 0 0 2 2v-2Zm14 0v2a2 2 0 0 0 2-2h-2Zm0-12h2a2 2 0 0 0-2-2v2Zm-14-2a2 2 0 0 0-2 2h2v-2Zm-1 6h16v-2H4v2ZM10 16h4v-2h-4v2Zm3 1v-4h-2v4h2Zm0-9.95v-3h-2v3h2Zm-5 0v-3H6v3h2Zm10 0v-3h-2v3h2Z"
+                        />
+                      </svg>
+
+                      End:</label
+                    >
+                    <select
+                      id="end-selector"
+                      class="my-1 border rounded-lg mr-4"
+                    >
+                      <option id="end-option-loading" value="0">
+                        Loading...
+                      </option>
+                    </select>
+                  </div>
+                  <div class="flex flex-row">
+                    <button
+                      id="refresh-btn"
+                      class="px-2 py-1 mr-1 inline-flex items-center gap-x-1 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+                    >
+                      <svg
+                        class="w-4 h-4 text-gray-800 dark:text-white"
+                        aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke="currentColor"
+                          stroke-linecap="round"
+                          stroke-width="2"
+                          d="m21 21-3.5-3.5M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"
+                        />
+                      </svg>
+
+                      Search
+                    </button>
+                    <button
+                      id="clear-btn"
+                      class="px-2 py-1 mr-1 inline-flex items-center gap-x-1 text-sm font-semibold rounded-lg border border-transparent bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+                    >
+                      <svg
+                        class="w-4 h-4 text-gray-800 dark:text-white"
+                        aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke="currentColor"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M17.651 7.65a7.131 7.131 0 0 0-12.68 3.15M18.001 4v4h-4m-7.652 8.35a7.13 7.13 0 0 0 12.68-3.15M6 20v-4h4"
+                        />
+                      </svg>
+
+                      Clear
+                    </button>
+                    <button
+                      id="download-btn"
+                      class="px-2 py-1 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-gray-200 text-gray-500 hover:border-blue-600 hover:text-blue-600 disabled:opacity-50 disabled:pointer-events-none dark:border-gray-700 dark:text-gray-400 dark:hover:text-blue-500 dark:hover:border-blue-600 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+                    >
+                      <svg
+                        class="w-4 h-4 text-gray-800 dark:text-white"
+                        aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke="currentColor"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M12 13V4M7 14H5a1 1 0 0 0-1 1v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4a1 1 0 0 0-1-1h-2m-1-5-4 5-4-5m9 8h.01"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                </div>
                 <div
                   class="bg-white grow border rounded-lg"
                   id="vis-container"
@@ -52,9 +175,8 @@
     </div>
     <script type="module">
         import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
-
-
         let runTestID = {{ runTest.id }};
+        let locationName = "{{ location.name }}";
         let dateButtonDiv = document.getElementById('accordion');
         let visContainer = document.getElementById('vis-container');
         let colorMap = {
@@ -89,51 +211,42 @@
             monthRange.push(new Date(currentDate));
             currentDate.setMonth(currentDate.getMonth() + 1);
           }
-          // create 2d array of years containing months
-          const yearMonthRange = monthRange.reduce((acc, date) => {
-            const year = date.getFullYear();
-            const month = date.getMonth();
-            if (!acc[year]) {
-              acc[year] = [];
-            }
-            acc[year][month] = date;
-            return acc;
-          }, []);
-          yearMonthRange.forEach((year)=>{
-            const yearHeader = document.createElement('h2')
-            {# yearHeader.classList.add('') #}
-            yearHeader.textContent = year.at(-1).getFullYear()
+          // Remove loading indiators
+          document.getElementById('start-option-loading').remove();
+          document.getElementById('end-option-loading').remove();
 
-            const yearPanel = document.createElement('div')
-            yearPanel.classList.add('bg-transparent', 'border-none', 'h-min')
+          const start_selector = document.getElementById('start-selector')
+          const end_selector = document.getElementById('end-selector')
+          monthRange.forEach((month) => {
+            const monthOption = document.createElement('option')
+            monthOption.innerHTML = `${month.toLocaleString('default', { month: 'long' })} ${month.getFullYear()}`;
+            monthOption.value = (month.getTime()/1000);
+            const startOption = monthOption.cloneNode(true);
+            start_selector.appendChild(startOption);
 
-            year.forEach((month) => {
-              const dateElement = document.createElement('button');
-              dateElement.textContent = `${month.toLocaleString('default', { month: 'long' })} ${month.getFullYear()}`;
-              dateElement.classList.add('font-mono','whitespace-nowrap','min-w-full','gap-x-2', 'text-sm', 'rounded-lg', 'py-1', 'px-2', 'border', 'border-transparent', 'bg-blue-600', 'text-white', 'hover:bg-blue-700', 'disabled:opacity-50', 'disabled:pointer-events-none', 'dark:focus:outline-none', 'dark:focus:ring-1', 'dark:focus:ring-gray-600');
-              dateElement.addEventListener('click', async () => {
-                visContainer.innerHTML = '';
-                await generatePlot(Math.floor(month.getTime() / 1000));
-              });
-              yearPanel.appendChild(dateElement);
-            })
-            dateButtonDiv.appendChild(yearHeader)
-            dateButtonDiv.appendChild(yearPanel)
-            $( function() {
-              $( "#accordion" ).accordion();
-              });
-            });
+            const endOption = monthOption.cloneNode(true);
+            end_selector.appendChild(endOption);
+          })
+        generatePlot();
         }
-        async function generatePlot(startDate){
-          // If start date is not provided, use the earliest date and convert it to unix timestamp
-          if (startDate === undefined) {
-            if (earliest == undefined){
-              await getRange();
-            }
-            startDate = Math.floor(earliest.getTime() / 1000);
+        async function generatePlot(){
+          const start_selector = document.getElementById('start-selector')
+          const end_selector = document.getElementById('end-selector')
+          let startDate = parseInt(start_selector.value);
+          let endDate = parseInt(end_selector.value);
+          if (startDate > endDate) {
+            alert('Start date must be before end date');
+            return;
           }
-          // set end date to start date plus one month
-          let endDate = startDate + 2678400;
+          // if start date is equal to end date, set end date to start date plus one month
+          if (startDate === endDate) {
+            endDate = startDate + 2678400;
+          }
+          // if range is greater than 1 year, alert user and return
+          if (endDate - startDate > 31536000) {
+            alert('Date range must be less than 1 year');
+            return;
+          }
           let data = await fetch(`/api/results/timeseries?runTestID=${runTestID}&startTime=${startDate}&endTime=${endDate}`)
           data = await data.json();
           data.forEach(d => {
@@ -166,17 +279,59 @@
                 y1: -1,
                 y2: -2,
                 stroke: d => (d.spillAllowed === "YES" ? "purple" : "white")
-              })
+              }),
+              Plot.crosshair(data, {
+                x: d => d.dateTime,
+                y: d => d.intensity
+              }),
             ],
           });
-        const div = document.querySelector("#vis-container");
-        plot.classList.add('w-10/12');
-        div.appendChild(plot);
+          const div = document.querySelector("#vis-container");
+          div.innerHTML = '';
+          plot.classList.add('w-full');
+          div.appendChild(plot);
         }
+        // Button event listeners
+        document.getElementById('refresh-btn').addEventListener('click', () => generatePlot())
+        document.getElementById('clear-btn').addEventListener('click', () => {
+          document.getElementById('start-selector').selectedIndex  = 0;
+          document.getElementById('end-selector').selectedIndex  = 0;
+          generatePlot();
+        })
+        document.getElementById('download-btn').addEventListener('click', () => {
+          const start_selector = document.getElementById('start-selector')
+          const end_selector = document.getElementById('end-selector')
+          const vis_container = document.getElementById('vis-container');
+          const svg_element = vis_container.querySelector('svg');
+          let startDate = parseInt(start_selector.value);
+          let endDate = parseInt(end_selector.value);
+          if (startDate > endDate) {
+            alert('Start date must be before end date');
+            return;
+          }
+          // if start date is equal to end date, set end date to start date plus one month
+          if (startDate === endDate) {
+            endDate = startDate + 2678400;
+          }
+          // if range is greater than 1 year, alert user and return
+          if (endDate - startDate > 31536000) {
+            alert('Date range must be less than 1 year');
+            return;
+          }
+          // Create a Blob object with the SVG data
+          const svgData = new XMLSerializer().serializeToString(svg_element);
+          const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+          // Create a temporary link element
+          const tempLink = document.createElement('a');
+          tempLink.href = window.URL.createObjectURL(svgBlob);
+          tempLink.download = `${locationName}-${startDate}_to_${endDate}-rainfall_visualisation.svg`;
+          document.body.appendChild(tempLink);
+          tempLink.click();
+          document.body.removeChild(tempLink);
+          })
         window.addEventListener("load", (event) => {
           getRange();
           populatePage();
-          generatePlot();
         });
     </script>
   </body>
