@@ -27,8 +27,8 @@
         {% endif %}
       </a>
 
-      <a class=""
-        ><span
+      <a class="" href="/{{ location.id }}/{{ run.id }}/results_spill_perc">
+        <span
           class="underline text-base text-blue-600 dark:text-blue-400 cursor-pointer"
           >Year Spilling (WHT)</span
         >
@@ -42,6 +42,7 @@
       {% if show_so %}
       <a
         class="underline text-base text-blue-600 dark:text-blue-400 cursor-pointer"
+        href="/{{ location.id }}/{{ run.id }}/results_storm_overflow"
         >Storm Overflow Performance</a
       >
       {% else %}
