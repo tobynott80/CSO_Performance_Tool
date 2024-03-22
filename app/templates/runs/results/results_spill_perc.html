@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+  {% include 'head.html' %}
+
+  <body class="bg-gray-50 dark:bg-slate-900">
+    <!-- ========== HEADER ========== -->
+    {% include 'header.html' %} {% include 'sidebar.html' %}
+
+    <!-- Content -->
+    <div class="max-w-[90rem] px-4 py-4 sm:px-6 lg:px-8 lg:ps-64 mx-auto">
+      <!-- Table Section -->
+      <div class="max-w-[85rem] px-4 sm:px-6 lg:px-8 lg:py-14 mx-auto">
+        <!-- Card -->
+        <div class="flex flex-col">
+          <div class="-m-1.5 overflow-x-auto">
+            <div class="p-1.5 min-w-full inline-block align-middle">
+              <div
+                class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden dark:bg-slate-900 dark:border-gray-700"
+              >
+                <!-- Header -->
+                <div
+                  class="px-6 py-4 flex justify-between items-center border-b border-gray-200 dark:border-gray-700"
+                >
+                  <div>
+                    <h2
+                      class="text-xl font-semibold text-gray-800 dark:text-gray-200"
+                    >
+                      {{ location.name }} - {{ run.name }} - OC Fixed Baseline -
+                      Percentage of year spilling (%)
+                    </h2>
+                    <br />
+                    <p
+                      class="text-sm text-gray-600 dark:text-gray-400 font-medium"
+                    >
+                      The percentage of the year during which spilling events
+                      occurred, calculated against the fixed OC baseline.
+                    </p>
+                  </div>
+                  <div>
+                    <div class="inline-flex gap-x-2">
+                      <a
+                        href="/{{ location.id }}/{{ run.id }}"
+                        class="py-2 px-3 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke-width="1.5"
+                          stroke="currentColor"
+                          class="flex-shrink-0 size-4"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M15.75 19.5 8.25 12l7.5-7.5"
+                          />
+                        </svg>
+                        Back
+                      </a>
+                    </div>
+                  </div>
+                </div>
+                <!-- End Header -->
+                <!-- Table -->
+                <table
+                  class="min-w-full divide-y divide-gray-200 dark:divide-gray-700"
+                >
+                  <!-- Table Heading -->
+                  <thead class="bg-gray-50 dark:bg-slate-800">
+                    <tr>
+                      <th
+                        scope="col"
+                        class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-gray-200"
+                      >
+                        Year
+                      </th>
+                      <th
+                        scope="col"
+                        class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-gray-200"
+                      >
+                        OC Fixed Baseline - Percentage of year spilling (%)
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody
+                    class="bg-white dark:bg-slate-900 divide-y divide-gray-200 dark:divide-gray-700"
+                  >
+                    {% for result in spill_perc_results %}
+                    <tr class="hover:bg-gray-200 dark:hover:bg-slate-800">
+                      <td
+                        class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white"
+                      >
+                        {{ result.year }}
+                      </td>
+                      <td
+                        class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400"
+                      >
+                        {% if result.spillPerc > 0 %} {{ '%.*g' | format(3,
+                        result.spillPerc)}} {% else %} {{result.spillPerc}} {%
+                        endif %}
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+                <!-- End Table -->
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- End Card -->
+      </div>
+    </div>
+    <!-- End Table Section -->
+  </body>
+</html>

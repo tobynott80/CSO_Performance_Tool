@@ -399,3 +399,229 @@ async def download_test3(filename):
         abort(404)
 
     return await send_file(file_path, attachment_filename=filename)
+
+
+@app.get("/<int:location_id>/<int:run_id>/results_dry_day")
+async def dry_day_results(location_id, run_id):
+    
+    location = await db.location.find_first(where={"id": location_id})
+    if not location:
+        return redirect("/")
+
+    run = await db.runs.find_first(where={"id": run_id})
+    if not run:
+        return redirect(f"/{location_id}")
+
+    tests = await db.tests.find_first(
+        where={"name": "Test 1"},
+        include={
+            "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+        },
+    )
+
+    if not tests:
+        return redirect(f"/{location_id}/{run_id}")
+
+    if tests.runsTests[0].status != "COMPLETED":
+        return redirect(f"/{location_id}/{run_id}")
+
+    # Handling the case where there are no Test 1 results found for the run
+    if not tests.runsTests[0].summary:
+        message = "No Test 1 results found for this run."
+        return await render_template_string("Message: {{message}}", message=message)
+
+    # If Test 1 results are found, pass them to your template
+    return await render_template(
+        "/runs/results/results_dry_day.html",
+        location=location,
+        run=run,
+        dry_day_results=tests.runsTests[0].summary,
+    )
+
+@app.get("/<int:location_id>/<int:run_id>/results_unsatisfactory_spills")
+async def unsatisfactory_spills_results(location_id, run_id):
+    
+    location = await db.location.find_first(where={"id": location_id})
+    if not location:
+        return redirect("/")
+
+    run = await db.runs.find_first(where={"id": run_id})
+    if not run:
+        return redirect(f"/{location_id}")
+
+    tests = await db.tests.find_first(
+        where={"name": "Test 1"},
+        include={
+            "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+        },
+    )
+
+    if not tests:
+        return redirect(f"/{location_id}/{run_id}")
+
+    if tests.runsTests[0].status != "COMPLETED":
+        return redirect(f"/{location_id}/{run_id}")
+
+    # Handling the case where there are no Test 1 results found for the run
+    if not tests.runsTests[0].summary:
+        message = "No Test 1 results found for this run."
+        return await render_template_string("Message: {{message}}", message=message)
+
+    # If Test 1 results are found, pass them to your template
+    return await render_template(
+        "/runs/results/results_unsatisfactory_spills.html",
+        location=location,
+        run=run,
+        unsatisfactory_spills_results=tests.runsTests[0].summary,
+    )
+
+@app.get("/<int:location_id>/<int:run_id>/results_substandard_spills")
+async def substandard_spills_results(location_id, run_id):
+    
+    location = await db.location.find_first(where={"id": location_id})
+    if not location:
+        return redirect("/")
+
+    run = await db.runs.find_first(where={"id": run_id})
+    if not run:
+        return redirect(f"/{location_id}")
+
+    tests = await db.tests.find_first(
+        where={"name": "Test 1"},
+        include={
+            "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+        },
+    )
+
+    if not tests:
+        return redirect(f"/{location_id}/{run_id}")
+
+    if tests.runsTests[0].status != "COMPLETED":
+        return redirect(f"/{location_id}/{run_id}")
+
+    # Handling the case where there are no Test 1 results found for the run
+    if not tests.runsTests[0].summary:
+        message = "No Test 1 results found for this run."
+        return await render_template_string("Message: {{message}}", message=message)
+
+    # If Test 1 results are found, pass them to your template
+    return await render_template(
+        "/runs/results/results_substandard_spills.html",
+        location=location,
+        run=run,
+        substandard_spills_results=tests.runsTests[0].summary,
+    )
+
+@app.get("/<int:location_id>/<int:run_id>/results_heavy_perc")
+async def heavy_perc_results(location_id, run_id):
+
+    location = await db.location.find_first(where={"id": location_id})
+    if not location:
+        return redirect("/")
+
+    run = await db.runs.find_first(where={"id": run_id})
+    if not run:
+        return redirect(f"/{location_id}")
+    
+    test1 = await db.tests.find_first(
+        where={"name": "Test 1"},
+        include={
+            "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+        },
+    )
+
+    print(test1)
+    if not test1.runsTests:
+
+        test1 = await db.tests.find_first(
+            where={"name": "Test 2"},
+            include={
+                "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+            },
+        )
+ 
+    return await render_template(
+        "/runs/results/results_heavy_perc.html",
+        location=location,
+        run=run,
+        heavy_perc_results=test1.runsTests[0].summary,
+    )
+
+@app.get("/<int:location_id>/<int:run_id>/results_spill_perc")
+async def spill_perc_results(location_id, run_id):
+
+    location = await db.location.find_first(where={"id": location_id})
+    if not location:
+        return redirect("/")
+
+    run = await db.runs.find_first(where={"id": run_id})
+    if not run:
+        return redirect(f"/{location_id}")
+    
+    test1 = await db.tests.find_first(
+        where={"name": "Test 1"},
+        include={
+            "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+        },
+    )
+
+    print(test1)
+    if not test1.runsTests:
+
+        test1 = await db.tests.find_first(
+            where={"name": "Test 2"},
+            include={
+                "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+            },
+        )
+ 
+    return await render_template(
+        "/runs/results/results_spill_perc.html",
+        location=location,
+        run=run,
+        spill_perc_results=test1.runsTests[0].summary,
+    )
+
+@app.get("/<int:location_id>/<int:run_id>/results_storm_overflow")
+async def storm_overflow_results(location_id, run_id):
+
+    location = await db.location.find_first(where={"id": location_id})
+    if not location:
+        return redirect("/")
+
+    run = await db.runs.find_first(where={"id": run_id})
+    if not run:
+        return redirect(f"/{location_id}")
+    
+    test1 = await db.tests.find_first(
+        where={"name": "Test 1"},
+        include={
+            "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+        },
+    )
+
+    print(test1)
+    if not test1.runsTests:
+
+        test1 = await db.tests.find_first(
+            where={"name": "Test 2"},
+            include={
+                "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+            },
+        )
+ 
+    return await render_template(
+        "/runs/results/results_storm_overflow.html",
+        location=location,
+        run=run,
+        storm_overflow_results=test1.runsTests[0].summary,
+    )
+   
+   
+    
+    
+   
+    
+    
+
+

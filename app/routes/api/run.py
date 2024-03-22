@@ -249,7 +249,7 @@ async def createRunStep2():
             # Load the Excel file and checks whether sheet "Summary" exists
             try:
                 df_pff = pd.read_excel(
-                    files["Baseline Stats Report"].stream, sheet_name="Summary", header=1)
+                    files["Baseline Stats Report"].stream, sheet_name="Summary", header=1, nrows=2,)
             except Exception as e:
                 await flash("Error reading file, Please Input a valid Excel file. Error: " + str(e))
                 return redirect(url_for(f"createRun", locid=session["loc"], step=2))
@@ -285,6 +285,7 @@ async def createRunStep2():
             )
             test3thread.start()
 
+    print(run)
     # Delete session data since not needed in client side
     session.pop("loc")
     session.pop("run_name")

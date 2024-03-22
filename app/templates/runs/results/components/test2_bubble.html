@@ -15,8 +15,8 @@
   </div>
   <div class="flex flex-row">
     <div class="flex flex-col flex-grow space-y-2">
-      <a class=""
-        ><span
+      <a href="/{{ location.id }}/{{ run.id }}/results_heavy_perc">
+        <span
           class="underline text-base text-blue-600 dark:text-blue-400 cursor-pointer"
           >Allowed Spill Start (WHT)</span
         >
@@ -27,8 +27,8 @@
         {% endif %}
       </a>
 
-      <a class=""
-        ><span
+      <a href="/{{ location.id }}/{{ run.id }}/results_spill_perc">
+        <span
           class="underline text-base text-blue-600 dark:text-blue-400 cursor-pointer"
           >Year Spilling (WHT)</span
         >
@@ -42,6 +42,7 @@
       {% if show_so %}
       <a
         class="underline text-base text-blue-600 dark:text-blue-400 cursor-pointer"
+        href="/{{ location.id }}/{{ run.id }}/results_storm_overflow"
         >Storm Overflow Performance</a
       >
       {% else %}
@@ -70,7 +71,8 @@
         </svg>
         Export
       </button>
-      <button
+      <a
+        href="/{{ location.id }}/{{ run.id }}/visualisation"
         class="py-1.5 px-3 my-1 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
       >
         <svg
@@ -89,7 +91,7 @@
           />
         </svg>
         Visualisation
-      </button>
+      </a>
     </div>
   </div>
 </div>
