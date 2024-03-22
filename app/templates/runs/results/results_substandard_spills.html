@@ -3,6 +3,8 @@
   {% include 'head.html' %}
 
   <body class="bg-gray-50 dark:bg-slate-900">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src=https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.3.0/math.min.js></script>
     <!-- ========== HEADER ========== -->
     {% include 'header.html' %} {% include 'sidebar.html' %}
 
@@ -113,5 +115,154 @@
       </div>
     </div>
     <!-- End Table Section -->
-  </body>
+  <!-- Chart Section -->
+  <div class="max-w-[87.4rem] px-4 py-4 sm:px-6 lg:px-8 lg:ps-64 mx-auto">
+    <!-- Card -->
+    <div class="flex flex-col">
+      <div class="p-1.5 min-w-full inline-block align-middle">
+        <div
+          class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden dark:bg-slate-900 dark:border-gray-700"
+        >
+          <!-- Header -->
+          <div
+            class="px-6 py-4 flex justify-between items-center border-b border-gray-200 dark:border-gray-700"
+          >
+            <div>
+              <h2
+                class="text-xl font-semibold text-gray-800 dark:text-gray-200"
+              >
+                Substandard Spills Chart
+              </h2>
+            </div>
+            <div>
+              <button
+                id="toggleMode"
+                class="py-2 px-3 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+              >
+                <span id="modeText">Light Mode</span>
+              </button>
+            </div>
+          </div>
+          <!-- End Header -->
+          <!-- Chart -->
+          <div class="p-6 max-w-[87.4rem] mx-auto dark">
+            <canvas id="substandardSpillsChart" width="400" height="200"></canvas>
+          </div>
+          <!-- End Chart -->
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- End Card -->
+</body>
 </html>
+
+<script>
+  var ctx = document.getElementById('substandardSpillsChart').getContext('2d');
+  var dataPoints = [
+    {% for result in substandard_spills_results %}
+      { year: "{{ result.year }}", value: {{ '%.*g' | format(3, result.substandardSpills) }} },
+    {% endfor %}
+  ];
+  
+  dataPoints.pop(); // Remove the last entry which is 'Whole Time Series'
+  
+  var years = dataPoints.map(point => point.year);
+  var values = dataPoints.map(point => point.value);
+  
+  var minValue = Math.min(...values) - 5;
+  var maxValue = Math.max(...values);
+  
+  maxValue = Math.ceil(maxValue);
+  minValue = Math.floor(minValue);
+  
+  var isDarkMode = ctx.canvas.parentNode.classList.contains('dark');
+  var myChart;
+
+  function toggleMode() {
+    var body = document.body;
+    body.classList.toggle('dark');
+    isDarkMode = !isDarkMode;
+    updateChart();
+    updateModeText();
+  }
+
+  function updateChart() {
+    if (myChart) {
+      myChart.options.scales.y.ticks.color = isDarkMode ? '#ffffff' : '#333333';
+      myChart.options.scales.y.grid.color = isDarkMode ? '#2d333a' : '#e5e7eb';
+      myChart.options.scales.x.ticks.color = isDarkMode ? '#ffffff' : '#333333';
+      myChart.options.scales.x.grid.color = isDarkMode ? '#2d333a' : '#e5e7eb';
+      myChart.options.plugins.legend.labels.color = isDarkMode ? '#ffffff' : '#333333';
+      myChart.canvas.parentNode.style.backgroundColor = isDarkMode ? '#1e293b' : '#f9fafb';
+      myChart.update();
+    }
+  }
+
+  function updateModeText() {
+    var modeText = document.getElementById('modeText');
+    modeText.textContent = isDarkMode ? 'Light Mode' : 'Dark Mode';
+  }
+  
+  function createChart() {
+    myChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: years,
+        datasets: [{
+          label: 'Substandard Spills Amount',
+          data: values,
+          fill: false,
+          borderColor: 'rgb(75, 192, 192)',
+          tension: 0.1
+        }]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: false,
+            min: minValue,
+            max: maxValue + 2,
+            ticks: {
+              color: isDarkMode ? '#ffffff' : '#333333',
+              stepSize: 4,
+
+            },
+            grid: {
+              color: isDarkMode ? '#2d333a' : '#e5e7eb'
+            }
+
+          },
+          x: {
+            ticks: {
+              color: isDarkMode ? '#ffffff' : '#333333',
+              autoSkip: false,
+              maxRotation: 0,
+              minRotation: 0
+            },
+            grid: {
+              color: isDarkMode ? '#2d333a' : '#e5e7eb'
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            labels: {
+              color: isDarkMode ? '#ffffff' : '#333333'
+            }
+          }
+        }
+      }
+    });
+    
+    ctx.canvas.parentNode.style.backgroundColor = isDarkMode ? '#1e293b' : '#f9fafb';
+  }
+
+  var toggleButton = document.getElementById('toggleMode');
+  toggleButton.addEventListener('click', toggleMode);
+  
+  
+  createChart();
+  updateModeText();
+  </script>
+  
