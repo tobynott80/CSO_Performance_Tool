@@ -507,13 +507,86 @@ async def heavy_perc_results(location_id, run_id):
             },
         )
  
-    #If Test 1 results are found, pass them to your template
     return await render_template(
         "/runs/results/results_heavy_perc.html",
         location=location,
         run=run,
         heavy_perc_results=test1.runsTests[0].summary,
     )
+
+@app.get("/<int:location_id>/<int:run_id>/results_spill_perc")
+async def spill_perc_results(location_id, run_id):
+
+    location = await db.location.find_first(where={"id": location_id})
+    if not location:
+        return redirect("/")
+
+    run = await db.runs.find_first(where={"id": run_id})
+    if not run:
+        return redirect(f"/{location_id}")
+    
+    test1 = await db.tests.find_first(
+        where={"name": "Test 1"},
+        include={
+            "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+        },
+    )
+
+    print(test1)
+    if not test1.runsTests:
+
+        test1 = await db.tests.find_first(
+            where={"name": "Test 2"},
+            include={
+                "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+            },
+        )
+ 
+    return await render_template(
+        "/runs/results/results_spill_perc.html",
+        location=location,
+        run=run,
+        spill_perc_results=test1.runsTests[0].summary,
+    )
+
+@app.get("/<int:location_id>/<int:run_id>/results_storm_overflow")
+async def storm_overflow_results(location_id, run_id):
+
+    location = await db.location.find_first(where={"id": location_id})
+    if not location:
+        return redirect("/")
+
+    run = await db.runs.find_first(where={"id": run_id})
+    if not run:
+        return redirect(f"/{location_id}")
+    
+    test1 = await db.tests.find_first(
+        where={"name": "Test 1"},
+        include={
+            "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+        },
+    )
+
+    print(test1)
+    if not test1.runsTests:
+
+        test1 = await db.tests.find_first(
+            where={"name": "Test 2"},
+            include={
+                "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+            },
+        )
+ 
+    return await render_template(
+        "/runs/results/results_storm_overflow.html",
+        location=location,
+        run=run,
+        storm_overflow_results=test1.runsTests[0].summary,
+    )
+   
+   
+    
+    
    
     
     
