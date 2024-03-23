@@ -30,6 +30,14 @@ async def initializeDB():
     db = await initDB()
 
 
+@app.before_request
+def make_session_permanent():
+    """
+    Makes the session permanent
+    """
+    session.permanent = True
+
+
 async def getPaginatedLocations(page, limit, include_runs=False):
     """
     Retrieves a paginated list of locations from the database.
@@ -120,7 +128,25 @@ async def docs_three():
 
 @app.route("/settings")
 async def setting_page():
+    if "colorblind_mode" not in session:
+        session["colorblind_mode"] = "normal"
     return await render_template("settings.html")
+
+
+@app.route("/settings/colorblind_mode", methods=["POST"])
+async def set_colorblind_mode():
+    """
+    Sets the colorblind mode for the session.
+
+    This function expects a JSON payload with a "mode" key indicating the desired colorblind mode.
+    Valid colorblind modes are "normal", "protanopia", "deuteranopia", and "tritanopia".
+    """
+    data = await request.get_json()
+    mode = data.get("mode")
+    if mode not in ["normal", "protanopia", "deuteranopia", "tritanopia"]:
+        return {"error": "Invalid colorblind mode"}, 400
+    session["colorblind_mode"] = mode
+    return {"success": True}
 
 
 @app.delete("/api/location/<int:locid>")
@@ -403,7 +429,7 @@ async def download_test3(filename):
 
 @app.get("/<int:location_id>/<int:run_id>/results_dry_day")
 async def dry_day_results(location_id, run_id):
-    
+
     location = await db.location.find_first(where={"id": location_id})
     if not location:
         return redirect("/")
@@ -438,9 +464,10 @@ async def dry_day_results(location_id, run_id):
         dry_day_results=tests.runsTests[0].summary,
     )
 
+
 @app.get("/<int:location_id>/<int:run_id>/results_unsatisfactory_spills")
 async def unsatisfactory_spills_results(location_id, run_id):
-    
+
     location = await db.location.find_first(where={"id": location_id})
     if not location:
         return redirect("/")
@@ -475,9 +502,10 @@ async def unsatisfactory_spills_results(location_id, run_id):
         unsatisfactory_spills_results=tests.runsTests[0].summary,
     )
 
+
 @app.get("/<int:location_id>/<int:run_id>/results_substandard_spills")
 async def substandard_spills_results(location_id, run_id):
-    
+
     location = await db.location.find_first(where={"id": location_id})
     if not location:
         return redirect("/")
@@ -512,6 +540,7 @@ async def substandard_spills_results(location_id, run_id):
         substandard_spills_results=tests.runsTests[0].summary,
     )
 
+
 @app.get("/<int:location_id>/<int:run_id>/results_heavy_perc")
 async def heavy_perc_results(location_id, run_id):
 
@@ -522,7 +551,7 @@ async def heavy_perc_results(location_id, run_id):
     run = await db.runs.find_first(where={"id": run_id})
     if not run:
         return redirect(f"/{location_id}")
-    
+
     test1 = await db.tests.find_first(
         where={"name": "Test 1"},
         include={
@@ -539,13 +568,14 @@ async def heavy_perc_results(location_id, run_id):
                 "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
             },
         )
- 
+
     return await render_template(
         "/runs/results/results_heavy_perc.html",
         location=location,
         run=run,
         heavy_perc_results=test1.runsTests[0].summary,
     )
+
 
 @app.get("/<int:location_id>/<int:run_id>/results_spill_perc")
 async def spill_perc_results(location_id, run_id):
@@ -557,7 +587,7 @@ async def spill_perc_results(location_id, run_id):
     run = await db.runs.find_first(where={"id": run_id})
     if not run:
         return redirect(f"/{location_id}")
-    
+
     test1 = await db.tests.find_first(
         where={"name": "Test 1"},
         include={
@@ -574,13 +604,14 @@ async def spill_perc_results(location_id, run_id):
                 "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
             },
         )
- 
+
     return await render_template(
         "/runs/results/results_spill_perc.html",
         location=location,
         run=run,
         spill_perc_results=test1.runsTests[0].summary,
     )
+
 
 @app.get("/<int:location_id>/<int:run_id>/results_storm_overflow")
 async def storm_overflow_results(location_id, run_id):
@@ -592,7 +623,7 @@ async def storm_overflow_results(location_id, run_id):
     run = await db.runs.find_first(where={"id": run_id})
     if not run:
         return redirect(f"/{location_id}")
-    
+
     test1 = await db.tests.find_first(
         where={"name": "Test 1"},
         include={
@@ -609,19 +640,10 @@ async def storm_overflow_results(location_id, run_id):
                 "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
             },
         )
- 
+
     return await render_template(
         "/runs/results/results_storm_overflow.html",
         location=location,
         run=run,
         storm_overflow_results=test1.runsTests[0].summary,
     )
-   
-   
-    
-    
-   
-    
-    
-
-
