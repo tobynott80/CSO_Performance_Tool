@@ -44,7 +44,9 @@
       </div>
     </div>
     <script>
+      const selected_mode = "{{ colorblind_mode }}";
       let colorblind_selector = document.getElementById("colorblind");
+      colorblind_selector.value = selected_mode;
       colorblind_selector.addEventListener("change", (e) => {
         // Post selected colorblind mode
         fetch("/settings/colorblind_mode", {

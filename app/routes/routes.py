@@ -130,7 +130,8 @@ async def docs_three():
 async def setting_page():
     if "colorblind_mode" not in session:
         session["colorblind_mode"] = "normal"
-    return await render_template("settings.html")
+    colorblind_mode = session["colorblind_mode"]
+    return await render_template("settings.html", colorblind_mode=colorblind_mode)
 
 
 @app.route("/settings/colorblind_mode", methods=["POST"])
