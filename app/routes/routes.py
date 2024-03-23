@@ -347,11 +347,45 @@ async def view_visualisation(location_id, run_id):
         )
     elif runTest.status != "COMPLETED":
         return await render_template_string("Run in progress. Please try again later")
+    match session["colorblind_mode"]:
+        case "normal":
+            colors = {
+                "red": "red",
+                "green": "green",
+                "orange": "orange",
+                "blue": "blue",
+                "purple": "purple",
+            }
+        case "protanopia":
+            colors = {
+                "red": "darkblue",
+                "green": "teal",
+                "orange": "gold",
+                "blue": "blue",
+                "purple": "violet",
+            }
+        case "deuteranopia":
+            colors = {
+                "red": "darkblue",
+                "green": "teal",
+                "orange": "gold",
+                "blue": "blue",
+                "purple": "violet",
+            }
+        case "tritanopia":
+            colors = {
+                "red": "#ff0000",
+                "green": "#444444",
+                "orange": "#ff0000",
+                "blue": "violet",
+                "purple": "orange",
+            }
     return await render_template(
         "runs/results/visualisation.html",
         location=location,
         run=run,
         runTest=runTest,
+        colors=colors,
     )
 
 

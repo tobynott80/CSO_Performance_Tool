@@ -180,9 +180,9 @@
         let dateButtonDiv = document.getElementById('accordion');
         let visContainer = document.getElementById('vis-container');
         let colorMap = {
-          "Substandard": "orange",
-          "Satisfactory": "green",
-          "Unsatisfactory": "red"
+          "Substandard": "{{ colors.orange}}",
+          "Satisfactory": "{{ colors.green}}",
+          "Unsatisfactory": "{{ colors.red}}",
       }
         let earliest;
         let latest;
@@ -260,7 +260,7 @@
               Plot.lineY(data, {
                 x: "dateTime",
                 y: "intensity",
-                stroke: "blue",
+                stroke: "{{colors.blue}}",
                 channels: {
                   Classification: "classification",
                   dateTime: d => d.dateTime.toLocaleString(),
@@ -278,7 +278,7 @@
                 x: "dateTime",
                 y1: -1,
                 y2: -2,
-                stroke: d => (d.spillAllowed === "YES" ? "purple" : "white")
+                stroke: d => (d.spillAllowed === "YES" ? "{{colors.purple}}" : "white")
               }),
               Plot.crosshair(data, {
                 x: d => d.dateTime,
