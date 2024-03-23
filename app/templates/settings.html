@@ -1,18 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
+  {% include 'head.html' %}
 
-{% include 'head.html' %}
+  <body class="bg-gray-50 dark:bg-slate-900">
+    <!-- ========== HEADER ========== -->
+    {% include 'header.html' %}
 
-<body class="bg-gray-50 dark:bg-slate-900">
-  <!-- ========== HEADER ========== -->
-  {% include 'header.html' %}
+    <!-- ========== MAIN CONTENT ========== -->
+    {% include 'sidebar.html' %}
 
-  <!-- ========== MAIN CONTENT ========== -->
-  {% include 'sidebar.html' %}
-
-  <div class="max-w-[90rem] px-4 py-4 sm:px-6 lg:px-8 lg:ps-64 mx-auto">
-    <h1 class="m-4 text-xl font-semibold text-gray-800 dark:text-gray-200">Settings </h1>
-  </div>
-</body>
-
+    <div class="max-w-[90rem] px-4 py-4 sm:px-6 lg:px-8 lg:ps-64 mx-auto">
+      <h1 class="m-4 text-xl font-semibold text-gray-800 dark:text-gray-200">
+        Settings
+      </h1>
+      {# Colorblind Settings #}
+      <div
+        class="flex flex-col items-start justify-start w-full p-4 my-4 bg-white border border-gray-200 rounded-lg dark:bg-slate-800 dark:border-slate-700"
+      >
+        <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200">
+          Colorblind Settings
+        </h2>
+        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+          Change the color scheme to make the website more accessible for
+          colorblind users.
+        </p>
+        <div class="flex flex-col items-start justify-start w-full mt-4">
+          <label
+            for="colorblind"
+            class="text-sm font-semibold text-gray-800 dark:text-gray-200"
+            >Colorblind Mode</label
+          >
+          <select
+            id="colorblind"
+            name="colorblind"
+            class="w-full mt-2 p-1 border rounded-lg form-select dark:bg-slate-700 dark:border-slate-700 text-gray-800 dark:text-gray-200"
+          >
+            <option value="normal">Normal</option>
+            <option value="protanopia">Protanopia</option>
+            <option value="deuteranopia">Deuteranopia</option>
+            <option value="tritanopia">Tritanopia</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <script>
+      let colorblind_selector = document.getElementById("colorblind");
+    </script>
+  </body>
 </html>
