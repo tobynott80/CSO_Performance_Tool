@@ -45,6 +45,18 @@
     </div>
     <script>
       let colorblind_selector = document.getElementById("colorblind");
+      colorblind_selector.addEventListener("change", (e) => {
+        // Post selected colorblind mode
+        fetch("/settings/colorblind_mode", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            mode: e.target.value,
+          }),
+        });
+      });
     </script>
   </body>
 </html>
