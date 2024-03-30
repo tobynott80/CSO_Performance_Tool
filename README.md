@@ -14,6 +14,8 @@ This tool provides a front end to easily run and track GN066 tests. We are using
    `./run.bat`
 4. Navigate to `http://127.0.0.1:8080` in a browser
 
+> Please note: There is a known issue with some networks where the Prisma binary certificate is invalidated - breaking the project setup. If you run into this problem, please run `$ENV:NODE_TLS_REJECT_UNAUTHORIZED=0` before `./setup.bat` in step 2.
+
 ## Alternative Dowloads
 
 As the client does not have access to the Cardiff University GitLab service, we have a alternative host on [GitHub](https://github.com/tobynott80/ArupReleases/releases). Every commit on main branch is tagged, zipped and uploaded to the GitHub repo.
