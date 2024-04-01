@@ -5,6 +5,8 @@
 
 This tool provides a front end to easily run and track GN066 tests. We are using a locally hosted [Flask](https://flask.palletsprojects.com/en/3.0.x/) server and SQLite.
 
+This tool currently only supports Windows 10/11.
+
 ## Install
 
 1. Clone/Download this repo
