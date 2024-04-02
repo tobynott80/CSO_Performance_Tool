@@ -124,10 +124,10 @@ async def createRunStep2():
 
     form_data = await request.form
 
-    formula_a_value = safe_float_conversion(
-        form_data.get('formula-a'), default=None)
+    formula_a_value = safe_float_conversion(form_data.get("formula-a"), default=None)
     consent_flow_value = safe_float_conversion(
-        form_data.get('consent-flow'), default=None)
+        form_data.get("consent-flow"), default=None
+    )
 
     runs_tracker[str(run["id"])] = run
 
@@ -211,8 +211,7 @@ async def createRunStep2():
             )
 
             runtest = await db.runtests.create(
-                data={"runID": run["id"],
-                      "testID": testid.id, "status": "PROGRESS"}
+                data={"runID": run["id"], "testID": testid.id, "status": "PROGRESS"}
             )
 
             # Store RunTest ID for when running thread
@@ -242,31 +241,40 @@ async def createRunStep2():
                 return redirect(url_for(f"createRun", locid=session["loc"], step=2))
 
             # Correct format check
-            if not files["Baseline Stats Report"].filename.endswith(('.xlsx', '.csv', '.xls')):
-                await flash("Invalid file format. Only '.xlsx', '.csv', and '.xls' files are supported.")
+            if not files["Baseline Stats Report"].filename.endswith(
+                (".xlsx", ".csv", ".xls")
+            ):
+                await flash(
+                    "Invalid file format. Only '.xlsx', '.csv', and '.xls' files are supported."
+                )
                 return redirect(url_for(f"createRun", locid=session["loc"], step=2))
 
             # Load the Excel file and checks whether sheet "Summary" exists
             try:
                 df_pff = pd.read_excel(
-                    files["Baseline Stats Report"].stream, sheet_name="Summary", header=1, nrows=2,)
+                    files["Baseline Stats Report"].stream,
+                    sheet_name="Summary",
+                    header=1,
+                    nrows=2,
+                )
             except Exception as e:
-                await flash("Error reading file, Please Input a valid Excel file. Error: " + str(e))
+                await flash(
+                    "Error reading file, Please Input a valid Excel file. Error: "
+                    + str(e)
+                )
                 return redirect(url_for(f"createRun", locid=session["loc"], step=2))
 
             # Check if required columns are present
-            required_columns = [
-                'Peak PFF (l/s)', 'Avg Initial PFF (l/s)', 'Year']
+            required_columns = ["Peak PFF (l/s)", "Avg Initial PFF (l/s)", "Year"]
             missing_columns = [
-                column for column in required_columns if column not in df_pff.columns]
+                column for column in required_columns if column not in df_pff.columns
+            ]
             if missing_columns:
                 await flash("Missing required columns: " + ", ".join(missing_columns))
                 return redirect(url_for(f"createRun", locid=session["loc"], step=2))
 
             # Connect Tests in DB to frontend tests
-            testid = await db.tests.find_first(where={
-                "name": "Test 3"
-            })
+            testid = await db.tests.find_first(where={"name": "Test 3"})
 
             runtest = await db.runtests.create(
                 data={"runID": run["id"], "testID": testid.id, "status": "PROGRESS"}
@@ -333,8 +341,7 @@ def test1and2callback(rainfall_file, spills_baseline, run):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
 
-    loop.run_until_complete(createTests1andor2(
-        rainfall_file, spills_baseline, run))
+    loop.run_until_complete(createTests1andor2(rainfall_file, spills_baseline, run))
     loop.close()
     return
 
@@ -352,8 +359,9 @@ def test3callback(formula_a_value, consent_flow_value, baseline_stats_file, run)
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
 
-    loop.run_until_complete(createTest3(
-        formula_a_value, consent_flow_value, baseline_stats_file, run))
+    loop.run_until_complete(
+        createTest3(formula_a_value, consent_flow_value, baseline_stats_file, run)
+    )
     loop.close()
 
 
@@ -373,51 +381,53 @@ async def createTests1andor2(rainfall_file, spills_baseline, run):
     await db.connect()
     heavy_rain = 4
 
+    runs_tracker[str(run["id"])]["progress"][
+        "test-1&2"
+    ] = "Importing files and reading data"
+
     # Read CSV and Reformat
     df_rain_dtindex = csvReader.init(rainfall_file)
-
-    runs_tracker[str(run["id"])]["progress"]["test-1"] = 20
-    runs_tracker[str(run["id"])]["progress"]["test-2"] = 20
-
     csvReader.readCSV(df_rain_dtindex)
+
+    runs_tracker[str(run["id"])]["progress"][
+        "test-1&2"
+    ] = "Running Sewage Be Spilling Analysis"
 
     df, spills_df = analysis.sewage_be_spillin(
         spills_baseline, df_rain_dtindex, heavy_rain
     )
+    # runs_tracker[str(run["id"])]["progress"]["test-1&2"] = "Visualising Data"
+    # Does this need to be run?
+    vis.timeline_visual(spills_baseline, df, vis.timeline_start, vis.timeline_end)
 
-    runs_tracker[str(run["id"])]["progress"]["test-1"] += 20
-    runs_tracker[str(run["id"])]["progress"]["test-2"] += 20
+    runs_tracker[str(run["id"])]["progress"]["test-1&2"] = "Calculating Summary Stats"
 
-    vis.timeline_visual(spills_baseline, df,
-                        vis.timeline_start, vis.timeline_end)
     perc_data = timeStats.time_stats(df, spills_baseline)
 
-    runs_tracker[str(run["id"])]["progress"]["test-1"] += 10
-    runs_tracker[str(run["id"])]["progress"]["test-2"] += 10
+    runs_tracker[str(run["id"])]["progress"]["test-1&2"] = "Calculating Spill Stats"
 
     all_spill_classification, spill_count_data = spillStats.spill_stats(
         spills_df, df, [1, 2]
     )
-
-    runs_tracker[str(run["id"])]["progress"]["test-1"] += 20
-    runs_tracker[str(run["id"])]["progress"]["test-2"] += 20
+    runs_tracker[str(run["id"])]["progress"]["test-1&2"] = "Merging Dataframes"
 
     summary = pd.merge(perc_data, spill_count_data, on="Year")
 
-    runs_tracker[str(run["id"])]["progress"]["test-1"] += 10
-    runs_tracker[str(run["id"])]["progress"]["test-2"] += 10
-
     # Save all results to SQLite database
+    runs_tracker[str(run["id"])]["progress"]["test-1&2"] = "Saving summary to DB"
     await saveSummaryToDB(db, run, summary)
+    runs_tracker[str(run["id"])]["progress"]["test-1&2"] = "Saving spills to DB"
     await saveSpillToDB(db, run, all_spill_classification)
 
-    runs_tracker[str(run["id"])]["progress"]["test-1"] += 20
-    runs_tracker[str(run["id"])]["progress"]["test-2"] += 20
-
     for test in run["runids"]:
-        if (test == "Test 1" or test == "Test 2"):
-            await db.runtests.update(where={"id": run["runids"][test]}, data={"status": "COMPLETED"})
+        if test == "Test 1" or test == "Test 2":
+            await db.runtests.update(
+                where={"id": run["runids"][test]}, data={"status": "COMPLETED"}
+            )
 
+    runs_tracker[str(run["id"])]["progress"][
+        "test-1&2"
+    ] = "Saving timeseries to DB. This may take a while."
     # Saves 300k worth of rows - can be done in background?
     await saveTimeSeriesToDB(db, run, df)
 
@@ -436,19 +446,24 @@ async def createTest3(formula_a_value, consent_flow_value, baseline_stats_file, 
     """
     global runs_tracker
 
-    df_pff = pd.read_excel(baseline_stats_file.stream,
-                           sheet_name="Summary", header=1)
+    runs_tracker[str(run["id"])]["progress"]["test-3"] = "Running FPF Calculations"
 
-    df_pff['Compliance Status'] = df_pff.apply(lambda row: test3.check_compliance(
-        row, formula_a_value, consent_flow_value), axis=1)
-    df_pff['Just Formula A'] = df_pff.apply(
-        lambda row: test3.check_formula_a(row, formula_a_value), axis=1)
-    df_pff['Just Consent FPF'] = df_pff.apply(
-        lambda row: test3.check_consent_fpf(row, consent_flow_value), axis=1)
+    df_pff = pd.read_excel(baseline_stats_file.stream, sheet_name="Summary", header=1)
 
-    print(df_pff[['Year', 'Compliance Status']])
-    print(df_pff[['Year', 'Just Formula A']])
-    print(df_pff[['Year', 'Just Consent FPF']])
+    df_pff["Compliance Status"] = df_pff.apply(
+        lambda row: test3.check_compliance(row, formula_a_value, consent_flow_value),
+        axis=1,
+    )
+    df_pff["Just Formula A"] = df_pff.apply(
+        lambda row: test3.check_formula_a(row, formula_a_value), axis=1
+    )
+    df_pff["Just Consent FPF"] = df_pff.apply(
+        lambda row: test3.check_consent_fpf(row, consent_flow_value), axis=1
+    )
+
+    print(df_pff[["Year", "Compliance Status"]])
+    print(df_pff[["Year", "Just Formula A"]])
+    print(df_pff[["Year", "Just Consent FPF"]])
 
     from prisma import Prisma
 
@@ -467,11 +482,13 @@ async def createTest3(formula_a_value, consent_flow_value, baseline_stats_file, 
         else f"Run-{run['id']} - Test 3 Summary.xlsx"
     )
     df_pff.to_excel(config.test_three_outputs / filename, index=False)
-    runs_tracker[str(run["id"])]["progress"]["test-3"] = 100
+    runs_tracker[str(run["id"])]["progress"]["test-3"] = "Completed! Saving to DB"
 
     for test in run["runids"]:
-        if (test == "Test 3"):
-            await db.runtests.update(where={"id": run["runids"][test]}, data={"status": "COMPLETED"})
+        if test == "Test 3":
+            await db.runtests.update(
+                where={"id": run["runids"][test]}, data={"status": "COMPLETED"}
+            )
 
 
 async def saveSummaryToDB(db, run, summary):
@@ -493,7 +510,11 @@ async def saveSummaryToDB(db, run, summary):
                 "unsatisfactorySpills": row[f"{run['name']} - Unsatisfactory Spills"],
                 "substandardSpills": row[f"{run['name']} - Substandard Spills"],
                 "satisfactorySpills": row[f"{run['name']} - Satisfactory Spills"],
-                "runTestID": run["runids"]["Test 1"] if "Test 1" in run["runids"] else run["runids"]["Test 2"],
+                "runTestID": (
+                    run["runids"]["Test 1"]
+                    if "Test 1" in run["runids"]
+                    else run["runids"]["Test 2"]
+                ),
             }
         )
 
@@ -518,7 +539,11 @@ async def saveTimeSeriesToDB(db, run, df):
                 "spillAllowed": row["Spill_allowed?"],
                 "dayType": row["Day Type"],
                 "result": row[run["name"]],
-                "runTestID": run["runids"]["Test 1"] if "Test 1" in run["runids"] else run["runids"]["Test 2"],
+                "runTestID": (
+                    run["runids"]["Test 1"]
+                    if "Test 1" in run["runids"]
+                    else run["runids"]["Test 2"]
+                ),
             }
         )
 
@@ -550,7 +575,11 @@ async def saveSpillToDB(db, run, all_spill_classification):
                 "test1": row["Test 1 Status"],
                 "test2": row["Test 2 Status"],
                 "classification": row["Classification"],
-                "runTestID": run["runids"]["Test 1"] if "Test 1" in run["runids"] else run["runids"]["Test 2"],
+                "runTestID": (
+                    run["runids"]["Test 1"]
+                    if "Test 1" in run["runids"]
+                    else run["runids"]["Test 2"]
+                ),
             }
         )
 
