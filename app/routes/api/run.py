@@ -1,5 +1,15 @@
+from dataclasses import dataclass
 import io
-from quart import Blueprint, render_template, request, redirect, session, url_for, flash
+from quart import (
+    Blueprint,
+    make_response,
+    render_template,
+    request,
+    redirect,
+    session,
+    url_for,
+    flash,
+)
 from app.helper.database import initDB
 import asyncio
 
@@ -303,16 +313,71 @@ async def createRunStep2():
     return redirect(f"/{run['locationID']}/{run['id']}")
 
 
+@dataclass
+class ServerSentEvent:
+    """
+    Helper class to represent a server sent event.
+    Adapted from: https://quart.palletsprojects.com/en/latest/how_to_guides/server_sent_events.html
+
+    Attributes:
+        data (str): The data to be sent in the event.
+        event (str | None): The event name .
+        id (int | None): The event ID.
+        retry (int | None): The retry time in milliseconds.
+    """
+
+    data: str
+    event: str | None = None
+    id: int | None = None
+    retry: int | None = None
+
+    def encode(self) -> bytes:
+        """
+        Encodes the Server-Sent Event into bytes.
+
+        Returns:
+            bytes: The encoded Server-Sent Event.
+        """
+        message = f"data: {self.data}"
+        if self.event is not None:
+            message = f"{message}\nevent: {self.event}"
+        if self.id is not None:
+            message = f"{message}\nid: {self.id}"
+        if self.retry is not None:
+            message = f"{message}\nretry: {self.retry}"
+        message = f"{message}\n\n"
+        return message.encode("utf-8")
+
+
 @run_blueprint.route("/status", methods=["GET"])
 async def checkStatus():
     """
-    Returns the current status of the runs_tracker.
+    Check the status of the runs tracker and send updates using server sent events.
 
+    Adapted from: https://quart.palletsprojects.com/en/latest/how_to_guides/server_sent_events.html
     Returns:
-        The current value of the runs_tracker.
+        A response object for server sent events.
     """
     global runs_tracker
-    return runs_tracker
+    if "text/event-stream" not in request.accept_mimetypes:
+        return "Invalid request", 400
+
+    async def send_events():
+        while True:
+            data = runs_tracker
+            event = ServerSentEvent(data)
+            yield event.encode()
+
+    response = await make_response(
+        send_events(),
+        {
+            "Content-Type": "text/event-stream",
+            "Cache-Control": "no-cache",
+            "Transfer-Encoding": "chunked",
+        },
+    )
+    response.timeout = None
+    return response
 
 
 async def getNextRunID():
