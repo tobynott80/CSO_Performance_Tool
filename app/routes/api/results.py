@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Tuple
 from quart import Blueprint, request
 from app.helper.database import initDB
 import datetime
@@ -106,7 +106,7 @@ async def getTimesSeriesRange():
 
 async def get_datetime_range(
     run_test_ID: int,
-) -> tuple[Optional[datetime.datetime], Optional[datetime.datetime]]:
+) -> Tuple[Optional[datetime.datetime], Optional[datetime.datetime]]:
     """
     Helper function to retrieve the earliest and latest datetime values for a given run test ID.
 

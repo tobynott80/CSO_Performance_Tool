@@ -5,6 +5,8 @@
 
 This tool provides a front end to easily run and track GN066 tests. We are using a locally hosted [Flask](https://flask.palletsprojects.com/en/3.0.x/) server and SQLite.
 
+This tool currently only supports Windows 10/11.
+
 ## Install
 
 1. Clone/Download this repo
@@ -13,6 +15,8 @@ This tool provides a front end to easily run and track GN066 tests. We are using
 3. Run the following to start the server
    `./run.bat`
 4. Navigate to `http://127.0.0.1:8080` in a browser
+
+> Please note: There is a known issue with some networks where the Prisma binary certificate is invalidated - breaking the project setup. If you run into this problem, please run `$ENV:NODE_TLS_REJECT_UNAUTHORIZED=0` before `./setup.bat` in step 2.
 
 ## Alternative Dowloads
 
