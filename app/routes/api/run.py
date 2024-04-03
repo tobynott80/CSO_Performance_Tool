@@ -1,7 +1,9 @@
 from dataclasses import dataclass
 import io
+import json
 from quart import (
     Blueprint,
+    jsonify,
     make_response,
     render_template,
     request,
@@ -327,16 +329,16 @@ class ServerSentEvent:
     """
 
     data: str
+    retry: int | None = 100
     event: str | None = None
     id: int | None = None
-    retry: int | None = None
 
     def encode(self) -> bytes:
         """
-        Encodes the Server-Sent Event into bytes.
+        Encodes the SSE into bytestream.
 
         Returns:
-            bytes: The encoded Server-Sent Event.
+            The encoded sse
         """
         message = f"data: {self.data}"
         if self.event is not None:
@@ -365,8 +367,9 @@ async def checkStatus():
     async def send_events():
         while True:
             data = runs_tracker
-            event = ServerSentEvent(data)
+            event = ServerSentEvent(json.dumps(data))
             yield event.encode()
+            await asyncio.sleep(0.1)
 
     response = await make_response(
         send_events(),
