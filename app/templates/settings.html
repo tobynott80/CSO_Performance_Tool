@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 {% include 'head.html' %}
 
 <body class="bg-gray-50 dark:bg-slate-900">
@@ -11,8 +10,50 @@
   {% include 'sidebar.html' %}
 
   <div class="max-w-[90rem] px-4 py-4 sm:px-6 lg:px-8 lg:ps-64 mx-auto">
-    <h1 class="m-4 text-xl font-semibold text-gray-800 dark:text-gray-200">Settings </h1>
+    <h1 class="m-4 text-xl font-semibold text-gray-800 dark:text-gray-200">
+      Settings
+    </h1>
+    {# Colorblind Settings #}
+    <div
+      class="flex flex-col items-start justify-start w-full p-4 my-4 ml-4 bg-white border border-gray-200 rounded-lg dark:bg-slate-800 dark:border-slate-700">
+      <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-200">
+        Colorblind Settings <span
+          class="mx-2 py-1 px-1.5 inline-flex items-center gap-x-1 text-xs font-medium border rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-500/10 dark:text-yellow-500">Beta
+          Feature</span>
+      </h2>
+      <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+        Change the color scheme to make the website more accessible for
+        colorblind users.
+      </p>
+      <div class="flex flex-col items-start justify-start w-full mt-4">
+        <label for="colorblind" class="text-sm font-semibold text-gray-800 dark:text-gray-200">Colorblind Mode</label>
+        <select id="colorblind" name="colorblind"
+          class="w-full mt-2 p-1 border rounded-lg form-select dark:bg-slate-700 dark:border-slate-700 text-gray-800 dark:text-gray-200">
+          <option value="normal">Normal</option>
+          <option value="protanopia">Protanopia</option>
+          <option value="deuteranopia">Deuteranopia</option>
+          <option value="tritanopia">Tritanopia</option>
+        </select>
+      </div>
+    </div>
   </div>
+  <script>
+    const selected_mode = "{{ colorblind_mode }}";
+    let colorblind_selector = document.getElementById("colorblind");
+    colorblind_selector.value = selected_mode;
+    colorblind_selector.addEventListener("change", (e) => {
+      // Post selected colorblind mode
+      fetch("/settings/colorblind_mode", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          mode: e.target.value,
+        }),
+      });
+    });
+  </script>
 </body>
 
 </html>
