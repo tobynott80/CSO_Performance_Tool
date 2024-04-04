@@ -1,11 +1,8 @@
 from dataclasses import dataclass
-import io
 import json
 from quart import (
     Blueprint,
-    jsonify,
     make_response,
-    render_template,
     request,
     redirect,
     session,
@@ -550,7 +547,7 @@ async def createTest3(formula_a_value, consent_flow_value, baseline_stats_file, 
         else f"Run-{run['id']} - Test 3 Summary.xlsx"
     )
     df_pff.to_excel(config.test_three_outputs / filename, index=False)
-    runs_tracker[str(run["id"])]["progress"]["test-3"] = "Completed! Saving to DB"
+    runs_tracker[str(run["id"])]["progress"]["test-3"] = "Completed!"
 
     for test in run["runids"]:
         if test == "Test 3":
