@@ -46,6 +46,7 @@
                   Back
                 </a>
               </div>
+              {% if data["Test 1"].status == "PROGRESS" or data["Test 2"].status == "PROGRESS" %}
               <div
                 id="progressDiv"
                 class="bg-grey-200 border border-gray-200 rounded-xl shadow-sm overflow-hidden px-4 py-4 my-4 dark:bg-gray-800 dark:border-gray-700 space-y-2"
@@ -56,14 +57,15 @@
                   Progress
                 </h2>
               </div>
+              {% endif %}
               {% if "Test 1" in data %} {% with runTest=data["Test 1"],
               show_so=True if "Test 1" in data and "Test 2" in data else False
               %} {% include 'runs/results/components/test1_bubble.html' %} {%
               endwith %} {% endif %} {% if "Test 2" in data %} {% with
-              runTest=data["Test 2"], show_so=True if "Test 1" in data and "Test
-              2" in data else False %} {% include
-              'runs/results/components/test2_bubble.html' %} {% endwith %} {%
-              endif %} {% if "Test 3" in data %} {% with runTest=data["Test 3"]
+              runTest=data["Test 2"], show_so=True if "Test 1" in data and 
+              "Test 2" in data else False %} 
+              {% include 'runs/results/components/test2_bubble.html' %} {% endwith %} 
+              {% endif %} {% if "Test 3" in data %} {% with runTest=data["Test 3"]
               %} {% include 'runs/results/components/test3_bubble.html' %} {%
               endwith %} {% endif %}
             </div>
