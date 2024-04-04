@@ -77,6 +77,11 @@
     <script>
       const evtSource = new EventSource("/api/run/status");
       const runTestId = {{ run.id }};
+      const test1Progress = {{data["Test 1"].status}};
+      const test2Progress = {{data["Test 2"].status}};
+      if (test1Progress === "COMPLETED" || test2Progress === "COMPLETED") {
+        evtSource.close();
+      }
       evtSource.onmessage = function (event) {
         console.log(event.data);
         getProgressData(JSON.parse(event.data), runTestId)
