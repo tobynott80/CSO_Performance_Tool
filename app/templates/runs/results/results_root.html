@@ -46,7 +46,7 @@
                   Back
                 </a>
               </div>
-              {% if data["Test 1"].status == "PROGRESS" or data["Test 2"].status == "PROGRESS" %}
+              {% if ("Test 1" in data and data["Test 1"].status == "PROGRESS") or ("Test 2" in data and data["Test 2"].status == "PROGRESS") or ("Test 3" in data and data["Test 3"].status == "PROGRESS") %}
               <div
                 id="progressDiv"
                 class="bg-grey-200 border border-gray-200 rounded-xl shadow-sm overflow-hidden px-4 py-4 my-4 dark:bg-gray-800 dark:border-gray-700 space-y-2"
@@ -77,9 +77,10 @@
     <script>
       const evtSource = new EventSource("/api/run/status");
       const runTestId = {{ run.id }};
-      const test1Progress = {{data["Test 1"].status}};
-      const test2Progress = {{data["Test 2"].status}};
-      if (test1Progress === "COMPLETED" || test2Progress === "COMPLETED") {
+      const test1Progress = "{{data["Test 1"].status if "Test 1" in data else ""}}";
+      const test2Progress = "{{data["Test 2"].status if "Test 2" in data else ""}}";
+      const test3Progress = "{{data["Test 3"].status if "Test 3" in data else ""}}";
+      if (test1Progress === "COMPLETED" || test2Progress === "COMPLETED" || test3Progress === "COMPLETED") {
         evtSource.close();
       }
       evtSource.onmessage = function (event) {
