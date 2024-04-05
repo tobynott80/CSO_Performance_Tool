@@ -51,6 +51,20 @@ async def initializeDB():
     db = await initDB()
 
 
+@run_blueprint.after_app_serving
+async def closeDB():
+    """
+    Closes the database connection.
+
+    This function is called after serving the application and gracefully disconnects the prisma instance.
+
+    Returns:
+        None
+    """
+    global db
+    db = await db.disconnect()
+
+
 @run_blueprint.route("/create/step1", methods=["POST"])
 async def createRunStep1():
     """
@@ -488,18 +502,18 @@ async def createTests1andor2(rainfall_file, spills_baseline, run):
     runs_tracker[str(run["id"])]["progress"]["test-1&2"] = "Saving spills to DB"
     await saveSpillToDB(db, run, all_spill_classification)
 
+    runs_tracker[str(run["id"])]["progress"]["test-1&2"] = "Saving timeseries to DB..."
+
+    # Saves 300k worth of rows
+    await saveTimeSeriesToDB(db, run, df)
+
+    runs_tracker[str(run["id"])]["progress"]["test-1&2"] = "Completed"
+
     for test in run["runids"]:
         if test == "Test 1" or test == "Test 2":
             await db.runtests.update(
                 where={"id": run["runids"][test]}, data={"status": "COMPLETED"}
             )
-
-    runs_tracker[str(run["id"])]["progress"][
-        "test-1&2"
-    ] = "Saving timeseries to DB. This may take a while."
-    # Saves 300k worth of rows - can be done in background?
-    await saveTimeSeriesToDB(db, run, df)
-
     # csvWriter.writeCSV(df, summary, all_spill_classification)
 
 
@@ -569,24 +583,35 @@ async def saveSummaryToDB(db, run, summary):
         run: The run database information.
         summary: The summary data to be saved.
     """
-    for index, row in summary.iterrows():
-        await db.summary.create(
-            data={
-                "year": str(row["Year"]),
-                "dryPerc": row["Percentage of dry days (%)"],
-                "heavyPerc": row["Percentage of year spills are allowed to start (%)"],
-                "spillPerc": row[f"{run['name']} - Percentage of year spilling (%)"],
-                "unsatisfactorySpills": row[f"{run['name']} - Unsatisfactory Spills"],
-                "substandardSpills": row[f"{run['name']} - Substandard Spills"],
-                "satisfactorySpills": row[f"{run['name']} - Satisfactory Spills"],
-                "totalIntensity": row["Total Rainfall (mm)"] if math.isnan(row["Total Rainfall (mm)"]) == False else 0.0,
-                "runTestID": (
-                    run["runids"]["Test 1"]
-                    if "Test 1" in run["runids"]
-                    else run["runids"]["Test 2"]
-                ),
-            }
-        )
+    runtestid = (
+        run["runids"]["Test 1"]
+        if "Test 1" in run["runids"]
+        else run["runids"]["Test 2"]
+    )
+    async with db.batch_() as batcher:
+        print("In Batch...")
+        for index, row in summary.iterrows():
+            batcher.summary.create(
+                data={
+                    "year": str(row["Year"]),
+                    "dryPerc": row["Percentage of dry days (%)"],
+                    "heavyPerc": row[
+                        "Percentage of year spills are allowed to start (%)"
+                    ],
+                    "spillPerc": row[
+                        f"{run['name']} - Percentage of year spilling (%)"
+                    ],
+                    "unsatisfactorySpills": row[
+                        f"{run['name']} - Unsatisfactory Spills"
+                    ],
+                    "substandardSpills": row[f"{run['name']} - Substandard Spills"],
+                    "satisfactorySpills": row[f"{run['name']} - Satisfactory Spills"],
+                    "totalIntensity": row["Total Rainfall (mm)"] if math.isnan(row["Total Rainfall (mm)"]) == False else 0.0,
+                    "runTestID": runtestid,
+                }
+            )
+        print("Committing batch...")
+        await batcher.commit()
 
 
 async def saveTimeSeriesToDB(db, run, df):
@@ -598,24 +623,42 @@ async def saveTimeSeriesToDB(db, run, df):
         run (dict): The run database information.
         df (DataFrame): The time series DataFrame to be saved.
     """
-    for index, row in df.iterrows():
-        await db.timeseries.create(
-            data={
-                "dateTime": index,
-                "intensity": row["Intensity"],
-                "depth": row["Depth_x"],
-                "rollingDepth": row["Rolling 1hr depth"],
-                "classification": row["Classification"],
-                "spillAllowed": row["Spill_allowed?"],
-                "dayType": row["Day Type"],
-                "result": row[run["name"]],
-                "runTestID": (
-                    run["runids"]["Test 1"]
-                    if "Test 1" in run["runids"]
-                    else run["runids"]["Test 2"]
-                ),
-            }
-        )
+    global runs_tracker
+
+    runtestid = (
+        run["runids"]["Test 1"]
+        if "Test 1" in run["runids"]
+        else run["runids"]["Test 2"]
+    )
+    batch_size = 10000
+    total_batches = (len(df) // batch_size) + 1
+
+    for batch_index in range(total_batches):
+        start_index = batch_index * batch_size
+        end_index = min((batch_index + 1) * batch_size, len(df))
+        current_batch = df.iloc[start_index:end_index]
+        runs_tracker[str(run["id"])]["progress"][
+            "test-1&2"
+        ] = f"Saving timeseries to DB... ({round((start_index/len(df))*100.0, 1)}%)"
+
+        async with db.batch_() as batcher:
+            print("In Batch...")
+            for index, row in current_batch.iterrows():
+                batcher.timeseries.create(
+                    data={
+                        "dateTime": index,
+                        "intensity": row["Intensity"],
+                        "depth": row["Depth_x"],
+                        "rollingDepth": row["Rolling 1hr depth"],
+                        "classification": row["Classification"],
+                        "spillAllowed": row["Spill_allowed?"],
+                        "dayType": row["Day Type"],
+                        "result": row[run["name"]],
+                        "runTestID": runtestid,
+                    }
+                )
+            print("Committing batch...")
+            await batcher.commit()
 
 
 async def saveSpillToDB(db, run, all_spill_classification):
@@ -627,31 +670,46 @@ async def saveSpillToDB(db, run, all_spill_classification):
         run (dict): The run database information.
         all_spill_classification (DataFrame): The DataFrame containing spill event data.
     """
-    print(all_spill_classification)
-    for index, row in all_spill_classification.iterrows():
-        await db.spillevent.create(
-            data={
-                "start": row["Start of Spill (absolute)"],
-                "end": row["End of Spill (absolute)"],
-                "volume": row["Spill Volume (m3)"],
-                "runName": run["name"],
-                "maxIntensity": row[
-                    "Max intensity in 24hrs preceding spill start (mm/hr)"
-                ],
-                "maxDepthInHour": row[
-                    "Max depth in an hour in 24hrs preceding spill start (mm/hr)"
-                ],
-                "totalDepth": row["Total depth in 24hrs preceding spill start (mm)"],
-                "test1": row["Test 1 Status"],
-                "test2": row["Test 2 Status"],
-                "classification": row["Classification"],
-                "runTestID": (
-                    run["runids"]["Test 1"]
-                    if "Test 1" in run["runids"]
-                    else run["runids"]["Test 2"]
-                ),
-            }
-        )
+    runtestid = (
+        run["runids"]["Test 1"]
+        if "Test 1" in run["runids"]
+        else run["runids"]["Test 2"]
+    )
+    batch_size = 100
+    total_batches = (len(all_spill_classification) // batch_size) + 1
+
+    for batch_index in range(total_batches):
+        start_index = batch_index * batch_size
+        end_index = min((batch_index + 1) * batch_size, len(all_spill_classification))
+        current_batch = all_spill_classification.iloc[start_index:end_index]
+        print(f"Currently batching {start_index} to {end_index} values")
+
+        async with db.batch_() as batcher:
+            print("In Batch...")
+            for index, row in current_batch.iterrows():
+                batcher.spillevent.create(
+                    data={
+                        "start": row["Start of Spill (absolute)"],
+                        "end": row["End of Spill (absolute)"],
+                        "volume": row["Spill Volume (m3)"],
+                        "runName": run["name"],
+                        "maxIntensity": row[
+                            "Max intensity in 24hrs preceding spill start (mm/hr)"
+                        ],
+                        "maxDepthInHour": row[
+                            "Max depth in an hour in 24hrs preceding spill start (mm/hr)"
+                        ],
+                        "totalDepth": row[
+                            "Total depth in 24hrs preceding spill start (mm)"
+                        ],
+                        "test1": row["Test 1 Status"],
+                        "test2": row["Test 2 Status"],
+                        "classification": row["Classification"],
+                        "runTestID": runtestid,
+                    }
+                )
+            print("Committing batch...")
+            await batcher.commit()
 
 
 async def saveTest3ToDB(db, run, df_pff, formula_a, consent_fpf):

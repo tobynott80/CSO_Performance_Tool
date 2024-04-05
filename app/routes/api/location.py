@@ -20,6 +20,20 @@ async def initializeDB():
     db = await initDB()
 
 
+@location_blueprint.after_app_serving
+async def closeDB():
+    """
+    Closes the database connection.
+
+    This function is called after serving the application and gracefully disconnects the prisma instance.
+
+    Returns:
+        None
+    """
+    global db
+    db = await db.disconnect()
+
+
 @location_blueprint.route("/", methods=["POST"])
 async def location():
     """

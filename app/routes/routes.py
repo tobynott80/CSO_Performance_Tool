@@ -30,6 +30,20 @@ async def initializeDB():
     db = await initDB()
 
 
+@app.after_serving
+async def closeDB():
+    """
+    Closes the database connection.
+
+    This function is called after serving the application and gracefully disconnects the prisma instance.
+
+    Returns:
+        None
+    """
+    global db
+    db = await db.disconnect()
+
+
 @app.before_request
 def init_session():
     """
