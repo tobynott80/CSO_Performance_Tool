@@ -5,6 +5,8 @@
   <body class="bg-gray-50 dark:bg-slate-900">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src=https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.3.0/math.min.js></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
     <!-- ========== HEADER ========== -->
     {% include 'header.html' %} {% include 'sidebar.html' %}
 
@@ -124,32 +126,41 @@
           class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden dark:bg-slate-900 dark:border-gray-700"
         >
           <!-- Header -->
-          <div
-            class="px-6 py-4 flex justify-between items-center border-b border-gray-200 dark:border-gray-700"
-          >
-            <div>
-              <h2
-                class="text-xl font-semibold text-gray-800 dark:text-gray-200"
-              >
-                Substandard Spills Chart
-              </h2>
-            </div>
-            <div>
-              <button
-                id="toggleMode"
-                class="py-2 px-3 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
-              >
-                <span id="modeText">Light Mode</span>
-              </button>
-            </div>
-          </div>
-          <!-- End Header -->
+<div
+class="px-6 py-4 flex justify-between items-center border-b border-gray-200 dark:border-gray-700"
+>
+<div>
+  <h2
+    class="text-xl font-semibold text-gray-800 dark:text-gray-200"
+  >
+  Comparison of total rainfall and the amount of substandard spills in a year
+</h2>
+</div>
+<!-- Export Button for the Chart -->
+<button
+  id="downloadPdf"
+  class="py-2 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+>
+  <svg
+    class="flex-shrink-0 h-4 w-4"  
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 20 20"
+    fill="currentColor"
+  >
+    <path d="M3 3v10c0 1.1.9 2 2 2h4v-2H5V5h10v4h2V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2zm13 6v1h-2.59l.3-.3A.996.996 0 1013.3 8.3l-3 3a.996.996 0 000 1.41l3 3a.996.996 0 101.41-1.41l-.29-.3H16v1c0 .55.45 1 1 1s1-.45 1-1v-4c0-.55-.45-1-1-1s-1-.45-1-1z" />
+  </svg>
+  Export Chart to PDF
+</button>
+</div>
+<!-- End Header -->
+
           <!-- Chart -->
-          <div class="p-6 max-w-[87.4rem] mx-auto dark">
-            <canvas id="substandardSpillsChart" width="400" height="200"></canvas>
+          <div class="dark">
+            <div class="flex justify-center px-1">
+              <canvas id="substandardSpillsChart" width="300" height="600"></canvas>
+            </div>
           </div>
           <!-- End Chart -->
-        </div>
       </div>
     </div>
   </div>
@@ -158,111 +169,158 @@
 </html>
 
 <script>
+
   var ctx = document.getElementById('substandardSpillsChart').getContext('2d');
+  
+
   var dataPoints = [
     {% for result in substandard_spills_results %}
-      { year: "{{ result.year }}", value: {{ '%.*g' | format(3, result.substandardSpills) }} },
+      { year: "{{ result.year }}", value: {{ '%.*g' | format(3, result.substandardSpills) }}, totalIntensity: {{ result.totalIntensity }} }, 
     {% endfor %}
   ];
+
+  const colors = {
+    darkMode: {
+      background: '#1e293b',
+      grid: '#3e4c59',
+      ticks: '#ffffff',
+      legend: '#ffffff',
+      lineBorderColor: 'rgb(59, 130, 246)', 
+      lineBackgroundColor: 'rgb(59, 130, 246)', 
+      barBackgroundColor: 'rgba(37, 99, 235, 0.5)' 
+    },
+    lightMode: {
+      background: '#f9fafb',
+      grid: '#e5e7eb',
+      ticks: '#333333',
+      legend: '#333333',
+      lineBorderColor: 'rgb(59, 130, 246)', 
+      lineBackgroundColor: 'rgb(59, 130, 246)',
+      barBackgroundColor: 'rgba(59, 130, 246, 0.5)' 
+    }
+  };
+
+  
   
   dataPoints.pop(); // Remove the last entry which is 'Whole Time Series'
   
   var years = dataPoints.map(point => point.year);
   var values = dataPoints.map(point => point.value);
+  var totalIntensity = dataPoints.map(point => point.totalIntensity); // Map the total intensity values
+
   
   var minValue = Math.min(...values) - 5;
   var maxValue = Math.max(...values);
   
   maxValue = Math.ceil(maxValue);
   minValue = Math.floor(minValue);
-  
-  var isDarkMode = ctx.canvas.parentNode.classList.contains('dark');
-  var myChart;
 
-  function toggleMode() {
-    var body = document.body;
-    body.classList.toggle('dark');
-    isDarkMode = !isDarkMode;
-    updateChart();
-    updateModeText();
+  function updateChartColors() {
+    const modeColors = window.matchMedia('(prefers-color-scheme: dark)').matches ? colors.darkMode : colors.lightMode;
+
+    
+    // Apply the mode-based colors to the chart
+    myChart.data.datasets[0].borderColor = modeColors.lineBorderColor;
+    myChart.data.datasets[0].backgroundColor = modeColors.lineBackgroundColor;
+    myChart.data.datasets[1].backgroundColor = modeColors.barBackgroundColor;
+    
+    myChart.options.scales.y.ticks.color = modeColors.ticks;
+    myChart.options.scales.y1.ticks.color = modeColors.ticks;
+
+    myChart.options.scales.y.grid.color = modeColors.grid;
+    myChart.options.scales.x.ticks.color = modeColors.ticks;
+    myChart.options.scales.x.grid.color = modeColors.grid;
+    myChart.options.plugins.legend.labels.color = modeColors.legend;
+    myChart.options.scales.y.title.color = modeColors.legend;
+    myChart.options.scales.y1.title.color = modeColors.legend;
+
+    
+    
+    myChart.canvas.parentNode.style.backgroundColor = modeColors.background;
+    
+    myChart.update();
   }
 
   function updateChart() {
     if (myChart) {
-      myChart.options.scales.y.ticks.color = isDarkMode ? '#ffffff' : '#333333';
-      myChart.options.scales.y.grid.color = isDarkMode ? '#2d333a' : '#e5e7eb';
-      myChart.options.scales.x.ticks.color = isDarkMode ? '#ffffff' : '#333333';
-      myChart.options.scales.x.grid.color = isDarkMode ? '#2d333a' : '#e5e7eb';
-      myChart.options.plugins.legend.labels.color = isDarkMode ? '#ffffff' : '#333333';
-      myChart.canvas.parentNode.style.backgroundColor = isDarkMode ? '#1e293b' : '#f9fafb';
-      myChart.update();
+      updateChartColors();
     }
   }
 
-  function updateModeText() {
-    var modeText = document.getElementById('modeText');
-    modeText.textContent = isDarkMode ? 'Light Mode' : 'Dark Mode';
+  function toggleMode() {
+    var body = document.body;
+    body.classList.toggle('dark');
+    isDarkMode = body.classList.contains('dark');
+    updateChart(); 
   }
   
   function createChart() {
     myChart = new Chart(ctx, {
-      type: 'line',
+      type: 'bar', // Change to 'bar' type to accommodate multiple datasets
+      responsive: true,
       data: {
         labels: years,
-        datasets: [{
-          label: 'Substandard Spills Amount',
-          data: values,
-          fill: false,
-          borderColor: 'rgb(75, 192, 192)',
-          tension: 0.1
-        }]
+        datasets: [
+          {
+            label: 'Total Substandard Spills',
+            data: values,
+            type: 'line', // Keep this dataset as a line
+            yAxisID: 'y', // Use the first y-axis for this dataset
+          },
+          {
+            label: 'Rainfall (mm)',
+            data: totalIntensity,
+            type: 'bar', // This dataset is a bar chart
+            yAxisID: 'y1', // Use the same y-axis as the total rainfall
+          }
+        ]
       },
       options: {
+        maintainAspectRatio: false,
         scales: {
-          y: {
-            beginAtZero: false,
-            min: minValue,
-            max: maxValue + 2,
-            ticks: {
-              color: isDarkMode ? '#ffffff' : '#333333',
-              stepSize: 4,
-
-            },
-            grid: {
-              color: isDarkMode ? '#2d333a' : '#e5e7eb'
+          y: { // First y-axis
+            beginAtZero: true,
+            position: 'left',
+            title: {
+              display: true,
+              text: 'Substandard Spills'
             }
-
           },
-          x: {
-            ticks: {
-              color: isDarkMode ? '#ffffff' : '#333333',
-              autoSkip: false,
-              maxRotation: 0,
-              minRotation: 0
+          y1: { // Second y-axis
+            beginAtZero: true,
+            position: 'right',
+            title: {
+              display: true,
+              text: 'Rainfall (mm)'
             },
             grid: {
-              color: isDarkMode ? '#2d333a' : '#e5e7eb'
-            }
-          }
+              drawOnChartArea: false, 
+            },
+          },
         },
-        plugins: {
-          legend: {
-            labels: {
-              color: isDarkMode ? '#ffffff' : '#333333'
-            }
-          }
-        }
-      }
-    });
-    
-    ctx.canvas.parentNode.style.backgroundColor = isDarkMode ? '#1e293b' : '#f9fafb';
+    }
+  }  );
+  updateChartColors();
   }
 
-  var toggleButton = document.getElementById('toggleMode');
-  toggleButton.addEventListener('click', toggleMode);
-  
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+    isDarkMode = e.matches;
+    updateChartColors();
+  });
   
   createChart();
-  updateModeText();
+
+  window.jsPDF = window.jspdf.jsPDF;
+  var pdf = new jsPDF('landscape', 'mm', 'a4');
+
+ 
+    document.getElementById('downloadPdf').addEventListener('click', function() {
+      var canvas = document.getElementById('substandardSpillsChart');
+      var imgData = canvas.toDataURL('image/png');
+      pdf.addImage(imgData, 'PNG', 10, 10, 280, 150); 
+      pdf.save('chart-export.pdf');
+    });
+    
+
   </script>
   
