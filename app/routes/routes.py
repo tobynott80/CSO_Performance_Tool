@@ -31,9 +31,9 @@ async def initializeDB():
 
 
 @app.before_request
-def make_session_permanent():
+def init_session():
     """
-    Makes the session permanent
+    Makes the session permanent.
     """
     session.permanent = True
 
@@ -311,7 +311,6 @@ async def view_run(location_id, run_id):
                 res.summary = data["Test 1"].summary
         else:
             data[res.test.name] = res
-
     return await render_template(
         "runs/results/results_root.html",
         location=location,
@@ -336,6 +335,9 @@ async def view_visualisation(location_id, run_id):
     """
     location = await db.location.find_first(where={"id": location_id})
     run = await db.runs.find_first(where={"id": run_id})
+
+    if "colorblind_mode" not in session:
+        session["colorblind_mode"] = "normal"
 
     runTest = await db.runtests.find_first(
         where={

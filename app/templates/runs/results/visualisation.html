@@ -13,14 +13,36 @@
               class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden px-6 py-4 dark:bg-slate-900 dark:border-gray-700"
             >
               <div>
-                <h2
-                  class="text-xl font-semibold text-gray-800 dark:text-gray-200"
-                >
-                  Run Results
-                  <span class="text-gray-400 dark:text-gray-400"
-                    >- Run {{run.id}} ({{location.name}})</span
+                <div class="flex flex-row">
+                  <h2
+                    class="grow text-xl font-semibold text-gray-800 dark:text-gray-200"
                   >
-                </h2>
+                    Run Results
+                    <span class="text-gray-400 dark:text-gray-400"
+                      >- Run {{run.id}} ({{location.name}})</span
+                    >
+                  </h2>
+                  <a
+                    href="/{{ location.id }}/{{ run.id }}"
+                    class="py-2 px-3 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke-width="1.5"
+                      stroke="currentColor"
+                      class="w-4 h-4"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M15.75 19.5 8.25 12l7.5-7.5"
+                      />
+                    </svg>
+                    Back
+                  </a>
+                </div>
                 <p class="text-sm text-gray-600 dark:text-gray-400">
                   Visualisation of rainfall intensity, day classification and
                   spill permission.
@@ -280,6 +302,7 @@
                 y2: -2,
                 stroke: d => (d.spillAllowed === "YES" ? "{{colors.purple}}" : "white")
               }),
+              Plot.ruleY([4], {stroke: "red"}),
               Plot.crosshair(data, {
                 x: d => d.dateTime,
                 y: d => d.intensity
