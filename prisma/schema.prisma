@@ -61,6 +61,7 @@ model Summary {
   unsatisfactorySpills Int
   substandardSpills    Int
   satisfactorySpills   Int
+  totalIntensity       Float
   runTestID            Int
   runTest              RunTests @relation("RunTestToSummary", fields: [runTestID], references: [id], onDelete: Cascade)
 }
