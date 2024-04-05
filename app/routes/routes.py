@@ -579,7 +579,7 @@ async def download_unsatisfactory_spills(location_id, run_id):
     
     # Convert the data to a DataFrame
     if tests and tests.runsTests[0].summary:
-        data = [{"Year": summary.year, "Percentage": summary.unsatisfactorySpills} for summary in tests.runsTests[0].summary]
+        data = [{"Year": summary.year, "OC Fixed Baseline - Unsatisfactory Spills": summary.unsatisfactorySpills} for summary in tests.runsTests[0].summary]
         df = pd.DataFrame(data)
 
         # Define the filename and path
@@ -631,6 +631,34 @@ async def substandard_spills_results(location_id, run_id):
         run=run,
         substandard_spills_results=tests.runsTests[0].summary,
     )
+
+@app.route("/download/substandard_spills/<int:location_id>/<int:run_id>")
+async def download_substandard_spills(location_id, run_id):
+    # Fetch the Substandard Spills results from the database
+    location = await db.location.find_first(where={"id": location_id})
+    tests = await db.tests.find_first(
+        where={"name": "Test 1"},
+        include={
+            "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+        },
+    )
+    
+    # Convert the data to a DataFrame
+    if tests and tests.runsTests[0].summary:
+        data = [{"Year": summary.year, "OC Fixed Baseline - Substandard Spills": summary.substandardSpills} for summary in tests.runsTests[0].summary]
+        df = pd.DataFrame(data)
+
+        # Define the filename and path
+        filename = f"Substandard_Spills_Results_{location.name}_{run_id}.xlsx"
+        filepath = os.path.join(config.outfolder, filename)
+
+        # Export to Excel
+        df.to_excel(filepath, index=False, sheet_name="Substandard Spills Results")
+
+        # Send the file for download
+        return await send_file(filepath, attachment_filename=filename, as_attachment=True)
+    
+    return "No data available for this run", 404
 
 
 @app.get("/<int:location_id>/<int:run_id>/results_heavy_perc")
