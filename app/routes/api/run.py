@@ -565,6 +565,11 @@ async def saveSummaryToDB(db, run, summary):
         run: The run database information.
         summary: The summary data to be saved.
     """
+    runtestid = (
+        run["runids"]["Test 1"]
+        if "Test 1" in run["runids"]
+        else run["runids"]["Test 2"]
+    )
     for index, row in summary.iterrows():
         await db.summary.create(
             data={
@@ -575,11 +580,7 @@ async def saveSummaryToDB(db, run, summary):
                 "unsatisfactorySpills": row[f"{run['name']} - Unsatisfactory Spills"],
                 "substandardSpills": row[f"{run['name']} - Substandard Spills"],
                 "satisfactorySpills": row[f"{run['name']} - Satisfactory Spills"],
-                "runTestID": (
-                    run["runids"]["Test 1"]
-                    if "Test 1" in run["runids"]
-                    else run["runids"]["Test 2"]
-                ),
+                "runTestID": runtestid,
             }
         )
 
@@ -593,24 +594,38 @@ async def saveTimeSeriesToDB(db, run, df):
         run (dict): The run database information.
         df (DataFrame): The time series DataFrame to be saved.
     """
-    for index, row in df.iterrows():
-        await db.timeseries.create(
-            data={
-                "dateTime": index,
-                "intensity": row["Intensity"],
-                "depth": row["Depth_x"],
-                "rollingDepth": row["Rolling 1hr depth"],
-                "classification": row["Classification"],
-                "spillAllowed": row["Spill_allowed?"],
-                "dayType": row["Day Type"],
-                "result": row[run["name"]],
-                "runTestID": (
-                    run["runids"]["Test 1"]
-                    if "Test 1" in run["runids"]
-                    else run["runids"]["Test 2"]
-                ),
-            }
-        )
+    runtestid = (
+        run["runids"]["Test 1"]
+        if "Test 1" in run["runids"]
+        else run["runids"]["Test 2"]
+    )
+    batch_size = 10000
+    total_batches = (len(df) // batch_size) + 1
+
+    for batch_index in range(total_batches):
+        start_index = batch_index * batch_size
+        end_index = min((batch_index + 1) * batch_size, len(df))
+        current_batch = df.iloc[start_index:end_index]
+        print(f"Currently batching {start_index} to {end_index} values")
+
+        async with db.batch_() as batcher:
+            print("In Batch...")
+            for index, row in current_batch.iterrows():
+                batcher.timeseries.create(
+                    data={
+                        "dateTime": index,
+                        "intensity": row["Intensity"],
+                        "depth": row["Depth_x"],
+                        "rollingDepth": row["Rolling 1hr depth"],
+                        "classification": row["Classification"],
+                        "spillAllowed": row["Spill_allowed?"],
+                        "dayType": row["Day Type"],
+                        "result": row[run["name"]],
+                        "runTestID": runtestid,
+                    }
+                )
+            print("Committing batch...")
+            await batcher.commit()
 
 
 async def saveSpillToDB(db, run, all_spill_classification):
@@ -622,7 +637,12 @@ async def saveSpillToDB(db, run, all_spill_classification):
         run (dict): The run database information.
         all_spill_classification (DataFrame): The DataFrame containing spill event data.
     """
-    print(all_spill_classification)
+    runtestid = (
+        run["runids"]["Test 1"]
+        if "Test 1" in run["runids"]
+        else run["runids"]["Test 2"]
+    )
+
     for index, row in all_spill_classification.iterrows():
         await db.spillevent.create(
             data={
@@ -640,11 +660,7 @@ async def saveSpillToDB(db, run, all_spill_classification):
                 "test1": row["Test 1 Status"],
                 "test2": row["Test 2 Status"],
                 "classification": row["Classification"],
-                "runTestID": (
-                    run["runids"]["Test 1"]
-                    if "Test 1" in run["runids"]
-                    else run["runids"]["Test 2"]
-                ),
+                "runTestID": runtestid,
             }
         )
 
