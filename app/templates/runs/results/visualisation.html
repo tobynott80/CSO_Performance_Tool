@@ -280,6 +280,7 @@
                 y2: -2,
                 stroke: d => (d.spillAllowed === "YES" ? "{{colors.purple}}" : "white")
               }),
+              Plot.ruleY([4], {stroke: "red"}),
               Plot.crosshair(data, {
                 x: d => d.dateTime,
                 y: d => d.intensity
