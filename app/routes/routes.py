@@ -12,6 +12,7 @@ from app.helper.database import initDB
 from math import ceil
 import os
 import app.gn066_tests.config as config
+import pandas as pd
 
 db = None
 
@@ -498,6 +499,33 @@ async def dry_day_results(location_id, run_id):
         run=run,
         dry_day_results=tests.runsTests[0].summary,
     )
+
+@app.route("/download/dry_day/<int:location_id>/<int:run_id>")
+async def download_dry_day(location_id, run_id):
+    # Fetch the Dry Day results from the database
+    tests = await db.tests.find_first(
+        where={"name": "Test 1"},
+        include={
+            "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+        },
+    )
+    
+    # Convert the data to a DataFrame
+    if tests and tests.runsTests[0].summary:
+        data = [{"Year": summary.year, "Percentage": summary.dryPerc} for summary in tests.runsTests[0].summary]
+        df = pd.DataFrame(data)
+
+        # Define the filename and path
+        filename = f"Dry_Day_Results_{location_id}_{run_id}.xlsx"
+        filepath = os.path.join(config.outfolder, filename)
+
+        # Export to Excel
+        df.to_excel(filepath, index=False, sheet_name="Dry Day Results")
+
+        # Send the file for download
+        return await send_file(filepath, attachment_filename=filename, as_attachment=True)
+    
+    return "No data available for this run", 404
 
 
 @app.get("/<int:location_id>/<int:run_id>/results_unsatisfactory_spills")
