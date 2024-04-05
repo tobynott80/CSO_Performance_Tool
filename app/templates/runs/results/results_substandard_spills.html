@@ -185,18 +185,18 @@ class="px-6 py-4 flex justify-between items-center border-b border-gray-200 dark
       grid: '#3e4c59',
       ticks: '#ffffff',
       legend: '#ffffff',
-      lineBorderColor: 'rgb(59, 130, 246)', // A shade of dark blue
-      lineBackgroundColor: 'rgb(59, 130, 246)', // A lighter shade of the above color, semi-transparent
-      barBackgroundColor: 'rgba(37, 99, 235, 0.5)' // Another shade of dark blue
+      lineBorderColor: 'rgb(59, 130, 246)', 
+      lineBackgroundColor: 'rgb(59, 130, 246)', 
+      barBackgroundColor: 'rgba(37, 99, 235, 0.5)' 
     },
     lightMode: {
       background: '#f9fafb',
       grid: '#e5e7eb',
       ticks: '#333333',
       legend: '#333333',
-      lineBorderColor: 'rgb(59, 130, 246)', // The same dark blue as for dark mode for consistency
+      lineBorderColor: 'rgb(59, 130, 246)', 
       lineBackgroundColor: 'rgb(59, 130, 246)',
-      barBackgroundColor: 'rgba(59, 130, 246, 0.5)' // A light blue color
+      barBackgroundColor: 'rgba(59, 130, 246, 0.5)' 
     }
   };
 
@@ -251,7 +251,7 @@ class="px-6 py-4 flex justify-between items-center border-b border-gray-200 dark
     var body = document.body;
     body.classList.toggle('dark');
     isDarkMode = body.classList.contains('dark');
-    updateChart(); // Make sure to call updateChart to update the colors
+    updateChart(); 
   }
   
   function createChart() {
@@ -292,7 +292,7 @@ class="px-6 py-4 flex justify-between items-center border-b border-gray-200 dark
               text: 'Rainfall (mm)'
             },
             grid: {
-              drawOnChartArea: false, // Only draw the grid for the first y-axis
+              drawOnChartArea: false, 
             },
           },
         },
@@ -315,7 +315,7 @@ class="px-6 py-4 flex justify-between items-center border-b border-gray-200 dark
     document.getElementById('downloadPdf').addEventListener('click', function() {
       var canvas = document.getElementById('substandardSpillsChart');
       var imgData = canvas.toDataURL('image/png');
-      pdf.addImage(imgData, 'PNG', 10, 10, 280, 150); // Use the existing instance
+      pdf.addImage(imgData, 'PNG', 10, 10, 280, 150); 
       pdf.save('chart-export.pdf');
     });
     
