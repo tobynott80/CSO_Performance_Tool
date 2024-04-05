@@ -706,6 +706,15 @@ async def download_heavy_perc(location_id, run_id):
             "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
         },
     )
+
+    if not tests.runsTests:
+
+        tests = await db.tests.find_first(
+            where={"name": "Test 2"},
+            include={
+                "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+            },
+        )
     
     # Convert the data to a DataFrame
     if tests and tests.runsTests[0].summary:
@@ -770,6 +779,15 @@ async def download_spill_perc(location_id, run_id):
             "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
         },
     )
+
+    if not tests.runsTests:
+
+        tests = await db.tests.find_first(
+            where={"name": "Test 2"},
+            include={
+                "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+            },
+        )
     
     # Convert the data to a DataFrame
     if tests and tests.runsTests[0].summary:
@@ -834,6 +852,15 @@ async def download_storm_overflow(location_id, run_id):
             "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
         },
     )
+
+    if not tests.runsTests:
+
+        tests = await db.tests.find_first(
+            where={"name": "Test 2"},
+            include={
+                "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+            },
+        )
     
     # Convert the data to a DataFrame
     if tests and tests.runsTests[0].summary:
@@ -851,3 +878,33 @@ async def download_storm_overflow(location_id, run_id):
         return await send_file(filepath, attachment_filename=filename, as_attachment=True)
     
     return "No data available for this run", 404
+
+
+@app.route("/download/dry_day_discharges/<int:location_id>/<int:run_id>")
+async def download_dry_day_discharges(location_id, run_id):
+    # Fetch the Dry Day Discharges(test 1) results from the database
+    location = await db.location.find_first(where={"id": location_id})
+    tests = await db.tests.find_first(
+        where={"name": "Test 1"},
+        include={
+            "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+        },
+    )
+    
+    # Convert the data to a DataFrame
+    if tests and tests.runsTests[0].summary:
+        data = [{"Year": summary.year, "Dry Day Percentage": summary.dryPerc, "OC Fixed Baseline - Unsatisfactory Spills": summary.unsatisfactorySpills, "OC Fixed Baseline - Substandard Spills": summary.substandardSpills, "OC Fixed Baseline - Satisfactory Spills": summary.satisfactorySpills} for summary in tests.runsTests[0].summary]
+        df = pd.DataFrame(data)
+
+        # Define the filename and path
+        filename = f"Dry_Day_Discharges(test 1)_Results_{location.name}_{run_id}.xlsx"
+        filepath = os.path.join(config.outfolder, filename)
+
+        # Export to Excel
+        df.to_excel(filepath, index=False, sheet_name="Dry Day Discharges(test 1)")
+
+        # Send the file for download
+        return await send_file(filepath, attachment_filename=filename, as_attachment=True)
+    
+    return "No data available for this run", 404
+
