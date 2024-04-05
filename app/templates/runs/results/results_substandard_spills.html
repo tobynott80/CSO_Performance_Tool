@@ -155,8 +155,10 @@ class="px-6 py-4 flex justify-between items-center border-b border-gray-200 dark
 <!-- End Header -->
 
           <!-- Chart -->
-          <div class="p-6 max-w-[87.4rem] mx-auto dark">
-            <canvas id="substandardSpillsChart" width="400" height="200"></canvas>
+          <div class="dark">
+            <div class="flex justify-center px-1">
+              <canvas id="substandardSpillsChart" width="300" height="600"></canvas>
+            </div>
           </div>
           <!-- End Chart -->
       </div>
@@ -169,8 +171,6 @@ class="px-6 py-4 flex justify-between items-center border-b border-gray-200 dark
 <script>
 
   var ctx = document.getElementById('substandardSpillsChart').getContext('2d');
-  ctx.canvas.width = 300;
-  ctx.canvas.height = 170;
   
 
   var dataPoints = [
@@ -257,6 +257,7 @@ class="px-6 py-4 flex justify-between items-center border-b border-gray-200 dark
   function createChart() {
     myChart = new Chart(ctx, {
       type: 'bar', // Change to 'bar' type to accommodate multiple datasets
+      responsive: true,
       data: {
         labels: years,
         datasets: [
@@ -275,6 +276,7 @@ class="px-6 py-4 flex justify-between items-center border-b border-gray-200 dark
         ]
       },
       options: {
+        maintainAspectRatio: false,
         scales: {
           y: { // First y-axis
             beginAtZero: true,
