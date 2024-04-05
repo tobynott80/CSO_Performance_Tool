@@ -696,6 +696,34 @@ async def heavy_perc_results(location_id, run_id):
         heavy_perc_results=test1.runsTests[0].summary,
     )
 
+@app.route("/download/heavy_perc/<int:location_id>/<int:run_id>")
+async def download_heavy_perc(location_id, run_id):
+    # Fetch the Heavy Perc results from the database
+    location = await db.location.find_first(where={"id": location_id})
+    tests = await db.tests.find_first(
+        where={"name": "Test 1"},
+        include={
+            "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+        },
+    )
+    
+    # Convert the data to a DataFrame
+    if tests and tests.runsTests[0].summary:
+        data = [{"Year": summary.year, "Percentage of year spills are allowed to start (%)": summary.heavyPerc} for summary in tests.runsTests[0].summary]
+        df = pd.DataFrame(data)
+
+        # Define the filename and path
+        filename = f"Allowed_Spill_Start_Results_{location.name}_{run_id}.xlsx"
+        filepath = os.path.join(config.outfolder, filename)
+
+        # Export to Excel
+        df.to_excel(filepath, index=False, sheet_name="Allowed Spill Start Results")
+
+        # Send the file for download
+        return await send_file(filepath, attachment_filename=filename, as_attachment=True)
+    
+    return "No data available for this run", 404
+
 
 @app.get("/<int:location_id>/<int:run_id>/results_spill_perc")
 async def spill_perc_results(location_id, run_id):
