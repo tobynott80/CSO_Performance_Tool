@@ -77,10 +77,10 @@
     <script>
       const evtSource = new EventSource("/api/run/status");
       const runTestId = {{ run.id }};
-      const test1Progress = "{{data["Test 1"].status if "Test 1" in data else ""}}";
-      const test2Progress = "{{data["Test 2"].status if "Test 2" in data else ""}}";
-      const test3Progress = "{{data["Test 3"].status if "Test 3" in data else ""}}";
-      if (test1Progress === "COMPLETED" || test2Progress === "COMPLETED" || test3Progress === "COMPLETED") {
+      const test1Progress = "{{data["Test 1"].status if "Test 1" in data else "COMPLETED"}}";
+      const test2Progress = "{{data["Test 2"].status if "Test 2" in data else "COMPLETED"}}";
+      const test3Progress = "{{data["Test 3"].status if "Test 3" in data else "COMPLETED"}}";
+      if (test1Progress === "COMPLETED" && test2Progress === "COMPLETED" && test3Progress === "COMPLETED") {
         evtSource.close();
       }
       evtSource.onmessage = function (event) {
