@@ -503,6 +503,7 @@ async def dry_day_results(location_id, run_id):
 @app.route("/download/dry_day/<int:location_id>/<int:run_id>")
 async def download_dry_day(location_id, run_id):
     # Fetch the Dry Day results from the database
+    location = await db.location.find_first(where={"id": location_id})
     tests = await db.tests.find_first(
         where={"name": "Test 1"},
         include={
@@ -516,7 +517,7 @@ async def download_dry_day(location_id, run_id):
         df = pd.DataFrame(data)
 
         # Define the filename and path
-        filename = f"Dry_Day_Results_{location_id}_{run_id}.xlsx"
+        filename = f"Dry_Day_Results_{location.name}_{run_id}.xlsx"
         filepath = os.path.join(config.outfolder, filename)
 
         # Export to Excel
