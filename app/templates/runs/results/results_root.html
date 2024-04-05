@@ -46,14 +46,26 @@
                   Back
                 </a>
               </div>
+              {% if ("Test 1" in data and data["Test 1"].status == "PROGRESS") or ("Test 2" in data and data["Test 2"].status == "PROGRESS") or ("Test 3" in data and data["Test 3"].status == "PROGRESS") %}
+              <div
+                id="progressDiv"
+                class="bg-grey-200 border border-gray-200 rounded-xl shadow-sm overflow-hidden px-4 py-4 my-4 dark:bg-gray-800 dark:border-gray-700 space-y-2"
+              >
+                <h2
+                  class="text-l font-semibold text-gray-800 dark:text-gray-200"
+                >
+                  Progress
+                </h2>
+              </div>
+              {% endif %}
               {% if "Test 1" in data %} {% with runTest=data["Test 1"],
               show_so=True if "Test 1" in data and "Test 2" in data else False
               %} {% include 'runs/results/components/test1_bubble.html' %} {%
               endwith %} {% endif %} {% if "Test 2" in data %} {% with
               runTest=data["Test 2"], show_so=True if "Test 1" in data and 
-              "Test 2" in data else False %} {% include
-              'runs/results/components/test2_bubble.html' %} {% endwith %} {%
-              endif %} {% if "Test 3" in data %} {% with runTest=data["Test 3"]
+              "Test 2" in data else False %} 
+              {% include 'runs/results/components/test2_bubble.html' %} {% endwith %} 
+              {% endif %} {% if "Test 3" in data %} {% with runTest=data["Test 3"]
               %} {% include 'runs/results/components/test3_bubble.html' %} {%
               endwith %} {% endif %}
             </div>
@@ -61,5 +73,58 @@
         </div>
       </div>
     </div>
+
+    <script>
+      const evtSource = new EventSource("/api/run/status");
+      const runTestId = {{ run.id }};
+      const test1Progress = "{{data["Test 1"].status if "Test 1" in data else ""}}";
+      const test2Progress = "{{data["Test 2"].status if "Test 2" in data else ""}}";
+      const test3Progress = "{{data["Test 3"].status if "Test 3" in data else ""}}";
+      if (test1Progress === "COMPLETED" || test2Progress === "COMPLETED" || test3Progress === "COMPLETED") {
+        evtSource.close();
+      }
+      evtSource.onmessage = function (event) {
+        console.log(event.data);
+        getProgressData(JSON.parse(event.data), runTestId)
+      };
+      function getProgressData(data, runTestId) {
+        if (data.hasOwnProperty(runTestId.toString())) {
+          const runTestProgress = data[runTestId]["progress"];
+          console.log(runTestProgress);
+          const progressDiv = document.getElementById("progressDiv");
+          progressDiv.innerHTML = '';
+          if ('test-1&2' in runTestProgress){
+            const test1_2Progress = runTestProgress['test-1&2'];
+            const test1_2ProgressDiv = document.createElement('div');
+            test1_2ProgressDiv.classList.add('flex', 'justify-between', 'items-center');
+            const test1_2ProgressTitle = document.createElement('h3');
+            test1_2ProgressTitle.classList.add('text-sm', 'font-semibold', 'text-gray-800', 'dark:text-gray-200');
+            test1_2ProgressTitle.textContent = 'Test 1 & 2';
+            const test1_2ProgressValue = document.createElement('span');
+            test1_2ProgressValue.classList.add('text-sm', 'font-semibold', 'text-gray-800', 'dark:text-gray-200');
+            test1_2ProgressValue.textContent = `${test1_2Progress}`;
+            test1_2ProgressDiv.appendChild(test1_2ProgressTitle);
+            test1_2ProgressDiv.appendChild(test1_2ProgressValue);
+            progressDiv.appendChild(test1_2ProgressDiv);
+          }
+          if ('test-3' in runTestProgress){
+            const test3Progress = runTestProgress['test-3'];
+            const test3ProgressDiv = document.createElement('div');
+            test3ProgressDiv.classList.add('flex', 'justify-between', 'items-center');
+            const test3ProgressTitle = document.createElement('h3');
+            test3ProgressTitle.classList.add('text-sm', 'font-semibold', 'text-gray-800', 'dark:text-gray-200');
+            test3ProgressTitle.textContent = 'Test 3';
+            const test3ProgressValue = document.createElement('span');
+            test3ProgressValue.classList.add('text-sm', 'font-semibold', 'text-gray-800', 'dark:text-gray-200');
+            test3ProgressValue.textContent = `${test3Progress}`;
+            test3ProgressDiv.appendChild(test3ProgressTitle);
+            test3ProgressDiv.appendChild(test3ProgressValue);
+            progressDiv.appendChild(test3ProgressDiv);
+          }
+        } else {
+          throw new Error(`RunTestID ${runTestId} not found in the data.`);
+        }
+      }
+    </script>
   </body>
 </html>

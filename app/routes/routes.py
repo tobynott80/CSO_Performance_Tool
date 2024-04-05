@@ -313,7 +313,6 @@ async def view_run(location_id, run_id):
                 res.summary = data["Test 1"].summary
         else:
             data[res.test.name] = res
-
     return await render_template(
         "runs/results/results_root.html",
         location=location,
