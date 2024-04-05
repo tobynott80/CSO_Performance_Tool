@@ -24,6 +24,20 @@ async def initializeDB():
     db = await initDB()
 
 
+@results_blueprint.after_app_serving
+async def closeDB():
+    """
+    Closes the database connection.
+
+    This function is called after serving the application and gracefully disconnects the prisma instance.
+
+    Returns:
+        None
+    """
+    global db
+    db = await db.disconnect()
+
+
 @results_blueprint.route("/timeseries", methods=["GET"])
 async def getTimeSeries():
     """
