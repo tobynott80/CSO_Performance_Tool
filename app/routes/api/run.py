@@ -2,6 +2,7 @@ import io
 from quart import Blueprint, render_template, request, redirect, session, url_for, flash
 from app.helper.database import initDB
 import asyncio
+import math 
 
 import pandas as pd
 from app.gn066_tests.csvHandler import csvReader, csvWriter
@@ -385,6 +386,8 @@ async def createTests1andor2(rainfall_file, spills_baseline, run):
         spills_baseline, df_rain_dtindex, heavy_rain
     )
 
+    rainfall_summary = csvReader.aggregate_rainfall_directly(df_rain_dtindex)
+
     runs_tracker[str(run["id"])]["progress"]["test-1"] += 20
     runs_tracker[str(run["id"])]["progress"]["test-2"] += 20
 
@@ -403,6 +406,7 @@ async def createTests1andor2(rainfall_file, spills_baseline, run):
     runs_tracker[str(run["id"])]["progress"]["test-2"] += 20
 
     summary = pd.merge(perc_data, spill_count_data, on="Year")
+    summary = pd.merge(summary, rainfall_summary, on="Year", how="left")
 
     runs_tracker[str(run["id"])]["progress"]["test-1"] += 10
     runs_tracker[str(run["id"])]["progress"]["test-2"] += 10
@@ -475,7 +479,7 @@ async def createTest3(formula_a_value, consent_flow_value, baseline_stats_file, 
 
 
 async def saveSummaryToDB(db, run, summary):
-    """
+    """ 
     Helper function to save given summary data to the database.
 
     Args:
@@ -493,6 +497,7 @@ async def saveSummaryToDB(db, run, summary):
                 "unsatisfactorySpills": row[f"{run['name']} - Unsatisfactory Spills"],
                 "substandardSpills": row[f"{run['name']} - Substandard Spills"],
                 "satisfactorySpills": row[f"{run['name']} - Satisfactory Spills"],
+                "totalIntensity": row["Total Rainfall (mm)"] if math.isnan(row["Total Rainfall (mm)"]) == False else 0.0,
                 "runTestID": run["runids"]["Test 1"] if "Test 1" in run["runids"] else run["runids"]["Test 2"],
             }
         )
