@@ -760,6 +760,34 @@ async def spill_perc_results(location_id, run_id):
         spill_perc_results=test1.runsTests[0].summary,
     )
 
+@app.route("/download/spill_perc/<int:location_id>/<int:run_id>")
+async def download_spill_perc(location_id, run_id):
+    # Fetch the Spill Perc results from the database
+    location = await db.location.find_first(where={"id": location_id})
+    tests = await db.tests.find_first(
+        where={"name": "Test 1"},
+        include={
+            "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+        },
+    )
+    
+    # Convert the data to a DataFrame
+    if tests and tests.runsTests[0].summary:
+        data = [{"Year": summary.year, "OC Fixed Baseline - Percentage of year spilling (%)": summary.spillPerc} for summary in tests.runsTests[0].summary]
+        df = pd.DataFrame(data)
+
+        # Define the filename and path
+        filename = f"Year_Spilling_Results_{location.name}_{run_id}.xlsx"
+        filepath = os.path.join(config.outfolder, filename)
+
+        # Export to Excel
+        df.to_excel(filepath, index=False, sheet_name="Year Spilling Results")
+
+        # Send the file for download
+        return await send_file(filepath, attachment_filename=filename, as_attachment=True)
+    
+    return "No data available for this run", 404
+
 
 @app.get("/<int:location_id>/<int:run_id>/results_storm_overflow")
 async def storm_overflow_results(location_id, run_id):
