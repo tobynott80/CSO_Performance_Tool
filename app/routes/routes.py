@@ -30,14 +30,12 @@ async def initializeDB():
     db = await initDB()
 
 
-@app.before_serving
+@app.before_request
 def init_session():
     """
-    Makes the session permanent and initialises colorblind mode to normal.
+    Makes the session permanent.
     """
     session.permanent = True
-    if "colorblind_mode" not in session:
-        session["colorblind_mode"] = "normal"
 
 
 async def getPaginatedLocations(page, limit, include_runs=False):
@@ -337,6 +335,9 @@ async def view_visualisation(location_id, run_id):
     """
     location = await db.location.find_first(where={"id": location_id})
     run = await db.runs.find_first(where={"id": run_id})
+
+    if "colorblind_mode" not in session:
+        session["colorblind_mode"] = "normal"
 
     runTest = await db.runtests.find_first(
         where={
