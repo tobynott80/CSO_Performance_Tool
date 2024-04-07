@@ -910,8 +910,13 @@ async def download_dry_day_discharges(location_id, run_id):
 
 @app.route("/download/heavy_rainfall_spills/<int:location_id>/<int:run_id>")
 async def download_heavy_rainfall_spills(location_id, run_id):
-    # Fetch the Heavy Rainfall Spills(test 2) results from the database
+    # Fetch the location
     location = await db.location.find_first(where={"id": location_id})
+    if not location:
+        print("Location not found")
+        return "Location not found", 404
+
+    # fetching Test 1 data
     tests = await db.tests.find_first(
         where={"name": "Test 1"},
         include={
@@ -919,29 +924,36 @@ async def download_heavy_rainfall_spills(location_id, run_id):
         },
     )
 
-    if not tests.runsTests:
-
+    # If no Test 1 data, fetch Test 2 data
+    if not tests or not tests.runsTests:
         tests = await db.tests.find_first(
             where={"name": "Test 2"},
             include={
                 "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
             },
         )
-    
-    # Convert the data to a DataFrame
-    if tests and tests.runsTests[0].summary:
-        data = [{"Year": summary.year, "Percentage of year spills are allowed to start (%)": summary.heavyPerc, "OC Fixed Baseline - Percentage of year spilling (%)": summary.spillPerc, "OC Fixed Baseline - Substandard Spills": summary.substandardSpills, "OC Fixed Baseline - Satisfactory Spills": summary.satisfactorySpills} for summary in tests.runsTests[0].summary]
+
+    # Prepare data for DataFrame
+    if tests and tests.runsTests and tests.runsTests[0].summary:
+        test_name = tests.name  # This will be either "Test 1" or "Test 2"
+        data = []
+        for summary in tests.runsTests[0].summary:
+            row = {
+                "Year": summary.year,
+                "Percentage of year spills are allowed to start (%)": summary.heavyPerc,
+                "OC Fixed Baseline - Percentage of year spilling (%)": summary.spillPerc
+            }
+            # Include additional columns if Test 1 data is being used
+            if test_name == "Test 1":
+                row["OC Fixed Baseline - Substandard Spills"] = summary.substandardSpills
+                row["OC Fixed Baseline - Satisfactory Spills"] = summary.satisfactorySpills
+            data.append(row)
+
+        # Convert to DataFrame and export to Excel
         df = pd.DataFrame(data)
-
-        # Define the filename and path
-        filename = f"Heavy_Rainfall_Spills(test 2)_Results_{location.name}_{run_id}.xlsx"
+        filename = f"Heavy_Rainfall_Spills_Results_{location.name}_{run_id}.xlsx"
         filepath = os.path.join(config.outfolder, filename)
-
-        # Export to Excel
-        df.to_excel(filepath, index=False, sheet_name="Heavy Rainfall Spills(test 2))")
-
-        # Send the file for download
+        df.to_excel(filepath, index=False, sheet_name="Heavy Rainfall Spills")
         return await send_file(filepath, attachment_filename=filename, as_attachment=True)
-    
-    return "No data available for this run", 404
 
+    return "No data available for this run", 404
