@@ -174,6 +174,20 @@ async def delete_location(locid):
 
         # Delete the location from the database
         await db.location.delete(where={"id": locid})
+
+        if "visited_locations" in session:
+            session["visited_locations"] = [location for location in session["visited_locations"] if location["id"] != locid]
+
+        if "recent_runs" in session:
+            # Filter out runs associated with the deleted location
+            session["recent_runs"] = [
+                run for run in session["recent_runs"]
+                if run["location"] != locid
+            ]
+
+
+        
+        
         return {"success": True}
     except Exception as e:
         return {"success": False, "error": str(e)}, 500
@@ -184,6 +198,14 @@ async def delete_run(runid):
     try:
         # Delete the run from the database
         await db.runs.delete(where={"id": runid})
+
+        if "recent_runs" in session:
+            session["recent_runs"] = [
+                run for run in session["recent_runs"]
+                if run["id"] != runid
+            ]
+
+
         return {"success": True}
     except Exception as e:
         return {"success": False, "error": str(e)}, 500
