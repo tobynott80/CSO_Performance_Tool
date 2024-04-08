@@ -14,7 +14,9 @@ from app.routes import routes
 from app.routes.api.location import location_blueprint
 from app.routes.api.run import run_blueprint
 from app.routes.api.results import results_blueprint
+from app.routes.download import download_blueprint
 
 app.register_blueprint(location_blueprint, url_prefix="/api/location")
 app.register_blueprint(run_blueprint, url_prefix="/api/run")
 app.register_blueprint(results_blueprint, url_prefix="/api/results")
+app.register_blueprint(download_blueprint, url_prefix="/download")
