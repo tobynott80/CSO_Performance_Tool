@@ -212,48 +212,18 @@
                         </button>
                       </td>
 
-                      <td class="size-px whitespace-nowrap py-2">
-                        <div class="relative size-10 w-full">
-                          <svg
-                            class="size-full"
-                            width="36"
-                            height="36"
-                            viewBox="0 0 36 36"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <!-- Background Circle -->
-                            <circle
-                              cx="18"
-                              cy="18"
-                              r="16"
-                              fill="none"
-                              class="stroke-current text-gray-200 dark:text-gray-700"
-                              stroke-width="4"
-                            ></circle>
-                            <!-- Progress Circle inside a group with rotation -->
-                            <g class="origin-center -rotate-90 transform">
-                              <circle
-                                cx="18"
-                                cy="18"
-                                r="16"
-                                fill="none"
-                                class="stroke-current text-blue-600 dark:text-blue-500"
-                                stroke-width="4"
-                                stroke-dasharray="100"
-                                stroke-dashoffset="2"
-                              ></circle>
-                            </g>
-                          </svg>
-                          <!-- Percentage Text -->
-                          <div
-                            class="absolute top-1/2 start-1/2 transform -translate-y-1/2 -translate-x-1/2"
-                          >
-                            <span
-                              class="text-center text-sm text-gray-800 dark:text-white"
-                              >99%</span
-                            >
-                          </div>
-                        </div>
+                      <td class="size-px whitespace-nowrap py-2 text-center">
+                        {% set ns = namespace(completed_count=0) %} {% set
+                        total_count = run.runsTests|length %} {% if
+                        run.runsTests %} {% for runTest in run.runsTests %} {%
+                        if runTest.status == "COMPLETED" %} {% set
+                        ns.completed_count = ns.completed_count + 1 %} {% endif
+                        %} {% endfor %} {% endif %} {% if total_count ==
+                        ns.completed_count %} {% include
+                        'runs/results/components/completed_icon.html' %} {% else
+                        %} {% include
+                        'runs/results/components/pending_icon.html' %} {% endif
+                        %}
                         <!-- End Circular Progress -->
                       </td>
 
@@ -280,16 +250,14 @@
                           data-hs-overlay="#hs-ai-invoice-modal"
                         >
                           <span class="block px-6 py-2">
-                            <span class="text-bold text-green-600">
-                              {% set completed_count = 0 %} {% set total_count =
-                              run.runsTests|length %} {% if run.runsTests %} {%
-                              for runTest in run.runsTests %} {% set testString
-                              = runTest.status %} {% if runTest.status ==
-                              "COMPLETED" %} {% set completed_count =
-                              completed_count + 1 %} {% endif %} {% endfor %} {%
-                              set completion_ratio = completed_count /
-                              total_count %} {% endif %} {{ total_count }}/{{
-                              total_count }}
+                            {% set ns = namespace(completed_count=0) %} {% set
+                            total_count = run.runsTests|length %} {% if
+                            run.runsTests %} {% for runTest in run.runsTests %}
+                            {% if runTest.status == "COMPLETED" %} {% set
+                            ns.completed_count = ns.completed_count + 1 %} {%
+                            endif %} {% endfor %} {% endif %}
+                            <span class="text-bold {% if ns.completed_count < total_count %} {{'text-yellow-600'}} {% else %} {{'text-green-600'}} {% endif %}">
+                              {{ ns.completed_count }}/{{ total_count }}
                             </span>
                           </span>
                         </button>
