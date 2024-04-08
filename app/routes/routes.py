@@ -104,6 +104,7 @@ async def index():
         total = await db.location.count()
         locations = await getPaginatedLocations(page, limit, include_runs=True)
 
+
     total_pages = ceil(total / limit)
     return await render_template(
         "index.html",
@@ -325,6 +326,26 @@ async def view_run(location_id, run_id):
                 res.summary = data["Test 1"].summary
         else:
             data[res.test.name] = res
+
+
+    if not runTest or len(runTest) < 1:
+        return redirect(f"/{location_id}")        
+
+    if "recent_runs" not in session:
+        session["recent_runs"] = []
+
+    existing_run = next(
+        (item for item in session["recent_runs"] if item["id"] == run_id), None
+    )
+
+    if existing_run:
+        session["recent_runs"] = [
+            run for run in session["recent_runs"] if run["id"] != run_id
+        ]
+    
+    session["recent_runs"].insert(0, {"id": run_id, "name": run.name, "location": location_id})
+    session["recent_runs"] = session["recent_runs"][:5] 
+
     return await render_template(
         "runs/results/results_root.html",
         location=location,
