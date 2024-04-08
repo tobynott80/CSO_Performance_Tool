@@ -185,7 +185,6 @@ async def delete_location(locid):
                 if run["location"] != locid
             ]
 
-        session.modified = True  # Ensure changes are saved to the session
 
         
         
