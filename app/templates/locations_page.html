@@ -281,22 +281,15 @@
                         >
                           <span class="block px-6 py-2">
                             <span class="text-bold text-green-600">
-                              {% set completed_count = 0 %}
-                              {% set total_count = run.runsTests|length %}                               
-                                
-                              {% if run.runsTests %}  
-                                
-                                {% for runTest in run.runsTests %}
-                                  {% set testString = runTest.status %}
-                                  {% if runTest.status == "COMPLETED" %}
-                                    {% set completed_count = completed_count + 1 %}
-                                  {% endif %} 
-                                {% endfor %}
-                                {% set completion_ratio = completed_count / total_count %}
-
-                              {% endif %}
-                            
-                              {{ total_count }}/{{ total_count }}
+                              {% set completed_count = 0 %} {% set total_count =
+                              run.runsTests|length %} {% if run.runsTests %} {%
+                              for runTest in run.runsTests %} {% set testString
+                              = runTest.status %} {% if runTest.status ==
+                              "COMPLETED" %} {% set completed_count =
+                              completed_count + 1 %} {% endif %} {% endfor %} {%
+                              set completion_ratio = completed_count /
+                              total_count %} {% endif %} {{ total_count }}/{{
+                              total_count }}
                             </span>
                           </span>
                         </button>
@@ -341,7 +334,7 @@
                 <div
                   class="w-full justify-center text-center text-gray-600 dark:text-gray-400 p-5"
                 >
-                  No runs have been added yet
+                  No runs have been added yet.
                 </div>
                 {% endif %}
                 <!-- End Table -->
