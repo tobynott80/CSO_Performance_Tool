@@ -316,6 +316,13 @@
                 </tbody>
                 {% endfor %}
               </table>
+               {% if locations|length < 1 %}
+                <div
+                  class="w-full justify-center text-center text-gray-600 dark:text-gray-400 p-5"
+                >
+                  No locations have been added yet.
+                </div>
+                {% endif %}
               <!-- End Table -->
                 <div
                   class="pagination flex items-center justify-center space-x-1 my-4"
