@@ -579,7 +579,7 @@ async def download_unsatisfactory_spills(location_id, run_id):
     
     # Convert the data to a DataFrame
     if tests and tests.runsTests[0].summary:
-        data = [{"Year": summary.year, "OC Fixed Baseline - Unsatisfactory Spills": summary.unsatisfactorySpills} for summary in tests.runsTests[0].summary]
+        data = [{"Year": summary.year, "Unsatisfactory Spills": summary.unsatisfactorySpills} for summary in tests.runsTests[0].summary]
         df = pd.DataFrame(data)
 
         # Define the filename and path
@@ -645,7 +645,7 @@ async def download_substandard_spills(location_id, run_id):
     
     # Convert the data to a DataFrame
     if tests and tests.runsTests[0].summary:
-        data = [{"Year": summary.year, "OC Fixed Baseline - Substandard Spills": summary.substandardSpills} for summary in tests.runsTests[0].summary]
+        data = [{"Year": summary.year, "Substandard Spills": summary.substandardSpills} for summary in tests.runsTests[0].summary]
         df = pd.DataFrame(data)
 
         # Define the filename and path
@@ -791,7 +791,7 @@ async def download_spill_perc(location_id, run_id):
     
     # Convert the data to a DataFrame
     if tests and tests.runsTests[0].summary:
-        data = [{"Year": summary.year, "OC Fixed Baseline - Percentage of year spilling (%)": summary.spillPerc} for summary in tests.runsTests[0].summary]
+        data = [{"Year": summary.year, "Percentage of year spilling (%)": summary.spillPerc} for summary in tests.runsTests[0].summary]
         df = pd.DataFrame(data)
 
         # Define the filename and path
@@ -864,7 +864,7 @@ async def download_storm_overflow(location_id, run_id):
     
     # Convert the data to a DataFrame
     if tests and tests.runsTests[0].summary:
-        data = [{"Year": summary.year, "OC Fixed Baseline - Substandard Spills": summary.substandardSpills, "OC Fixed Baseline - Satisfactory Spills": summary.satisfactorySpills} for summary in tests.runsTests[0].summary]
+        data = [{"Year": summary.year, "Substandard Spills": summary.substandardSpills, "Satisfactory Spills": summary.satisfactorySpills} for summary in tests.runsTests[0].summary]
         df = pd.DataFrame(data)
 
         # Define the filename and path
@@ -893,7 +893,7 @@ async def download_dry_day_discharges(location_id, run_id):
     
     # Convert the data to a DataFrame
     if tests and tests.runsTests[0].summary:
-        data = [{"Year": summary.year, "Dry Day Percentage": summary.dryPerc, "OC Fixed Baseline - Unsatisfactory Spills": summary.unsatisfactorySpills, "OC Fixed Baseline - Substandard Spills": summary.substandardSpills, "OC Fixed Baseline - Satisfactory Spills": summary.satisfactorySpills} for summary in tests.runsTests[0].summary]
+        data = [{"Year": summary.year, "Dry Day Percentage": summary.dryPerc, "Unsatisfactory Spills": summary.unsatisfactorySpills, "Substandard Spills": summary.substandardSpills, "Satisfactory Spills": summary.satisfactorySpills} for summary in tests.runsTests[0].summary]
         df = pd.DataFrame(data)
 
         # Define the filename and path
@@ -941,12 +941,12 @@ async def download_heavy_rainfall_spills(location_id, run_id):
             row = {
                 "Year": summary.year,
                 "Percentage of year spills are allowed to start (%)": summary.heavyPerc,
-                "OC Fixed Baseline - Percentage of year spilling (%)": summary.spillPerc
+                "Percentage of year spilling (%)": summary.spillPerc
             }
             # Include additional columns if Test 1 data is being used
             if test_name == "Test 1":
-                row["OC Fixed Baseline - Substandard Spills"] = summary.substandardSpills
-                row["OC Fixed Baseline - Satisfactory Spills"] = summary.satisfactorySpills
+                row["Substandard Spills"] = summary.substandardSpills
+                row["Satisfactory Spills"] = summary.satisfactorySpills
             data.append(row)
 
         # Convert to DataFrame and export to Excel
