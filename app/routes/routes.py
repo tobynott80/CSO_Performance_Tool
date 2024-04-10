@@ -407,6 +407,7 @@ async def view_visualisation(location_id, run_id):
             "Run not found or in progess. Try again later"
         )
     elif runTest.status != "COMPLETED":
+        # Add better page here.
         return await render_template_string("Run in progress. Please try again later")
     match session["colorblind_mode"]:
         case "normal":

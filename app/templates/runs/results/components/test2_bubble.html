@@ -45,6 +45,9 @@
         href="/{{ location.id }}/{{ run.id }}/results_storm_overflow"
         >Storm Overflow Performance</a
       >
+      {% if run.rainfallStatsFile %}
+        <p class="text-sm text-gray-600 dark:text-gray-400">File: "{{ run.rainfallStatsFile }}"</p>
+      {% endif %}
       {% else %}
       <p class="text-sm text-gray-600 dark:text-gray-400">
         Run Both Dry Day Discharge and Heavy Rainfall Spills to view Storm

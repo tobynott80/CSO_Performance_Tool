@@ -20,6 +20,9 @@
         class="underline text-base text-blue-600 dark:text-blue-400 cursor-pointer"
         >View Test 3 Results</a
       >
+      {% if run.baselineStatsFile %}
+        <p class="text-sm text-gray-600 dark:text-gray-400">File: "{{ run.baselineStatsFile }}"</p>
+      {% endif %}
     </div>
     <div class="flex flex-col"></div>
   </div>
