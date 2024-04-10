@@ -1,10 +1,11 @@
 @echo off
-REM This script checks python 3 is installed and downloads, installs dependencies and sets up the database
+REM This script checks python =>3.11 is installed and downloads, installs dependencies and sets up the database
 
-REM Check for Python version 3.6 or newer
-python --version 2>&1 | findstr /R "Python 3\.[6-9] Python 3\.[1-9][0-9]" > nul
+REM Check for Python version 3.11 or newer
+python --version 2>&1 | findstr /R "Python 3\.[1-9][1-9]" > nul
 if errorlevel 1 (
-    echo Python 3.6 or newer is required.
+    echo Python 3.11 or newer is required.
+    echo Please download and install Python 3.11 or newer from https://www.python.org/downloads/ and set it as the default python version.
     pause
     exit /b 1
 )
