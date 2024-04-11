@@ -178,7 +178,7 @@
                       </th>
                     </tr>
                   </thead>
-                  {% for run in location.runs %}
+                  {% for run in runs %}
                   <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                     <tr
                       class="cursor-pointer bg-white hover:bg-gray-200 dark:bg-slate-900 dark:hover:bg-slate-800"
@@ -298,7 +298,7 @@
                   {% endfor %}
                 </table>
 
-                {% if location.runs|length < 1 %}
+                {% if runs|length < 1 %}
                 <div
                   class="w-full justify-center text-center text-gray-600 dark:text-gray-400 p-5"
                 >
@@ -306,6 +306,43 @@
                 </div>
                 {% endif %}
                 <!-- End Table -->
+                <!--Pagination  -->
+                <div class="pagination flex items-center justify-center space-x-1 my-4">
+                  {% if current_page > 1 %}
+                  <a
+                  href="/{{ location.id }}?page=1{{ '&search=' + search|urlencode if search }}"
+                    class="px-4 py-2 text-sm font-bold bg-white rounded-md border border-gray-300 hover:bg-blue-50 dark:text-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+                  >
+                    <<
+                  </a>
+                  <a
+                    href="{{ location.id }}?page={{ current_page - 1 }}{{ '&search=' + search|urlencode if search }}"
+                    class="px-4 py-2 text-sm font-bold bg-white rounded-md border border-gray-300 hover:bg-blue-50 dark:text-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600"
+                  >
+                    <
+                  </a>
+                  {% endif %}
+
+                  <span class="px-4 py-2 text-sm font-semibold bg-white rounded-md border border-gray-300 dark:text-gray-200 dark:bg-gray-700 dark:border-gray-600">
+                    Page {{ current_page }} of {{ total_pages }}
+                  </span>
+
+                  {% if current_page < total_pages %}  
+                  <a
+                    href="{{ location.id }}?page={{ current_page + 1 }}{{ '&search=' + search|urlencode if search }}"
+                    class="px-4 py-2 text-sm font-bold bg-white rounded-md border border-gray-300 hover:bg-blue-50 dark:text-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600"
+                  >
+                    >
+                  </a>
+                  <a
+                    href="{{ location.id }}?page={{ total_pages }}{{ '&search=' + search|urlencode if search }}"
+                    class="px-4 py-2 text-sm font-bold bg-white rounded-md border border-gray-300 hover:bg-blue-50 dark:text-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600"
+                  >
+                    >>
+                  </a>
+                  {% endif %}
+                </div>
+
               </div>
             </div>
           </div>
