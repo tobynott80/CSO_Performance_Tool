@@ -162,8 +162,9 @@
                                   </div>
                                   <!-- End Form Group -->
                                   <button id="submit-button" type="submit" value="submit"
-                                    class="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600 dark:bg-blue-700 dark:hover:bg-blue-800">Submit</button>
-                                  </form>
+                                    class="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600 dark:bg-blue-700 dark:hover:bg-blue-800">Submit
+                                  </button>
+                                </form>
                                 </div>
                               <!-- End Form -->
                           </div>
@@ -324,9 +325,7 @@
                 </div>
                 {% endif %}
               <!-- End Table -->
-                <div
-                  class="pagination flex items-center justify-center space-x-1 my-4"
-                >
+                <div class="pagination flex items-center justify-center space-x-1 my-4">
                   {% if current_page > 1 %}
                   <a
                     href="/?page=1{{ '&search=' + search|urlencode if search }}"
@@ -342,13 +341,11 @@
                   </a>
                   {% endif %}
 
-                  <span
-                    class="px-4 py-2 text-sm font-semibold bg-white rounded-md border border-gray-300 dark:text-gray-200 dark:bg-gray-700 dark:border-gray-600"
-                  >
+                  <span class="px-4 py-2 text-sm font-semibold bg-white rounded-md border border-gray-300 dark:text-gray-200 dark:bg-gray-700 dark:border-gray-600">
                     Page {{ current_page }} of {{ total_pages }}
                   </span>
 
-                  {% if current_page < total_pages %}
+                  {% if current_page < total_pages %}  
                   <a
                     href="/?page={{ current_page + 1 }}{{ '&search=' + search|urlencode if search }}"
                     class="px-4 py-2 text-sm font-bold bg-white rounded-md border border-gray-300 hover:bg-blue-50 dark:text-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600"
@@ -422,26 +419,7 @@
             });
       });
 
-      function updateTableData(page) {
-        fetch(`/api/locations?page=${page}`)
-          .then((response) => response.json())
-          .then((data) => {
-            currentPage = data.currentPage;
-            totalPages = data.totalPages;
-            document.getElementById("currentPage").textContent = currentPage;
-            document.getElementById("totalPages").textContent = totalPages;
-          })
-          .catch((error) => console.error("Error:", error));
-      }
-
-      function changePage(direction) {
-        var newPage = currentPage + direction;
-        if (newPage < 1 || newPage > totalPages) {
-          return;
-        }
-        updateTableData(newPage);
-      }
-      updateTableData(1);
+      
 
       document.querySelectorAll('tr').forEach(row => {
         row.addEventListener('click', (event) => {

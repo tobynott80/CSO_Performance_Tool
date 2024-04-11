@@ -103,7 +103,6 @@ async def index():
         search=query,
     )
 
-
 @app.route("/docs")
 async def documentation_page():
     """
@@ -208,9 +207,14 @@ async def showRuns(locid):
     Returns:
     Response: The rendered template of the specific location page.
     """
-    # Fetch the location details from the database
+    page = int(request.args.get("page", 1))
+    limit = int(request.args.get("limit", 10))
+    
+    runs = await getPaginatedRuns(page, limit, locid)
+    
+    # Fetch the location details from the database ----------------------------
     location = await db.location.find_unique(
-        where={"id": locid}, include={"runs": {"include": {"runsTests": True}}}
+        where={"id": locid}
     )
 
     if not location:
@@ -230,10 +234,27 @@ async def showRuns(locid):
         ]
     session["visited_locations"].insert(0, {"id": locid, "name": location.name})
     session["visited_locations"] = session["visited_locations"][:5]
-
+    
+    total = await db.runs.count(where={"locationID": locid })
+    total_pages = ceil(total / limit)
     # Render the specific location page
-    return await render_template("locations_page.html", location=location)
+    return await render_template("locations_page.html", location=location, runs=runs, total_pages = total_pages, current_page=page,)
 
+async def getPaginatedRuns(page, limit, locid):
+    """
+    Retrieves a paginated list of locations from the database.
+
+    Args:
+        page (int): The page number to retrieve.
+        limit (int): The maximum number of locations per page.
+        include_runs (boolean): Include runs relationship data
+    Returns:
+        list: A list of locations retrieved from the database.
+    """
+    skip = (page - 1) * limit
+
+    runs = await db.runs.find_many(where={"locationID": locid }, include={"runsTests": True}, skip=skip, take=limit)
+    return runs
 
 @app.get("/<locid>/create")
 async def createRun(locid):
