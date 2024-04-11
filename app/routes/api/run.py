@@ -220,7 +220,7 @@ async def createRunStep2():
                 ]
                 if missing_columns:
                     await flash(
-                        "Missing required columns in Spill Stats file: "
+                        "Please move Excel sheet to first place in sheet list. " + " Missing required columns in Spill Stats file: "
                         + ", ".join(missing_columns),
                         "error",
                     )
