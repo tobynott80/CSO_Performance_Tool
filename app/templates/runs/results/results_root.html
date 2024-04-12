@@ -58,16 +58,27 @@
                 </h2>
               </div>
               {% endif %}
-              {% if "Test 1" in data %} {% with runTest=data["Test 1"],
-              show_so=True if "Test 1" in data and "Test 2" in data else False
-              %} {% include 'runs/results/components/test1_bubble.html' %} {%
-              endwith %} {% endif %} {% if "Test 2" in data %} {% with
-              runTest=data["Test 2"], show_so=True if "Test 1" in data and 
-              "Test 2" in data else False %} 
-              {% include 'runs/results/components/test2_bubble.html' %} {% endwith %} 
-              {% endif %} {% if "Test 3" in data %} {% with runTest=data["Test 3"]
-              %} {% include 'runs/results/components/test3_bubble.html' %} {%
-              endwith %} {% endif %}
+
+              {% for asset in assets %}
+                <h2>{{asset.name}}</h2>
+                {% if "Test 1" in asset.data %} 
+                {% with runTest=asset.data["Test 1"], show_so=True if "Test 1" in asset.data and "Test 2" in asset.data else False%}
+                {% include 'runs/results/components/test1_bubble.html' %} 
+                {% endwith %} 
+                {% endif %} 
+
+                {% if "Test 2" in asset.data %} 
+                {% with runTest=asset.data["Test 2"], show_so=True if "Test 1" in asset.data and "Test 2" in asset.data else False %} 
+                {% include 'runs/results/components/test2_bubble.html' %} 
+                {% endwith %} 
+                {% endif %} 
+
+                {% if "Test 3" in asset.data %} {% with runTest=asset.data["Test 3"] %} 
+                {% include 'runs/results/components/test3_bubble.html' %} 
+                {% endwith %} 
+                {% endif %}
+              {% endfor %}
+
             </div>
           </div>
         </div>
@@ -76,10 +87,10 @@
 
     <script>
       const evtSource = new EventSource("/api/run/status");
-      const runTestId = {{ run.id }};
-      const test1Progress = "{{data["Test 1"].status if "Test 1" in data else "COMPLETED"}}";
-      const test2Progress = "{{data["Test 2"].status if "Test 2" in data else "COMPLETED"}}";
-      const test3Progress = "{{data["Test 3"].status if "Test 3" in data else "COMPLETED"}}";
+      const runId = {{ run.id }};
+      const test1Progress = "{{assets[0].data["Test 1"].status if "Test 1" in assets[0].data else "COMPLETED"}}";
+      const test2Progress = "{{assets[0].data["Test 2"].status if "Test 2" in assets[0].data else "COMPLETED"}}";
+      const test3Progress = "{{assets[0].data["Test 3"].status if "Test 3" in assets[0].data else "COMPLETED"}}";
       if (test1Progress === "COMPLETED" && test2Progress === "COMPLETED" && test3Progress === "COMPLETED") {
         evtSource.close();
       }
