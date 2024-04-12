@@ -16,6 +16,8 @@ import math
 import os
 from pathlib import Path
 import time
+from openpyxl import load_workbook
+from io import BytesIO
 
 import pandas as pd
 from app.gn066_tests.csvHandler import csvReader, csvWriter
@@ -137,6 +139,8 @@ async def createRunStep2Validation():
     if resp["hasMultiAsset"]:
         session["multiAsset"] = True
         # Add session value for multi asset
+    else:
+        session["multiAsset"] = False
     return redirect(url_for(f"createRun", locid=session["loc"], step=2))
 
 
@@ -176,13 +180,22 @@ async def createRunStep2():
 
 
 async def saveTempFile(file):
+    print(file)
     Path(TMP_FOLDER).mkdir(exist_ok=True)
-    path = os.path.join(TMP_FOLDER, str(time.time()*1000) + "." + file.filename.split(".")[-1])
-    await file.save(path)
+    extension = file.filename.split(".")[-1]
+    path = os.path.join(TMP_FOLDER, file.filename.split(".")[0] + "." + extension)
+    if (extension == "xlsx"):
+        # VERY BAD IF CAN DO BETTER PLS DO
+        df = pd.read_excel(file)
+        writer = pd.ExcelWriter(path, engine='xlsxwriter')
+        df.to_excel(writer)
+        writer.close()
+    else:
+        await file.save(path)
     return path
     # Delete tmp folder on every app run? ensure no stale files
 
-
+    
 @run_blueprint.route("/create/step3", methods=["POST"])
 async def createRunStep3():
     """
@@ -228,7 +241,7 @@ async def createRunStep3():
         return redirect(url_for(f"createRun", locid=session["loc"], step=3))
     else:
         # Run the tests in step 2
-        await createRun()
+        await createRuns()
 
 
 async def createRuns(session):
