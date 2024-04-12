@@ -2,6 +2,7 @@ from quart import render_template, render_template_string, request, redirect, se
 from app import app
 from app.helper.database import initDB
 from math import ceil
+import pandas as pd
 
 db = None
 
@@ -253,7 +254,7 @@ async def getPaginatedRuns(page, limit, locid):
     """
     skip = (page - 1) * limit
 
-    runs = await db.runs.find_many(where={"locationID": locid }, include={"runsTests": True}, skip=skip, take=limit)
+    runs = await db.runs.find_many(where={"locationID": locid }, include={"Assets": True}, skip=skip, take=limit)
     return runs
 
 @app.get("/<locid>/create")
@@ -285,13 +286,36 @@ async def createRun(locid):
             session.pop("run_name")
             session.pop("run_desc")
             session.pop("tests")
+            session.pop("doneValidation") # used in move from step 2 validate 
+            session.pop("multiAsset") # used in checking for multiple assets
             step = 1
     elif "loc" not in session:
         # Set step to 1 if no session data found
         step = 1
 
+    if step == 3:
+        if "doneValidation" not in session or session["doneValidation"] == False:
+            step = 2
+        elif "multiAsset" not in session or session["multiAsset"] == False:
+            step = 2
+        # Step 3 requires file validation precheck and multiple assets to be true
+        else:
+            session["spillStats"]["path"]
+            spill_data = pd.read_excel(session["spillStats"].stream)
+            # Seperate the spill_Data excel file into individual assets based on the ID column
+            assets = spill_data["ID"].unique()
+            session["assets"] = assets
+            session["assetCount"] = len(assets)
+            session["step"] = 3
+            return await render_template(
+                "runs/create_three.html",
+                loc=loc,
+                step=step,
+                session=session,
+            )
+
     return await render_template(
-        f"runs/{'create_one' if step == 1 else 'create_two'}.html",
+        f"runs/{'create_one' if step == 1 else ('create_two' if step == 2 else 'create_three')}.html",
         loc=loc,
         step=step,
         session=session,
@@ -323,41 +347,43 @@ async def view_run(location_id, run_id):
     if not run:
         return redirect(f"/{location_id}")
 
-    runTest = await db.runtests.find_many(
+    assets = await db.assets.find_many(
         where={
             "runID": run_id,
         },
+        include={"assetTests": {"where": {"runID": run_id}, "include": {"test": True, "summary": True, "testThree": True}}},
     )
-    if not runTest or len(runTest) < 1:
+    if not assets or len(assets) < 1:
         return redirect(f"/{location_id}")
 
-    data = {}
 
-    for rt in runTest:
-        res = await db.runtests.find_first(
-            where={"id": rt.id},
-            include={"test": True, "summary": True, "testThree": True},
-        )
-        if rt.status == "COMPLETED":
-            if len(res.summary) > 0:
+    for asset in assets:
+        asset.data = {}
+        data_asset = db.assettests.find_first(
+            where={"id": asset.id},
+            include={"test": True, "summary": True, "testThree": True},)
+        if asset.status == "COMPLETED":
+            if len(data_asset.summary) > 0:
                 val = {}
                 count = 0
-                for x in res.summary:
-                    if x.year == "Whole Time Series":
-                        val = x
+                for summary_record in data_asset.summary:
+                    if summary_record.year == "Whole Time Series":
+                        val = summary_record
                     else:
                         count += 1
-                # setattr(val, "yearsCount", count)
-                res.summary = dict(val)
-                res.summary["yearsCount"] = count
-            data[res.test.name] = res
-            if res.test.name == "Test 2" and "Test 1" in data:
-                # Test 1 data is made so duplicate all data for it aswell
-                res.summary = data["Test 1"].summary
+                summary_record.summary = dict(val)
+                summary_record.summary["yearsCount"] = count
+            asset.data[summary_record.test.name] = data_asset
+            if summary_record.test.name == "Test 2" and "Test 1" in asset.data:
+                # Avoiding repetition: Test 1 data has already been made, so set test 2 data to test 1
+                data_asset.summary = asset.data["Test 1"].summary
         else:
-            data[res.test.name] = res
+            # If asset test in progress
+            asset.data[summary_record.test.name] = summary_record
 
-    if not runTest or len(runTest) < 1:
+
+
+    if not assets or len(assets) < 1:
         return redirect(f"/{location_id}")
 
     if "recent_runs" not in session:
@@ -381,8 +407,7 @@ async def view_run(location_id, run_id):
         "runs/results/results_root.html",
         location=location,
         run=run,
-        runTest=runTest,
-        data=data,
+        assets=assets,
     )
 
 
