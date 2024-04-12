@@ -86,7 +86,22 @@ async def getTimeSeries():
         return {
             "error": "No timeseries data found for the provided run test ID or given time"
         }, 404
-    return [timeseries.model_dump() for timeseries in timeseries_list], 200
+    # If reduce argument is not provided, return the timeseries data as is
+    reduce_arg = request.args.get("reduce")
+    if reduce_arg is None:
+        return [timeseries.model_dump() for timeseries in timeseries_list], 200
+    # Else reduce timeseries data from 15 min gap to 1 hour gap
+    reduced_timeseries_list = []
+    timeseries_hour = timeseries_list[0]
+    for i in range(len(timeseries_list)):
+        if i % 4 == 0:
+            reduced_timeseries_list.append(timeseries_hour)
+            if i + 1 < len(timeseries_list):
+                timeseries_hour = timeseries_list[i + 1]
+        else:
+            timeseries_hour.intensity += timeseries_list[i].intensity
+
+    return [timeseries.model_dump() for timeseries in reduced_timeseries_list], 200
 
 
 @results_blueprint.route("/timeseries/range", methods=["GET"])
