@@ -53,8 +53,11 @@ def spill_stats(spills_df, df, run_tests=[1, 2]):
     spill_count = [[] for _ in range(3)]
 
     for yr,yr_grp in spills_df.groupby(pd.Grouper(key="Start of Spill (absolute)", freq='Y')):
-        print (yr.year)
         years.append(yr.year)
+        if (yr_grp.empty):
+            spill_count[0].append(0)
+            spill_count[1].append(0)
+            spill_count[2].append(0)
         for i, (run, run_grp) in enumerate(yr_grp.groupby(['RUN'])):
             spill_count[i*3].append(run_grp['Classification'].value_counts().get('Unsatisfactory',0))
             spill_count[(i*3) + 1].append(run_grp['Classification'].value_counts().get('Substandard',0))
@@ -67,7 +70,6 @@ def spill_stats(spills_df, df, run_tests=[1, 2]):
         spill_count[i*3].append(run_grp['Classification'].value_counts().get('Unsatisfactory',0))
         spill_count[(i*3) + 1].append(run_grp['Classification'].value_counts().get('Substandard',0))
         spill_count[(i*3) + 2].append(run_grp['Classification'].value_counts().get('Satisfactory',0))
-    #print (spill_count)
         
     annual_summary = pd.DataFrame({"Year": years})
     for i, run_name in enumerate(run_names):
