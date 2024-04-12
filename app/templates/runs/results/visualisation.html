@@ -197,7 +197,7 @@
     </div>
     <script type="module">
         import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
-        let runTestID = {{ runTest.id }};
+        let assetTestID = {{ assetTest.id }};
         let locationName = "{{ location.name }}";
         let dateButtonDiv = document.getElementById('accordion');
         let visContainer = document.getElementById('vis-container');
@@ -214,7 +214,7 @@
             return [earliest, latest];
           }
           try {
-            const response = await fetch(`/api/results/timeseries/range?runTestID=${runTestID}`);
+            const response = await fetch(`/api/results/timeseries/range?assetTestID=${assetTestID}`);
             const range = await response.json();
             // get earliest and latest date from range
             earliest = new Date(range.earliest_datetime);
@@ -269,7 +269,7 @@
             alert('Date range must be less than 1 year');
             return;
           }
-          let data = await fetch(`/api/results/timeseries?runTestID=${runTestID}&startTime=${startDate}&endTime=${endDate}`)
+          let data = await fetch(`/api/results/timeseries?assetTestID=${assetTestID}&startTime=${startDate}&endTime=${endDate}`)
           data = await data.json();
           data.forEach(d => {
             d.dateTime = new Date(d.dateTime);
