@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from quart import app
 import json
 from quart import (
     Blueprint,
@@ -11,7 +12,10 @@ from quart import (
 )
 from app.helper.database import initDB
 import asyncio
-import math 
+import math
+import os
+from pathlib import Path
+import time
 
 import pandas as pd
 from app.gn066_tests.csvHandler import csvReader, csvWriter
@@ -23,8 +27,10 @@ from app.gn066_tests.tests import test3
 from app.gn066_tests import config
 
 pd.options.mode.chained_assignment = None  # default='warn'
+TMP_FOLDER = "tmp"
 
 run_blueprint = Blueprint("run", __name__)
+
 
 db = None
 runs_tracker = {}
@@ -84,6 +90,7 @@ async def createRunStep1():
     # If no run name given, set one with the ID from prisma? eg: Run 1
     session["run_name"] = data.pop("run_name", "New Run")
     session["run_desc"] = data.pop("run_desc", "N/A")
+    session["doneValidation"] = False
     tests = []
     for test in data:
         if data[test] == "on":
@@ -93,16 +100,101 @@ async def createRunStep1():
     return redirect(url_for(f"createRun", locid=session["loc"], step=2))
 
 
+@run_blueprint.route("/create/step2/validate", methods=["POST"])
+async def createRunStep2Validation():
+    
+    if "loc" not in session:
+        # If no loc found, invalid since no session data
+        return redirect("/")
+    
+    tests = session["tests"]
+
+    files = await request.files
+
+    resp = await checkTestValidation(tests, files)
+    # resp = {success: true, message: "If Error", hasMultiAsset: false}
+    if not resp:
+        await flash("Something went wrong with validation", "error")
+        return redirect(url_for(f"createRun", locid=session["loc"], step=1))
+    
+    if not resp['success'] or resp['success'] == False:
+        await flash(resp["message"], 'error')
+        return redirect(url_for(f"createRun", locid=session["loc"], step=2))
+    
+    if ("Baseline Stats Report" in files):
+        path = await saveTempFile(files["Baseline Stats Report"])
+        session["baselineStats"] = {"filename": files["Baseline Stats Report"].filename, "path": path}
+
+    if ("rainfall-stats" in files):
+        path = await saveTempFile(files["rainfall-stats"])
+        session["rainfallStats"] = {"filename": files["rainfall-stats"].filename, "path": path}
+
+    if ("spill-stats" in files):
+        path = await saveTempFile(files["spill-stats"])
+        session["spillStats"] = {"filename": files["spill-stats"].filename, "path": path}
+        
+    session["doneValidation"] = True
+    if resp["hasMultiAsset"]:
+        session["multiAsset"] = True
+        # Add session value for multi asset
+    return redirect(url_for(f"createRun", locid=session["loc"], step=2))
+
+
 @run_blueprint.route("/create/step2", methods=["POST"])
 async def createRunStep2():
     """
-    API route for step 2, the final step of the runs creation routine. Validates
-    all user input and dispatches the job to the thread handler.
+    API route for step 2, dispatches the job to the thread handler if no step 3 required.
 
     Returns:
         A redirect response to the created run page.
+
     """
     global runs_tracker
+
+    if "loc" not in session:
+        # If no loc found, invalid since no session data
+        return redirect("/")
+    
+    if "doneValidation" not in session or session["doneValidation"] == False:
+        # If not completed validation precheck, redirect back
+        return redirect(url_for(f"createRun", locid=session["loc"], step=2))
+    
+    if "multiAsset" in session and session["multiAsset"] == True:
+        # Redirect to step 3 where they will select assets
+        return redirect(url_for(f"createRun", locid=session["loc"], step=3))
+
+    # Create run since no multi assets
+    run = await createRuns(session)
+
+    # Delete session data since not needed in client side
+    session.pop("loc")
+    session.pop("run_name")
+    session.pop("run_desc")
+    session.pop("tests")
+
+    return redirect(f"/{run['locationID']}/{run['id']}")
+
+
+async def saveTempFile(file):
+    Path(TMP_FOLDER).mkdir(exist_ok=True)
+    path = os.path.join(TMP_FOLDER, str(time.time()*1000) + "." + file.filename.split(".")[-1])
+    await file.save(path)
+    return path
+    # Delete tmp folder on every app run? ensure no stale files
+
+
+@run_blueprint.route("/create/step3", methods=["POST"])
+async def createRunStep3():
+    """
+    API route for step 3, the final step of the runs creation routine. 
+    Dispatches the job to the thread handler.
+
+    Returns:
+        A redirect response to the created run page.
+
+    """
+    # In step 2, based on multiAsset cookie it will either 
+    # redirect to step 3 or start run process and redirect to results page
 
     if "loc" not in session:
         # If no loc found, invalid since no session data
@@ -120,16 +212,48 @@ async def createRunStep2():
 
     files = await request.files
 
+    resp = await checkTestValidation(run, files)
+    print(resp)
+    # resp = {success: true, message: "If Error", hasMultiAsset: false}
+    if not resp:
+        await flash("Something went wrong with validation", "error")
+        return redirect(url_for(f"createRun", locid=session["loc"], step=1))
+    
+    if not resp['success'] or resp['success'] == False:
+        await flash(resp["message"], 'error')
+        return redirect(url_for(f"createRun", locid=session["loc"], step=2))
+    
+    if resp["hasMultiAsset"]:
+        # Save files to session for step 3
+        return redirect(url_for(f"createRun", locid=session["loc"], step=3))
+    else:
+        # Run the tests in step 2
+        await createRun()
+
+
+async def createRuns(session):
+    run = {
+        "id": await getNextRunID(),
+        "locationID": int(session["loc"]),
+        "name": session["run_name"],
+        "description": session["run_desc"],
+        "tests": session["tests"],
+        "progress": {},
+        "runids": {},
+    }
+
+    
+
     run["baselineStatsFile"] = (
-        files["Baseline Stats Report"].filename
-        if "Baseline Stats Report" in files
+        session["baselineStats"]["filename"]
+        if "baselineStats" in session
         else None
     )
     run["rainfallStatsFile"] = (
-        files["rainfall-stats"].filename if "rainfall-stats" in files else None
+        session["rainfallStats"]["filename"] if "rainfallStats" in session else None
     )
     run["spillStatsFile"] = (
-        files["spill-stats"].filename if "spill-stats" in files else None
+        session["spillStats"]["filename"] if "spillStats" in session else None
     )
 
     await db.runs.create(
@@ -143,8 +267,6 @@ async def createRunStep2():
             "spillStatsFile": run["spillStatsFile"],
         }
     )
-
-    print(files)
 
     form_data = await request.form
 
@@ -160,23 +282,80 @@ async def createRunStep2():
     for test in run["tests"]:
         if test == "test-1" or test == "test-2":
 
+            # Connect Tests in DB to frontend tests
+            testid = await db.tests.find_first(
+                where={"name": "Test 1" if test == "test-1" else "Test 2"}
+            )
+
+            if not testid:
+                return redirect(url_for(f"createRun", locid=session["loc"], step=2))
+
+            runtest = await db.assettests.create(
+                data={"runID": run["id"], "testID": testid.id, "status": "PROGRESS"}
+            )
+
+            # Store RunTest ID for when running thread
+            run["runids"][testid.name] = runtest.id
+
+            # If both Test 1 & 2 selected, ensure thread is only ran once
+            if onlyOnce == True:
+                continue
+
+            onlyOnce = True
+
+            test12thread = Thread(
+                target=test1and2callback,
+                args=(
+                    session["rainfallStats"]["path"],
+                    (session["spillStats"]["path"], "None", run["name"]),
+                    run,
+                ),
+            )
+            test12thread.start()
+
+        if test == "test-3":
+
+            # Connect Tests in DB to frontend tests
+            testid = await db.tests.find_first(where={"name": "Test 3"})
+
+            runtest = await db.runtests.create(
+                data={"runID": run["id"], "testID": testid.id, "status": "PROGRESS"}
+            )
+
+            # Store RunTest ID for when running thread
+            run["runids"][testid.name] = runtest.id
+            test3thread = Thread(
+                target=test3callback,
+                args=(
+                    formula_a_value,
+                    consent_flow_value,
+                    session["baselineStats"]["path"],
+                    run,
+                ),
+            )
+            test3thread.start()
+    return run        
+
+# Only checks files validation
+async def checkTestValidation(tests, files):
+
+    resp = {"success": False, "message": "", "hasMultiAsset": False}
+
+    onlyOnce = False
+    for test in tests:
+        if test == "test-1" or test == "test-2":
+
             # Check if appropriate files are uploaded
             if "rainfall-stats" not in files or "spill-stats" not in files:
-                await flash(
-                    "Missing required files. Please upload both Rainfall Stats and Spill Stats.",
-                    "error",
-                )
-                return redirect(url_for(f"createRun", locid=session["loc"], step=2))
+                resp["message"] = "Missing required files. Please upload both Rainfall Stats and Spill Stats."
+                break
 
             # Check correct format
             if not files["rainfall-stats"].filename.endswith((".csv")) or not files[
                 "spill-stats"
             ].filename.endswith((".xlsx")):
-                await flash(
-                    "Invalid file format. Please upload files the rainfall-stats as a .csv and spill-stats as a .xlsx.",
-                    "error",
-                )
-                return redirect(url_for(f"createRun", locid=session["loc"], step=2))
+                resp["message"] = "Invalid file format. Please upload files the rainfall-stats as a .csv and spill-stats as a .xlsx."
+                break
 
             # Rainfall Stats Data Validation
             try:
@@ -190,15 +369,12 @@ async def createRunStep2():
 
                 # Check for the 'P_DATETIME' column
                 if "P_DATETIME" not in df_temp.columns:
-                    await flash(
-                        "Invalid Rainfall Stats file: 'P_DATETIME' column missing.",
-                        "error",
-                    )
-                    return redirect(url_for(f"createRun", locid=session["loc"], step=2))
+                    resp["message"] = "Invalid Rainfall Stats file: 'P_DATETIME' column missing."
+                    break
 
             except Exception as e:
-                await flash(f"Error reading Rainfall Stats file: {e}", "error")
-                return redirect(url_for(f"createRun", locid=session["loc"], step=2))
+                resp["message"] = f"Error reading Rainfall Stats file: {e}"
+                break
 
             # Reset file pointer to the beginning of the file
             files["rainfall-stats"].seek(0)
@@ -219,27 +395,20 @@ async def createRunStep2():
                     if column not in spill_data.columns
                 ]
                 if missing_columns:
-                    await flash(
-                        "Please move Excel sheet to first place in sheet list. " + " Missing required columns in Spill Stats file: "
-                        + ", ".join(missing_columns),
-                        "error",
-                    )
-                    return redirect(url_for(f"createRun", locid=session["loc"], step=2))
+                    resp["message"] = "Please move Excel sheet to first place in sheet list. " + " Missing required columns in Spill Stats file: " + ", ".join(missing_columns)
+                    break
+
+                # Check if there are multiple ID's in the Excel file 
+
+                if len(spill_data["ID"].unique()) > 1:
+                    resp["hasMultiAsset"] = True
+
+                
             except Exception as e:
-                await flash(f"Error reading Spill Stats file: {e}", "error")
-                return redirect(url_for(f"createRun", locid=session["loc"], step=2))
+                resp["message"] = "Error reading Spill Stats file: " + str(e)
+                break
 
-            # Connect Tests in DB to frontend tests
-            testid = await db.tests.find_first(
-                where={"name": "Test 1" if test == "test-1" else "Test 2"}
-            )
-
-            runtest = await db.runtests.create(
-                data={"runID": run["id"], "testID": testid.id, "status": "PROGRESS"}
-            )
-
-            # Store RunTest ID for when running thread
-            run["runids"][testid.name] = runtest.id
+            resp["success"] = True
 
             # If both Test 1 & 2 selected, ensure thread is only ran once
             if onlyOnce == True:
@@ -247,31 +416,19 @@ async def createRunStep2():
 
             onlyOnce = True
 
-            test12thread = Thread(
-                target=test1and2callback,
-                args=(
-                    files["rainfall-stats"],
-                    (files["spill-stats"], "None", run["name"]),
-                    run,
-                ),
-            )
-            test12thread.start()
-
         if test == "test-3":
 
             # Check if Baseline Stats Report is present
             if "Baseline Stats Report" not in files:
-                await flash("Baseline Stats Report is required for Test 3")
-                return redirect(url_for(f"createRun", locid=session["loc"], step=2))
+                resp["message"] = "Baseline Stats Report is required for Test 3"
+                break
 
             # Correct format check
             if not files["Baseline Stats Report"].filename.endswith(
                 (".xlsx", ".csv", ".xls")
             ):
-                await flash(
-                    "Invalid file format. Only '.xlsx', '.csv', and '.xls' files are supported."
-                )
-                return redirect(url_for(f"createRun", locid=session["loc"], step=2))
+                resp["message"] = "Invalid file format. Only '.xlsx', '.csv', and '.xls' files are supported."
+                break
 
             # Load the Excel file and checks whether sheet "Summary" exists
             try:
@@ -282,11 +439,8 @@ async def createRunStep2():
                     nrows=2,
                 )
             except Exception as e:
-                await flash(
-                    "Error reading file, Please Input a valid Excel file. Error: "
-                    + str(e)
-                )
-                return redirect(url_for(f"createRun", locid=session["loc"], step=2))
+                resp["message"] = "Error reading file, Please Input a valid Excel file. Error: " + str(e)
+                break
 
             # Check if required columns are present
             required_columns = ["Peak PFF (l/s)", "Avg Initial PFF (l/s)", "Year"]
@@ -294,37 +448,10 @@ async def createRunStep2():
                 column for column in required_columns if column not in df_pff.columns
             ]
             if missing_columns:
-                await flash("Missing required columns: " + ", ".join(missing_columns))
-                return redirect(url_for(f"createRun", locid=session["loc"], step=2))
-
-            # Connect Tests in DB to frontend tests
-            testid = await db.tests.find_first(where={"name": "Test 3"})
-
-            runtest = await db.runtests.create(
-                data={"runID": run["id"], "testID": testid.id, "status": "PROGRESS"}
-            )
-
-            # Store RunTest ID for when running thread
-            run["runids"][testid.name] = runtest.id
-            test3thread = Thread(
-                target=test3callback,
-                args=(
-                    formula_a_value,
-                    consent_flow_value,
-                    files["Baseline Stats Report"],
-                    run,
-                ),
-            )
-            test3thread.start()
-
-    print(run)
-    # Delete session data since not needed in client side
-    session.pop("loc")
-    session.pop("run_name")
-    session.pop("run_desc")
-    session.pop("tests")
-
-    return redirect(f"/{run['locationID']}/{run['id']}")
+                resp["message"] = "Missing required columns: " + ", ".join(missing_columns)
+                break
+            resp["success"] = True
+    return resp
 
 
 @dataclass
