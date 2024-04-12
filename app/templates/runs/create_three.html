@@ -72,7 +72,7 @@
                     <div
                       class="text-xl font-semibold text-gray-800 dark:text-gray-200"
                     >
-                      Configure Tests
+                      Select Assets
                     </div>
 
                     <!-- Flash Messages -->
@@ -100,31 +100,23 @@
                     action="/api/run/create/step3"
                     method="post"
                   >
-                    <div class="flex flex-wrap items-center space-x-4">
-                      <div>
-                        <h3
-                          class="mb-4 font-semibold text-gray-900 dark:text-white"
+                    <div class="grid grid-cols-3 gap-4 items-center">
+                      {% for asset in assets %}
+                      <div class="items-center ps-3">
+                        <input
+                          id="{{asset}}"
+                          type="checkbox"
+                          value="{{asset}}"
+                          class="shrink-0 mt-0.5 border-gray-200 rounded text-blue-600 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
+                        />
+                        <label
+                          for="{{asset}}"
+                          class="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300 cursor-pointer select-none"
                         >
-                          Choose Assets:
-                        </h3>
-                          
-                          {% for asset in assets %}
-                            <div class="flex items-center ps-3">
-                              <input
-                                id="{{asset}}"
-                                type="checkbox"
-                                value="{{asset}}"
-                                class="w-4 h-4"
-                              />
-                              <label
-                                for="{{asset}}"
-                                class="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300 cursor-pointer select-none"
-                              >
-                                {{ asset }}
-                              </label>
-                            </div>
-                            {% endfor %}
+                          {{ asset }}
+                        </label>
                       </div>
+                      {% endfor %}
                     </div>
 
                     <div class="mt-6 flex justify-center space-x-4">
