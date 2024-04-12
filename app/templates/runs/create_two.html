@@ -25,7 +25,7 @@
                   <h2
                     class="text-xl font-semibold text-gray-800 dark:text-gray-200"
                   >
-                    Create New Run (Step {{ step }}/2)
+                    Create New Run (Step {{ step }}/3)
                   </h2>
                   <p class="text-sm text-gray-600 dark:text-gray-400">
                     Create a new run in
@@ -97,7 +97,7 @@
                   <form
                     id="createrun"
                     enctype="multipart/form-data"
-                    action="/api/run/create/step2"
+                    action="{{'/api/run/create/step2' if session['doneValidation'] else '/api/run/create/step2/validate' }}"
                     method="post"
                   >
                     <div class="flex flex-wrap items-center space-x-4">
@@ -110,6 +110,8 @@
                             class="block text-sm font-medium mb-2 dark:text-white"
                             >Rainfall Stats Report</label
                           >
+                          {% if "doneValidation" not in session or
+                          session["doneValidation"] == False %}
                           <input
                             type="file"
                             name="rainfall-stats"
@@ -118,6 +120,13 @@
                             accept=".xlsx,.csv"
                             class="block w-auto border border-gray-200 shadow-sm rounded-lg text-sm focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600 file:bg-gray-50 file:border-0 file:me-4 file:py-3 file:px-4 dark:file:bg-gray-700 dark:file:text-gray-400"
                           />
+                          {% else %}
+                          <div
+                            class="block w-auto border border-gray-200 shadow-sm rounded-lg text-sm focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+                          >
+                            {{session["rainfallStats"].filename}}
+                          </div>
+                          {% endif %}
                         </div>
                         <div>
                           <label
@@ -207,25 +216,28 @@
                       </a>
                       <button
                         type="submit"
-                        onclick="submitForm()"
+                        onclick="validate()"
                         class="py-2 px-3 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
                       >
+                        {% if "doneValidation" not in session or
+                        session["doneValidation"] == False %} Validate {% elif
+                        "multiAsset" not in session or session["multiAsset"] ==
+                        False %} Create Run {% else %} Next Step {% endif %}
+
                         <svg
-                          class="flex-shrink-0 size-4"
                           xmlns="http://www.w3.org/2000/svg"
-                          width="24"
-                          height="24"
-                          viewBox="0 0 24 24"
                           fill="none"
+                          viewBox="0 0 24 24"
+                          stroke-width="1.5"
                           stroke="currentColor"
-                          stroke-width="2"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
+                          class="flex-shrink-0 size-4"
                         >
-                          <path d="M5 12h14" />
-                          <path d="M12 5v14" />
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="m8.25 4.5 7.5 7.5-7.5 7.5"
+                          />
                         </svg>
-                        Create a new run
                       </button>
                     </div>
                   </form>
@@ -247,7 +259,7 @@
     const formatted = now.toLocaleString();
     document.querySelector("#date").innerHTML = formatted;
 
-    function submitForm() {
+    function validate() {
       const form = document.forms["createrun"];
       const formulaA = document.getElementById("formula-a");
       const consentFlow = document.getElementById("consent-flow");
