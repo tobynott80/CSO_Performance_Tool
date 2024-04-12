@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from quart import app
 import json
 from quart import (
     Blueprint,
@@ -15,9 +14,7 @@ import asyncio
 import math
 import os
 from pathlib import Path
-import time
-from openpyxl import load_workbook
-from io import BytesIO
+from datetime import datetime
 
 import pandas as pd
 from app.gn066_tests.csvHandler import csvReader, csvWriter
@@ -104,11 +101,11 @@ async def createRunStep1():
 
 @run_blueprint.route("/create/step2/validate", methods=["POST"])
 async def createRunStep2Validation():
-    
+
     if "loc" not in session:
         # If no loc found, invalid since no session data
         return redirect("/")
-    
+
     tests = session["tests"]
 
     files = await request.files
@@ -118,23 +115,32 @@ async def createRunStep2Validation():
     if not resp:
         await flash("Something went wrong with validation", "error")
         return redirect(url_for(f"createRun", locid=session["loc"], step=1))
-    
-    if not resp['success'] or resp['success'] == False:
-        await flash(resp["message"], 'error')
+
+    if not resp["success"] or resp["success"] == False:
+        await flash(resp["message"], "error")
         return redirect(url_for(f"createRun", locid=session["loc"], step=2))
-    
-    if ("Baseline Stats Report" in files):
+
+    if "Baseline Stats Report" in files:
         path = await saveTempFile(files["Baseline Stats Report"])
-        session["baselineStats"] = {"filename": files["Baseline Stats Report"].filename, "path": path}
+        session["baselineStats"] = {
+            "filename": files["Baseline Stats Report"].filename,
+            "path": path,
+        }
 
-    if ("rainfall-stats" in files):
+    if "rainfall-stats" in files:
         path = await saveTempFile(files["rainfall-stats"])
-        session["rainfallStats"] = {"filename": files["rainfall-stats"].filename, "path": path}
+        session["rainfallStats"] = {
+            "filename": files["rainfall-stats"].filename,
+            "path": path,
+        }
 
-    if ("spill-stats" in files):
+    if "spill-stats" in files:
         path = await saveTempFile(files["spill-stats"])
-        session["spillStats"] = {"filename": files["spill-stats"].filename, "path": path}
-        
+        session["spillStats"] = {
+            "filename": files["spill-stats"].filename,
+            "path": path,
+        }
+
     session["doneValidation"] = True
     if resp["hasMultiAsset"]:
         session["multiAsset"] = True
@@ -158,11 +164,11 @@ async def createRunStep2():
     if "loc" not in session:
         # If no loc found, invalid since no session data
         return redirect("/")
-    
+
     if "doneValidation" not in session or session["doneValidation"] == False:
         # If not completed validation precheck, redirect back
         return redirect(url_for(f"createRun", locid=session["loc"], step=2))
-    
+
     if "multiAsset" in session and session["multiAsset"] == True:
         # Redirect to step 3 where they will select assets
         return redirect(url_for(f"createRun", locid=session["loc"], step=3))
@@ -180,14 +186,13 @@ async def createRunStep2():
 
 
 async def saveTempFile(file):
-    print(file)
     Path(TMP_FOLDER).mkdir(exist_ok=True)
     extension = file.filename.split(".")[-1]
-    path = os.path.join(TMP_FOLDER, file.filename.split(".")[0] + "." + extension)
-    if (extension == "xlsx"):
-        # VERY BAD IF CAN DO BETTER PLS DO
+    path = os.path.join(TMP_FOLDER, datetime.today().strftime('%d-%m-%Y_%H-%M-%S') + "." + extension)
+    if extension == "xlsx":
+        # NOT PERFORMANT, IF CAN DO BETTER PLS DO
         df = pd.read_excel(file)
-        writer = pd.ExcelWriter(path, engine='xlsxwriter')
+        writer = pd.ExcelWriter(path, engine="xlsxwriter")
         df.to_excel(writer)
         writer.close()
     else:
@@ -195,18 +200,18 @@ async def saveTempFile(file):
     return path
     # Delete tmp folder on every app run? ensure no stale files
 
-    
+
 @run_blueprint.route("/create/step3", methods=["POST"])
 async def createRunStep3():
     """
-    API route for step 3, the final step of the runs creation routine. 
+    API route for step 3, the final step of the runs creation routine.
     Dispatches the job to the thread handler.
 
     Returns:
         A redirect response to the created run page.
 
     """
-    # In step 2, based on multiAsset cookie it will either 
+    # In step 2, based on multiAsset cookie it will either
     # redirect to step 3 or start run process and redirect to results page
 
     if "loc" not in session:
@@ -231,11 +236,11 @@ async def createRunStep3():
     if not resp:
         await flash("Something went wrong with validation", "error")
         return redirect(url_for(f"createRun", locid=session["loc"], step=1))
-    
-    if not resp['success'] or resp['success'] == False:
-        await flash(resp["message"], 'error')
+
+    if not resp["success"] or resp["success"] == False:
+        await flash(resp["message"], "error")
         return redirect(url_for(f"createRun", locid=session["loc"], step=2))
-    
+
     if resp["hasMultiAsset"]:
         # Save files to session for step 3
         return redirect(url_for(f"createRun", locid=session["loc"], step=3))
@@ -255,12 +260,8 @@ async def createRuns(session):
         "runids": {},
     }
 
-    
-
     run["baselineStatsFile"] = (
-        session["baselineStats"]["filename"]
-        if "baselineStats" in session
-        else None
+        session["baselineStats"]["filename"] if "baselineStats" in session else None
     )
     run["rainfallStatsFile"] = (
         session["rainfallStats"]["filename"] if "rainfallStats" in session else None
@@ -347,7 +348,8 @@ async def createRuns(session):
                 ),
             )
             test3thread.start()
-    return run        
+    return run
+
 
 # Only checks files validation
 async def checkTestValidation(tests, files):
@@ -360,14 +362,18 @@ async def checkTestValidation(tests, files):
 
             # Check if appropriate files are uploaded
             if "rainfall-stats" not in files or "spill-stats" not in files:
-                resp["message"] = "Missing required files. Please upload both Rainfall Stats and Spill Stats."
+                resp["message"] = (
+                    "Missing required files. Please upload both Rainfall Stats and Spill Stats."
+                )
                 break
 
             # Check correct format
             if not files["rainfall-stats"].filename.endswith((".csv")) or not files[
                 "spill-stats"
             ].filename.endswith((".xlsx")):
-                resp["message"] = "Invalid file format. Please upload files the rainfall-stats as a .csv and spill-stats as a .xlsx."
+                resp["message"] = (
+                    "Invalid file format. Please upload files the rainfall-stats as a .csv and spill-stats as a .xlsx."
+                )
                 break
 
             # Rainfall Stats Data Validation
@@ -382,7 +388,9 @@ async def checkTestValidation(tests, files):
 
                 # Check for the 'P_DATETIME' column
                 if "P_DATETIME" not in df_temp.columns:
-                    resp["message"] = "Invalid Rainfall Stats file: 'P_DATETIME' column missing."
+                    resp["message"] = (
+                        "Invalid Rainfall Stats file: 'P_DATETIME' column missing."
+                    )
                     break
 
             except Exception as e:
@@ -408,15 +416,18 @@ async def checkTestValidation(tests, files):
                     if column not in spill_data.columns
                 ]
                 if missing_columns:
-                    resp["message"] = "Please move Excel sheet to first place in sheet list. " + " Missing required columns in Spill Stats file: " + ", ".join(missing_columns)
+                    resp["message"] = (
+                        "Please move Excel sheet to first place in sheet list."
+                        + " Missing required columns in Spill Stats file: "
+                        + ", ".join(missing_columns)
+                    )
                     break
 
-                # Check if there are multiple ID's in the Excel file 
+                # Check if there are multiple ID's in the Excel file
 
                 if len(spill_data["ID"].unique()) > 1:
                     resp["hasMultiAsset"] = True
 
-                
             except Exception as e:
                 resp["message"] = "Error reading Spill Stats file: " + str(e)
                 break
@@ -440,7 +451,9 @@ async def checkTestValidation(tests, files):
             if not files["Baseline Stats Report"].filename.endswith(
                 (".xlsx", ".csv", ".xls")
             ):
-                resp["message"] = "Invalid file format. Only '.xlsx', '.csv', and '.xls' files are supported."
+                resp["message"] = (
+                    "Invalid file format. Only '.xlsx', '.csv', and '.xls' files are supported."
+                )
                 break
 
             # Load the Excel file and checks whether sheet "Summary" exists
@@ -452,7 +465,10 @@ async def checkTestValidation(tests, files):
                     nrows=2,
                 )
             except Exception as e:
-                resp["message"] = "Error reading file, Please Input a valid Excel file. Error: " + str(e)
+                resp["message"] = (
+                    "Error reading file, Please Input a valid Excel file. Error: "
+                    + str(e)
+                )
                 break
 
             # Check if required columns are present
@@ -461,7 +477,9 @@ async def checkTestValidation(tests, files):
                 column for column in required_columns if column not in df_pff.columns
             ]
             if missing_columns:
-                resp["message"] = "Missing required columns: " + ", ".join(missing_columns)
+                resp["message"] = "Missing required columns: " + ", ".join(
+                    missing_columns
+                )
                 break
             resp["success"] = True
     return resp
@@ -715,7 +733,7 @@ async def createTest3(formula_a_value, consent_flow_value, baseline_stats_file, 
 
 
 async def saveSummaryToDB(db, run, summary):
-    """ 
+    """
     Helper function to save given summary data to the database.
 
     Args:
@@ -746,7 +764,11 @@ async def saveSummaryToDB(db, run, summary):
                     ],
                     "substandardSpills": row[f"{run['name']} - Substandard Spills"],
                     "satisfactorySpills": row[f"{run['name']} - Satisfactory Spills"],
-                    "totalIntensity": row["Total Rainfall (mm)"] if math.isnan(row["Total Rainfall (mm)"]) == False else 0.0,
+                    "totalIntensity": (
+                        row["Total Rainfall (mm)"]
+                        if math.isnan(row["Total Rainfall (mm)"]) == False
+                        else 0.0
+                    ),
                     "runTestID": runtestid,
                 }
             )
