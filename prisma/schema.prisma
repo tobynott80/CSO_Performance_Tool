@@ -18,42 +18,63 @@ model Location {
 
 // Runs Table
 model Runs {
-  id          Int        @id @default(autoincrement())
-  date        DateTime   @default(now())
-  locationID  Int
-  name        String
-  description String
+  id                Int      @id @default(autoincrement())
+  date              DateTime @default(now())
+  locationID        Int
+  name              String
+  description       String
   rainfallStatsFile String?
-  spillStatsFile String?
+  spillStatsFile    String?
   baselineStatsFile String?
-  runsTests   RunTests[]
-  location    Location   @relation(fields: [locationID], references: [id], onDelete: Cascade)
+  Assets            Assets[]
+  location          Location @relation(fields: [locationID], references: [id], onDelete: Cascade)
 }
 
 // Tests Table
 model Tests {
-  id          Int        @id @default(autoincrement())
+  id          Int          @id @default(autoincrement())
   name        String
   description String
-  runsTests   RunTests[]
+  assetTests  AssetTests[]
 }
 
-// Run Test Table
-model RunTests {
+model Assets {
   id         Int          @id @default(autoincrement())
+  name       String
   runID      Int
+  run        Runs         @relation(fields: [runID], references: [id], onDelete: Cascade)
+  assetTests AssetTests[]
+}
+
+model AssetTests {
+  id         Int          @id @default(autoincrement())
+  assetID    Int
+  asset      Assets       @relation(fields: [assetID], references: [id], onDelete: Cascade)
   testID     Int
   status     String
-  run        Runs         @relation(fields: [runID], references: [id], onDelete: Cascade)
   test       Tests        @relation(fields: [testID], references: [id])
-  summary    Summary[]    @relation("RunTestToSummary")
-  timeSeries TimeSeries[] @relation("RunTestToTimeSeries")
-  spillEvent SpillEvent[] @relation("RunTestToSpillEvent")
-  testThree  TestThree[]  @relation("RunTestToTestThree")
+  summary    Summary[]    @relation("assetTestToSummary")
+  timeSeries TimeSeries[] @relation("assetTestToTimeSeries")
+  spillEvent SpillEvent[] @relation("assetTestToSpillEvent")
+  testThree  TestThree[]  @relation("assetTestToTestThree")
 }
 
+// // Run Test Table
+// model RunTests {
+//   id         Int          @id @default(autoincrement())
+//   runID      Int
+//   testID     Int
+//   status     String
+//   run        Runs         @relation(fields: [runID], references: [id], onDelete: Cascade)
+//   test       Tests        @relation(fields: [testID], references: [id])
+//   summary    Summary[]    @relation("RunTestToSummary")
+//   timeSeries TimeSeries[] @relation("RunTestToTimeSeries")
+//   spillEvent SpillEvent[] @relation("RunTestToSpillEvent")
+//   testThree  TestThree[]  @relation("RunTestToTestThree")
+// }
+
 model Summary {
-  id                   Int      @id @default(autoincrement())
+  id                   Int        @id @default(autoincrement())
   year                 String
   dryPerc              Float
   heavyPerc            Float
@@ -62,12 +83,12 @@ model Summary {
   substandardSpills    Int
   satisfactorySpills   Int
   totalIntensity       Float
-  runTestID            Int
-  runTest              RunTests @relation("RunTestToSummary", fields: [runTestID], references: [id], onDelete: Cascade)
+  assetTestID          Int
+  assetTest            AssetTests @relation("assetTestToSummary", fields: [assetTestID], references: [id], onDelete: Cascade)
 }
 
 model TimeSeries {
-  id             Int      @id @default(autoincrement())
+  id             Int        @id @default(autoincrement())
   dateTime       DateTime
   intensity      Float
   depth          Float
@@ -76,12 +97,12 @@ model TimeSeries {
   spillAllowed   String?
   dayType        String
   result         String?
-  runTestID      Int
-  runTest        RunTests @relation("RunTestToTimeSeries", fields: [runTestID], references: [id], onDelete: Cascade)
+  assetTestID    Int
+  assetTest      AssetTests @relation("assetTestToTimeSeries", fields: [assetTestID], references: [id], onDelete: Cascade)
 }
 
 model SpillEvent {
-  id             Int      @id @default(autoincrement())
+  id             Int        @id @default(autoincrement())
   start          DateTime
   end            DateTime
   volume         Float
@@ -92,18 +113,18 @@ model SpillEvent {
   test1          String
   test2          String
   classification String
-  runTestID      Int
-  runTest        RunTests @relation("RunTestToSpillEvent", fields: [runTestID], references: [id], onDelete: Cascade)
+  assetTestID    Int
+  assetTest      AssetTests @relation("assetTestToSpillEvent", fields: [assetTestID], references: [id], onDelete: Cascade)
 }
 
 model TestThree {
-  id        Int      @id @default(autoincrement())
-  year     String
-  formulaAInput Float?
-  consentFPFInput Float?
+  id               Int        @id @default(autoincrement())
+  year             String
+  formulaAInput    Float?
+  consentFPFInput  Float?
   complianceStatus String
-  formulaAStatus String
+  formulaAStatus   String
   consentFPFStatus String
-  runTestID      Int
-  runTest        RunTests @relation("RunTestToTestThree", fields: [runTestID], references: [id], onDelete: Cascade)
+  assetTestID      Int
+  assetTest        AssetTests @relation("assetTestToTestThree", fields: [assetTestID], references: [id], onDelete: Cascade)
 }
