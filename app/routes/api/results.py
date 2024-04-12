@@ -38,7 +38,6 @@ async def closeDB():
     db = await db.disconnect()
 
 
-
 @results_blueprint.route("/timeseries", methods=["GET"])
 async def getTimeSeries():
     """
@@ -97,10 +96,10 @@ async def getTimeSeries():
     for i in range(len(timeseries_list)):
         if i % 4 == 0:
             reduced_timeseries_list.append(timeseries_hour)
-            if i+1 < len(timeseries_list):
-                timeseries_hour = timeseries_list[i+1]
+            if i + 1 < len(timeseries_list):
+                timeseries_hour = timeseries_list[i + 1]
         else:
-            timeseries_hour.intensity += timeseries_list[i].intensity 
+            timeseries_hour.intensity += timeseries_list[i].intensity
 
     return [timeseries.model_dump() for timeseries in reduced_timeseries_list], 200
 
