@@ -3,6 +3,7 @@ from app import app
 from app.helper.database import initDB
 from math import ceil
 import pandas as pd
+from pathlib import Path
 
 db = None
 
@@ -300,18 +301,20 @@ async def createRun(locid):
             step = 2
         # Step 3 requires file validation precheck and multiple assets to be true
         else:
-            session["spillStats"]["path"]
-            spill_data = pd.read_excel(session["spillStats"].stream)
+            print(session["spillStats"]["path"])
+            #OSError: [Errno 22] Invalid argument
+            spill_data = pd.read_excel(session["spillStats"]["path"])
+
             # Seperate the spill_Data excel file into individual assets based on the ID column
             assets = spill_data["ID"].unique()
-            session["assets"] = assets
-            session["assetCount"] = len(assets)
-            session["step"] = 3
+            print(assets)
+
             return await render_template(
                 "runs/create_three.html",
                 loc=loc,
                 step=step,
                 session=session,
+                assets=assets
             )
 
     return await render_template(
@@ -333,7 +336,7 @@ async def view_run(location_id, run_id):
         run_id (str): The ID of the run.
 
     Returns:
-        A template with the details of the run, including the location, run, and runTest.
+        A template with the details of the run, including the location, run, and assetTest.
 
     Raises:
         None.
@@ -411,8 +414,8 @@ async def view_run(location_id, run_id):
     )
 
 
-@app.get("/<int:location_id>/<int:run_id>/visualisation")
-async def view_visualisation(location_id, run_id):
+@app.get("/<int:location_id>/<int:run_id>/<int:asset_id>/visualisation")
+async def view_visualisation(location_id, run_id, asset_id):
     """
     View the visualization for a specific location and run.
 
@@ -430,16 +433,16 @@ async def view_visualisation(location_id, run_id):
     if "colorblind_mode" not in session:
         session["colorblind_mode"] = "normal"
 
-    runTest = await db.runtests.find_first(
+    assetTest = await db.assettests.find_first(
         where={
-            "runID": run_id,
+            "assetID": asset_id,
         }
     )
-    if not (runTest):
+    if not (assetTest):
         return await render_template_string(
             "Run not found or in progess. Try again later"
         )
-    elif runTest.status != "COMPLETED":
+    elif assetTest.status != "COMPLETED":
         # Add better page here.
         return await render_template_string("Run in progress. Please try again later")
     match session["colorblind_mode"]:
@@ -479,13 +482,13 @@ async def view_visualisation(location_id, run_id):
         "runs/results/visualisation.html",
         location=location,
         run=run,
-        runTest=runTest,
+        assetTest=assetTest,
         colors=colors,
     )
 
 
-@app.get("/<int:location_id>/<int:run_id>/results_test3")
-async def test3_results(location_id, run_id):
+@app.get("/<int:location_id>/<int:run_id>/<int:asset_id>/results_test3")
+async def test3_results(location_id, run_id, asset_id):
     """
     Retrieve and render Test 3 results for a specific location and run.
 
@@ -507,18 +510,18 @@ async def test3_results(location_id, run_id):
     tests = await db.tests.find_first(
         where={"name": "Test 3"},
         include={
-            "runsTests": {"where": {"runID": run_id}, "include": {"testThree": True}},
+            "assetTests": {"where": {"assetID": asset_id}, "include": {"testThree": True}},
         },
     )
 
     if not tests:
         return redirect(f"/{location_id}/{run_id}")
 
-    if tests.runsTests[0].status != "COMPLETED":
+    if tests.assetTests[0].status != "COMPLETED":
         return redirect(f"/{location_id}/{run_id}")
 
     # Handling the case where there are no Test 3 results found for the run
-    if not tests.runsTests[0].testThree:
+    if not tests.assetTests[0].testThree:
         message = "No Test 3 results found for this run."
         return await render_template_string("Message: {{message}}", message=message)
 
@@ -527,12 +530,12 @@ async def test3_results(location_id, run_id):
         "/runs/results/results_test3.html",
         location=location,
         run=run,
-        test3_results=tests.runsTests[0].testThree,
+        test3_results=tests.assetTests[0].testThree,
     )
 
 
-@app.get("/<int:location_id>/<int:run_id>/results_dry_day")
-async def dry_day_results(location_id, run_id):
+@app.get("/<int:location_id>/<int:run_id>/<int:asset_id>/results_dry_day")
+async def dry_day_results(location_id, run_id, asset_id):
 
     location = await db.location.find_first(where={"id": location_id})
     if not location:
@@ -545,18 +548,18 @@ async def dry_day_results(location_id, run_id):
     tests = await db.tests.find_first(
         where={"name": "Test 1"},
         include={
-            "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+            "assetTests": {"where": {"assetID": asset_id}, "include": {"summary": True}},
         },
     )
 
     if not tests:
         return redirect(f"/{location_id}/{run_id}")
 
-    if tests.runsTests[0].status != "COMPLETED":
+    if tests.assetTests[0].status != "COMPLETED":
         return redirect(f"/{location_id}/{run_id}")
 
     # Handling the case where there are no Test 1 results found for the run
-    if not tests.runsTests[0].summary:
+    if not tests.assetTests[0].summary:
         message = "No Test 1 results found for this run."
         return await render_template_string("Message: {{message}}", message=message)
 
@@ -565,12 +568,12 @@ async def dry_day_results(location_id, run_id):
         "/runs/results/results_dry_day.html",
         location=location,
         run=run,
-        dry_day_results=tests.runsTests[0].summary,
+        dry_day_results=tests.assetTests[0].summary,
     )
 
 
-@app.get("/<int:location_id>/<int:run_id>/results_unsatisfactory_spills")
-async def unsatisfactory_spills_results(location_id, run_id):
+@app.get("/<int:location_id>/<int:run_id>/<int:asset_id>/results_unsatisfactory_spills")
+async def unsatisfactory_spills_results(location_id, run_id, asset_id):
 
     location = await db.location.find_first(where={"id": location_id})
     if not location:
@@ -583,18 +586,18 @@ async def unsatisfactory_spills_results(location_id, run_id):
     tests = await db.tests.find_first(
         where={"name": "Test 1"},
         include={
-            "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+            "assetTests": {"where": {"assetID": asset_id}, "include": {"summary": True}},
         },
     )
 
     if not tests:
         return redirect(f"/{location_id}/{run_id}")
 
-    if tests.runsTests[0].status != "COMPLETED":
+    if tests.assetTests[0].status != "COMPLETED":
         return redirect(f"/{location_id}/{run_id}")
 
     # Handling the case where there are no Test 1 results found for the run
-    if not tests.runsTests[0].summary:
+    if not tests.assetTests[0].summary:
         message = "No Test 1 results found for this run."
         return await render_template_string("Message: {{message}}", message=message)
 
@@ -603,12 +606,12 @@ async def unsatisfactory_spills_results(location_id, run_id):
         "/runs/results/results_unsatisfactory_spills.html",
         location=location,
         run=run,
-        unsatisfactory_spills_results=tests.runsTests[0].summary,
+        unsatisfactory_spills_results=tests.assetTests[0].summary,
     )
 
 
-@app.get("/<int:location_id>/<int:run_id>/results_substandard_spills")
-async def substandard_spills_results(location_id, run_id):
+@app.get("/<int:location_id>/<int:run_id>/<int:asset_id>/results_substandard_spills")
+async def substandard_spills_results(location_id, run_id, asset_id):
 
     location = await db.location.find_first(where={"id": location_id})
     if not location:
@@ -621,18 +624,18 @@ async def substandard_spills_results(location_id, run_id):
     tests = await db.tests.find_first(
         where={"name": "Test 1"},
         include={
-            "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+            "assetTests": {"where": {"assetID": asset_id}, "include": {"summary": True}},
         },
     )
 
     if not tests:
         return redirect(f"/{location_id}/{run_id}")
 
-    if tests.runsTests[0].status != "COMPLETED":
+    if tests.assetTests[0].status != "COMPLETED":
         return redirect(f"/{location_id}/{run_id}")
 
     # Handling the case where there are no Test 1 results found for the run
-    if not tests.runsTests[0].summary:
+    if not tests.assetTests[0].summary:
         message = "No Test 1 results found for this run."
         return await render_template_string("Message: {{message}}", message=message)
 
@@ -641,12 +644,12 @@ async def substandard_spills_results(location_id, run_id):
         "/runs/results/results_substandard_spills.html",
         location=location,
         run=run,
-        substandard_spills_results=tests.runsTests[0].summary,
+        substandard_spills_results=tests.assetTests[0].summary,
     )
 
 
-@app.get("/<int:location_id>/<int:run_id>/results_heavy_perc")
-async def heavy_perc_results(location_id, run_id):
+@app.get("/<int:location_id>/<int:run_id>/<int:asset_id>/results_heavy_perc")
+async def heavy_perc_results(location_id, run_id, asset_id):
 
     location = await db.location.find_first(where={"id": location_id})
     if not location:
@@ -659,17 +662,17 @@ async def heavy_perc_results(location_id, run_id):
     test1 = await db.tests.find_first(
         where={"name": "Test 1"},
         include={
-            "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+            "assetTests": {"where": {"assetID": asset_id}, "include": {"summary": True}},
         },
     )
 
     print(test1)
-    if not test1.runsTests:
+    if not test1.assetTests:
 
         test1 = await db.tests.find_first(
             where={"name": "Test 2"},
             include={
-                "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+                "assetTests": {"where": {"assetID": run_id}, "include": {"summary": True}},
             },
         )
 
@@ -677,12 +680,12 @@ async def heavy_perc_results(location_id, run_id):
         "/runs/results/results_heavy_perc.html",
         location=location,
         run=run,
-        heavy_perc_results=test1.runsTests[0].summary,
+        heavy_perc_results=test1.assetTests[0].summary,
     )
 
 
-@app.get("/<int:location_id>/<int:run_id>/results_spill_perc")
-async def spill_perc_results(location_id, run_id):
+@app.get("/<int:location_id>/<int:run_id>/<int:asset_id>/results_spill_perc")
+async def spill_perc_results(location_id, run_id, asset_id):
 
     location = await db.location.find_first(where={"id": location_id})
     if not location:
@@ -695,17 +698,17 @@ async def spill_perc_results(location_id, run_id):
     test1 = await db.tests.find_first(
         where={"name": "Test 1"},
         include={
-            "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+            "assetTests": {"where": {"assetID": asset_id}, "include": {"summary": True}},
         },
     )
 
     print(test1)
-    if not test1.runsTests:
+    if not test1.assetTests:
 
         test1 = await db.tests.find_first(
             where={"name": "Test 2"},
             include={
-                "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+                "assetTests": {"where": {"assetID": asset_id}, "include": {"summary": True}},
             },
         )
 
@@ -713,12 +716,12 @@ async def spill_perc_results(location_id, run_id):
         "/runs/results/results_spill_perc.html",
         location=location,
         run=run,
-        spill_perc_results=test1.runsTests[0].summary,
+        spill_perc_results=test1.assetTests[0].summary,
     )
 
 
-@app.get("/<int:location_id>/<int:run_id>/results_storm_overflow")
-async def storm_overflow_results(location_id, run_id):
+@app.get("/<int:location_id>/<int:run_id>/<int:asset_id>/results_storm_overflow")
+async def storm_overflow_results(location_id, run_id, asset_id):
 
     location = await db.location.find_first(where={"id": location_id})
     if not location:
@@ -731,17 +734,17 @@ async def storm_overflow_results(location_id, run_id):
     test1 = await db.tests.find_first(
         where={"name": "Test 1"},
         include={
-            "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+            "assetTests": {"where": {"assetID": asset_id}, "include": {"summary": True}},
         },
     )
 
     print(test1)
-    if not test1.runsTests:
+    if not test1.assetTests:
 
         test1 = await db.tests.find_first(
             where={"name": "Test 2"},
             include={
-                "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+                "assetTests": {"where": {"assetID": asset_id}, "include": {"summary": True}},
             },
         )
 
@@ -749,5 +752,5 @@ async def storm_overflow_results(location_id, run_id):
         "/runs/results/results_storm_overflow.html",
         location=location,
         run=run,
-        storm_overflow_results=test1.runsTests[0].summary,
+        storm_overflow_results=test1.assetTests[0].summary,
     )
