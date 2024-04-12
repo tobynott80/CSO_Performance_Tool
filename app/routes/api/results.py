@@ -44,7 +44,7 @@ async def getTimeSeries():
     Retrieves time series data based on the provided parameters.
 
     Parameters:
-    - runTestID (int): The ID of the asset test.
+    - assetTestID (int): The ID of the asset test.
     - startTime (int): The start time of the time series data (in epoch time).
     - endTime (int): The end time of the time series data (in epoch time).
 
