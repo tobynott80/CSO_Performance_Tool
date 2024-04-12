@@ -4,9 +4,11 @@
   <div class="flex flex-row">
     <h2 class="flex-grow text-l font-semibold text-gray-800 dark:text-gray-200">
       <div>
-        Formula A & Consent FPF {% if runTest.status == "COMPLETED" %} {%
-        include 'runs/results/components/completed_icon.html' %} {% else %} {%
-        include 'runs/results/components/pending_icon.html' %} {% endif %}
+        Formula A & Consent FPF 
+        {% if assetTest.status == "COMPLETED" %} {% include 'runs/results/components/completed_icon.html' %} 
+        {% else %} 
+        {% include 'runs/results/components/pending_icon.html' %} 
+        {% endif %}
       </div>
       <span class="text-gray-600 dark:text-gray-400 text-sm">
         Analysing Flow Passed Forward (FPF) of a SO against the minimum consent
@@ -16,7 +18,7 @@
   <div class="flex flex-row">
     <div class="flex flex-col">
       <a
-        href="/{{ location.id }}/{{ run.id }}/results_test3"
+        href="/{{ location.id }}/{{ run.id }}/{{ asset.id }}/results_test3"
         class="underline text-base text-blue-600 dark:text-blue-400 cursor-pointer"
         >View Test 3 Results</a
       >
