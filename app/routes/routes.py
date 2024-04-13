@@ -2,6 +2,7 @@ from quart import render_template, render_template_string, request, redirect, se
 from app import app
 from app.helper.database import initDB
 from math import ceil
+from flask import jsonify
 
 db = None
 
@@ -62,6 +63,32 @@ async def getPaginatedLocations(page, limit, include_runs=False):
         locations = await db.location.find_many(skip=skip, take=limit)
     return locations
 
+@app.route("/autocomplte", methods=["GET"])
+async def autocomplete():
+    """
+    Autocomplete the location search query.
+
+    Args:
+        None
+
+    Returns:
+        A list of locations based on the search query.
+        A list of runs based on the search query.
+    """
+    # fetches a list of locations
+    query = request.args.get("query")
+    locations = await db.location.find_many(
+        where={"name": {"contains": query}}, 
+        take=5, 
+        select={"name": True, "id": True}
+    )
+    # fetches a list of runs based on the search query
+    runs = await db.runs.find_many(
+        where={"name": {"contains": query}}, 
+        take=5, 
+        select={"name": True, "id": True, "locationID": True}
+    )
+    return jsonify({"locations": locations, "runs": runs})
 
 @app.route("/")
 async def index():
@@ -74,6 +101,7 @@ async def index():
     Returns:
         The rendered index.html template with the following variables:
         - locations: A list of locations based on the search query or all locations if no query is provided.
+        - runs: A list of runs based on the search query or all runs if no query is provided.
         - total_pages: The total number of pages based on the number of locations and the limit per page.
         - current_page: The current page number.
         - search: The search query.
@@ -89,6 +117,11 @@ async def index():
             skip=(page - 1) * limit,
             take=limit,
             include={"runs": True},
+        )
+        runs = await db.runs.find_many(
+            where={"name": {"contains": query}},
+            skip=(page - 1) * limit,
+            take=limit,
         )
     else:
         total = await db.location.count()
