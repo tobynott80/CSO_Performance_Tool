@@ -107,6 +107,7 @@
                           id="{{asset}}"
                           type="checkbox"
                           value="{{asset}}"
+                          name="{{asset}}"
                           class="shrink-0 mt-0.5 border-gray-200 rounded text-blue-600 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
                         />
                         <label
@@ -182,54 +183,14 @@
     const formatted = now.toLocaleString();
     document.querySelector("#date").innerHTML = formatted;
 
-    function submitForm() {
-      const form = document.forms["createrun"];
-      const formulaA = document.getElementById("formula-a");
-      const consentFlow = document.getElementById("consent-flow");
-      const rainfallStats = document.getElementById("rainfall-stats");
-      const spillStats = document.getElementById("spill-stats");
-
-      // Check which page we are on
-      const hasRainfallStats = rainfallStats && rainfallStats.files.length > 0;
-      const hasSpillStats = spillStats && spillStats.files.length > 0;
-      const hasFormulaA = formulaA && formulaA.value.trim() !== "";
-      const hasConsentFlow = consentFlow && consentFlow.value.trim() !== "";
-
-      // 1) We're on the page with all the inputs
-      if (
-        rainfallStats !== null &&
-        spillStats !== null &&
-        formulaA !== null &&
-        consentFlow !== null
-      ) {
-        if (
-          !hasRainfallStats ||
-          !hasSpillStats ||
-          (!hasFormulaA && !hasConsentFlow)
-        ) {
-          alert(
-            "Please upload both Spill Stats and Rainfall Stats, and input at least Formula A or Consent Flow."
-          );
-          return;
-        }
-      } else {
-        // Were on just test 1 or 2.
-        if (rainfallStats !== null && spillStats !== null) {
-          if (!hasRainfallStats || !hasSpillStats) {
-            alert("Please upload both Spill Stats and Rainfall Stats.");
-            return; // Prevent form submission
-          }
-        }
-
-        // Were on just test 3.
-        if (formulaA !== null && consentFlow !== null) {
-          if (!hasFormulaA && !hasConsentFlow) {
-            alert("Please input at least Formula A or Consent Flow.");
-            return; // Prevent form submission
-          }
-        }
+    function submitForm(event) {
+      const form = document.forms("createrun");
+      const checkboxes = form.querySelectorAll("input[type=checkbox]:checked");
+      if (checkboxes.length < 1) {
+        return alert("Select at least one asset to create a run.");
+        // Stop the function if no checkboxes are selected
       }
-      // No errors, submit the form
+
       form.submit();
     }
   </script>
