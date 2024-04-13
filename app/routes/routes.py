@@ -1,8 +1,7 @@
-from quart import render_template, render_template_string, request, redirect, session
+from quart import render_template, render_template_string, request, redirect, session, jsonify
 from app import app
 from app.helper.database import initDB
 from math import ceil
-from flask import jsonify
 
 db = None
 
@@ -63,7 +62,7 @@ async def getPaginatedLocations(page, limit, include_runs=False):
         locations = await db.location.find_many(skip=skip, take=limit)
     return locations
 
-@app.route("/autocomplte", methods=["GET"])
+@app.route("/autocomplete", methods=["GET"])
 async def autocomplete():
     """
     Autocomplete the location search query.
@@ -76,17 +75,15 @@ async def autocomplete():
         A list of runs based on the search query.
     """
     # fetches a list of locations
-    query = request.args.get("query")
+    query = request.args.get("q")
     locations = await db.location.find_many(
         where={"name": {"contains": query}}, 
         take=5, 
-        select={"name": True, "id": True}
     )
     # fetches a list of runs based on the search query
     runs = await db.runs.find_many(
         where={"name": {"contains": query}}, 
         take=5, 
-        select={"name": True, "id": True, "locationID": True}
     )
     return jsonify({"locations": locations, "runs": runs})
 
@@ -118,11 +115,7 @@ async def index():
             take=limit,
             include={"runs": True},
         )
-        runs = await db.runs.find_many(
-            where={"name": {"contains": query}},
-            skip=(page - 1) * limit,
-            take=limit,
-        )
+
     else:
         total = await db.location.count()
         locations = await getPaginatedLocations(page, limit, include_runs=True)
