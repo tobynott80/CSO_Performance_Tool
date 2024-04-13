@@ -62,7 +62,8 @@ async def getTimeSeries():
     # If no start or end time is provided, return the entire timeseries
     if start_time is None or end_time is None:
         timeseries_list = await db.timeseries.find_many(
-            where={"assetTestID": int(asset_test_ID)}
+            where={"assetTestID": int(asset_test_ID)},
+            include={"TimeSeriesResult": True},
         )
         if not timeseries_list:
             return {
@@ -81,6 +82,7 @@ async def getTimeSeries():
             "dateTime": {"gte": start_time, "lte": end_time},
         },
         order={"dateTime": "asc"},
+        include={"TimeSeriesResult": True},
     )
     if not timeseries_list:
         return {

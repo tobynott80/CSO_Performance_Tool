@@ -168,16 +168,19 @@ async def createRunStep2():
         # If not completed validation precheck, redirect back
         return redirect(url_for(f"createRun", locid=session["loc"], step=2))
 
-    if "multiAsset" in session and session["multiAsset"] == True:
-        # Redirect to step 3 where they will select assets
-        return redirect(url_for(f"createRun", locid=session["loc"], step=3))
-
     form_data = await request.form
-
     formula_a_value = safe_float_conversion(form_data.get("formula-a"), default=None)
     consent_flow_value = safe_float_conversion(
         form_data.get("consent-flow"), default=None
     )
+
+    if "multiAsset" in session and session["multiAsset"] == True:
+        # Redirect to step 3 where they will select assets
+        session["formulaA-val"] = formula_a_value
+        session["consent-val"] = consent_flow_value
+        return redirect(url_for(f"createRun", locid=session["loc"], step=3))
+
+
 
     # Create run since no multi assets
     run = await createRuns(session, formula_a_value, consent_flow_value)
@@ -225,10 +228,21 @@ async def createRunStep3():
     if "loc" not in session:
         # If no loc found, invalid since no session data
         return redirect("/")
-    
+
     # Fetch the selected assets and fit them into the createRuns() common function (somehow)
-    
-    # await createRuns()
+    form_data = await request.form
+    selectedAssets = list(form_data.keys())
+    run = await createRuns(session, session["formulaA-val"], session["consent-val"], selectedAssets)
+
+    # Delete session data since not needed in client side
+    session.pop("loc")
+    session.pop("run_name")
+    session.pop("run_desc")
+    session.pop("tests")    
+
+    return redirect(f"/{run['locationID']}/{run['id']}")
+
+
 
 
 # Only checks files validation
@@ -365,7 +379,7 @@ async def checkTestValidation(tests, files):
     return resp
 
 
-async def createRuns(session, formula_a_value=None, consent_flow_value=None):
+async def createRuns(session, formula_a_value, consent_flow_value, selectedAssets=None):
     global runs_tracker
 
     run = {
@@ -375,7 +389,7 @@ async def createRuns(session, formula_a_value=None, consent_flow_value=None):
         "description": session["run_desc"],
         "tests": session["tests"],
         "progress": {},
-        "runids": {},
+        "assets": {},
     }
 
     run["baselineStatsFile"] = (
@@ -404,63 +418,93 @@ async def createRuns(session, formula_a_value=None, consent_flow_value=None):
 
     onlyOnce = False
 
-    for test in run["tests"]:
-        if test == "test-1" or test == "test-2":
+    df = pd.read_excel(session["spillStats"]["path"])
 
-            # Connect Tests in DB to frontend tests
-            testid = await db.tests.find_first(
-                where={"name": "Test 1" if test == "test-1" else "Test 2"}
-            )
+    for assetName, assetData in df.groupby(pd.Grouper(key="ID")):
+        # Loops over every asset
 
-            if not testid:
-                return redirect(url_for(f"createRun", locid=session["loc"], step=2))
-
-            runtest = await db.assettests.create(
-                data={"testID": run["id"], "testID": testid.id, "status": "PROGRESS"}
-            )
-
-            # For multiple assets, the same rainfall file is used to combine with the spills
-
-            # Store RunTest ID for when running thread
-            run["runids"][testid.name] = runtest.id
-
-            # If both Test 1 & 2 selected, ensure thread is only ran once
-            if onlyOnce == True:
+        # Ignore unselected assets (as they do not want it)
+        if selectedAssets is not None:
+            if assetName not in selectedAssets:
                 continue
 
-            onlyOnce = True
+        asset = await db.assets.create(data={"name": assetName, "runID": run["id"]})
+        run["assets"][asset.id] = {"name": assetName, "assettests": {}}
 
-            test12thread = Thread(
-                target=test1and2callback,
-                args=(
-                    session["rainfallStats"]["path"],
-                    (session["spillStats"]["path"], "None", run["name"]),
-                    run,
-                ),
-            )
-            test12thread.start()
+        for test in run["tests"]:
+            if test == "test-1" or test == "test-2":
+                # Connect Tests in DB to frontend tests
+                testid = await db.tests.find_first(
+                    where={"name": "Test 1" if test == "test-1" else "Test 2"}
+                )
+                if not testid:
+                    # No tests in db, run setup script again
+                    await flash(
+                        "Server not setup properly, please run setup script again.",
+                        "error",
+                    )
+                    return redirect(url_for(f"createRun", locid=session["loc"], step=1))
 
-        if test == "test-3":
+                assettest = await db.assettests.create(
+                    data={
+                        "assetID": asset.id,
+                        "testID": testid.id,
+                        "status": "PROGRESS",
+                    }
+                )
 
-            # Connect Tests in DB to frontend tests
-            testid = await db.tests.find_first(where={"name": "Test 3"})
+                run["assets"][asset.id]["assettests"][testid.name] = assettest.id
 
-            runtest = await db.runtests.create(
-                data={"runID": run["id"], "testID": testid.id, "status": "PROGRESS"}
-            )
+                # If both Test 1 & 2 selected, ensure thread is only ran once
+                if onlyOnce == True:
+                    continue
 
-            # Store RunTest ID for when running thread
-            run["runids"][testid.name] = runtest.id
-            test3thread = Thread(
-                target=test3callback,
-                args=(
-                    formula_a_value,
-                    consent_flow_value,
-                    session["baselineStats"]["path"],
-                    run,
-                ),
-            )
-            test3thread.start()
+                onlyOnce = True
+                test12thread = Thread(
+                    target=test1and2callback,
+                    args=(
+                        session["rainfallStats"]["path"],
+                        (assetData, "None", run["name"]),
+                        run,
+                        asset.id,
+                    ),
+                )
+                test12thread.start()
+            if test == "test-3":
+
+                # Connect Tests in DB to frontend tests
+                testid = await db.tests.find_first(where={"name": "Test 3"})
+                if not testid:
+                    # No tests in db, run setup script again
+                    await flash(
+                        "Server not setup properly, please run setup script again.",
+                        "error",
+                    )
+                    return redirect(url_for(f"createRun", locid=session["loc"], step=1))
+
+                assettest = await db.assettests.create(
+                    data={
+                        "assetID": asset.id,
+                        "testID": testid.id,
+                        "status": "PROGRESS",
+                    }
+                )
+
+                # Store RunTest ID for when running thread
+                run["assets"][asset.id]["assettests"][testid.name] = assettest.id
+
+                test3thread = Thread(
+                    target=test3callback,
+                    args=(
+                        formula_a_value,
+                        consent_flow_value,
+                        session["baselineStats"]["path"],
+                        run,
+                        asset.id,
+                    ),
+                )
+                test3thread.start()
+
     return run
 
 
@@ -546,7 +590,7 @@ async def getNextRunID():
     return nextID
 
 
-def test1and2callback(rainfall_file, spills_baseline, run):
+def test1and2callback(rainfall_file, spills_baseline, run, assetid):
     """
     Callback function to execute tests 1 and 2.
 
@@ -558,12 +602,12 @@ def test1and2callback(rainfall_file, spills_baseline, run):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
 
-    loop.run_until_complete(createTests1andor2(rainfall_file, spills_baseline, run))
+    loop.run_until_complete(createTests1andor2(rainfall_file, spills_baseline, run, assetid))
     loop.close()
     return
 
 
-def test3callback(formula_a_value, consent_flow_value, baseline_stats_file, run):
+def test3callback(formula_a_value, consent_flow_value, baseline_stats_file, run, assetid):
     """
     Callback function to execute test 3.
 
@@ -577,12 +621,12 @@ def test3callback(formula_a_value, consent_flow_value, baseline_stats_file, run)
     asyncio.set_event_loop(loop)
 
     loop.run_until_complete(
-        createTest3(formula_a_value, consent_flow_value, baseline_stats_file, run)
+        createTest3(formula_a_value, consent_flow_value, baseline_stats_file, run, assetid)
     )
     loop.close()
 
 
-async def createTests1andor2(rainfall_file, spills_baseline, run):
+async def createTests1andor2(rainfall_file, spills_baseline, run, assetID):
     """
     Perform tests 1 and/or 2 on the given rainfall data and spills baseline.
 
@@ -635,26 +679,26 @@ async def createTests1andor2(rainfall_file, spills_baseline, run):
 
     # Save all results to SQLite database
     runs_tracker[str(run["id"])]["progress"]["test-1&2"] = "Saving summary to DB"
-    await saveSummaryToDB(db, run, summary)
+    await saveSummaryToDB(db, run, assetID, summary)
     runs_tracker[str(run["id"])]["progress"]["test-1&2"] = "Saving spills to DB"
-    await saveSpillToDB(db, run, all_spill_classification)
+    await saveSpillToDB(db, run, assetID, all_spill_classification)
 
     runs_tracker[str(run["id"])]["progress"]["test-1&2"] = "Saving timeseries to DB..."
 
     # Saves 300k worth of rows
-    await saveTimeSeriesToDB(db, run, df)
+    await saveTimeSeriesToDB(db, run, assetID, df)
 
     runs_tracker[str(run["id"])]["progress"]["test-1&2"] = "Completed"
-
-    for test in run["runids"]:
+    
+    for test in run["assets"][assetID]["assettests"]:
         if test == "Test 1" or test == "Test 2":
-            await db.runtests.update(
-                where={"id": run["runids"][test]}, data={"status": "COMPLETED"}
+            await db.assettests.update(
+                where={"id": run["assets"][assetID]["assettests"][test]}, data={"status": "COMPLETED"}
             )
     # csvWriter.writeCSV(df, summary, all_spill_classification)
 
 
-async def createTest3(formula_a_value, consent_flow_value, baseline_stats_file, run):
+async def createTest3(formula_a_value, consent_flow_value, baseline_stats_file, run, assetID):
     """
     Perform Test 3 analysis and save the results to the database and an Excel file.
 
@@ -689,7 +733,7 @@ async def createTest3(formula_a_value, consent_flow_value, baseline_stats_file, 
 
     db = Prisma()
     await db.connect()
-    await saveTest3ToDB(db, run, df_pff, formula_a_value, consent_flow_value)
+    await saveTest3ToDB(db, run, assetID, df_pff, formula_a_value, consent_flow_value)
 
     df_pff["Formula A Value"] = formula_a_value
     df_pff["Consent FPF Value"] = consent_flow_value
@@ -704,14 +748,14 @@ async def createTest3(formula_a_value, consent_flow_value, baseline_stats_file, 
     df_pff.to_excel(config.test_three_outputs / filename, index=False)
     runs_tracker[str(run["id"])]["progress"]["test-3"] = "Completed!"
 
-    for test in run["runids"]:
+    for test in run["assets"][assetID]["assettests"]:
         if test == "Test 3":
-            await db.runtests.update(
-                where={"id": run["runids"][test]}, data={"status": "COMPLETED"}
+            await db.assettests.update(
+                where={"id": run["assets"][assetID]["assettests"][test]}, data={"status": "COMPLETED"}
             )
 
 
-async def saveSummaryToDB(db, run, summary):
+async def saveSummaryToDB(db, run, assetID, summary):
     """
     Helper function to save given summary data to the database.
 
@@ -720,10 +764,10 @@ async def saveSummaryToDB(db, run, summary):
         run: The run database information.
         summary: The summary data to be saved.
     """
-    runtestid = (
-        run["runids"]["Test 1"]
-        if "Test 1" in run["runids"]
-        else run["runids"]["Test 2"]
+    assettestid = (
+        run["assets"][assetID]["assettests"]["Test 1"]
+        if "Test 1" in run["assets"][assetID]["assettests"]
+        else run["assets"][assetID]["assettests"]["Test 2"]
     )
     async with db.batch_() as batcher:
         print("In Batch...")
@@ -748,14 +792,14 @@ async def saveSummaryToDB(db, run, summary):
                         if math.isnan(row["Total Rainfall (mm)"]) == False
                         else 0.0
                     ),
-                    "runTestID": runtestid,
+                    "assetTestID": assettestid,
                 }
             )
         print("Committing batch...")
         await batcher.commit()
 
 
-async def saveTimeSeriesToDB(db, run, df):
+async def saveTimeSeriesToDB(db, run, assetID, df):
     """
     Helper function to save a given time series DataFrame to the database.
 
@@ -766,10 +810,10 @@ async def saveTimeSeriesToDB(db, run, df):
     """
     global runs_tracker
 
-    runtestid = (
-        run["runids"]["Test 1"]
-        if "Test 1" in run["runids"]
-        else run["runids"]["Test 2"]
+    assettestid = (
+        run["assets"][assetID]["assettests"]["Test 1"]
+        if "Test 1" in run["assets"][assetID]["assettests"]
+        else run["assets"][assetID]["assettests"]["Test 2"]
     )
     batch_size = 10000
     total_batches = (len(df) // batch_size) + 1
@@ -795,14 +839,14 @@ async def saveTimeSeriesToDB(db, run, df):
                         "spillAllowed": row["Spill_allowed?"],
                         "dayType": row["Day Type"],
                         "result": row[run["name"]],
-                        "runTestID": runtestid,
+                        "runTestID": assettestid,
                     }
                 )
             print("Committing batch...")
             await batcher.commit()
 
 
-async def saveSpillToDB(db, run, all_spill_classification):
+async def saveSpillToDB(db, run, assetID, all_spill_classification):
     """
     Helper function to save spill event data to the database.
 
@@ -811,10 +855,10 @@ async def saveSpillToDB(db, run, all_spill_classification):
         run (dict): The run database information.
         all_spill_classification (DataFrame): The DataFrame containing spill event data.
     """
-    runtestid = (
-        run["runids"]["Test 1"]
-        if "Test 1" in run["runids"]
-        else run["runids"]["Test 2"]
+    assettestid = (
+        run["assets"][assetID]["assettests"]["Test 1"]
+        if "Test 1" in run["assets"][assetID]["assettests"]
+        else run["assets"][assetID]["assettests"]["Test 2"]
     )
     batch_size = 100
     total_batches = (len(all_spill_classification) // batch_size) + 1
@@ -833,7 +877,6 @@ async def saveSpillToDB(db, run, all_spill_classification):
                         "start": row["Start of Spill (absolute)"],
                         "end": row["End of Spill (absolute)"],
                         "volume": row["Spill Volume (m3)"],
-                        "runName": run["name"],
                         "maxIntensity": row[
                             "Max intensity in 24hrs preceding spill start (mm/hr)"
                         ],
@@ -846,14 +889,14 @@ async def saveSpillToDB(db, run, all_spill_classification):
                         "test1": row["Test 1 Status"],
                         "test2": row["Test 2 Status"],
                         "classification": row["Classification"],
-                        "runTestID": runtestid,
+                        "runTestID": assettestid,
                     }
                 )
             print("Committing batch...")
             await batcher.commit()
 
 
-async def saveTest3ToDB(db, run, df_pff, formula_a, consent_fpf):
+async def saveTest3ToDB(db, run, assetID, df_pff, formula_a, consent_fpf):
     """
     Helper function to save test 3 data to the database.
 
@@ -873,6 +916,6 @@ async def saveTest3ToDB(db, run, df_pff, formula_a, consent_fpf):
                 "complianceStatus": row["Compliance Status"],
                 "formulaAStatus": row["Just Formula A"],
                 "consentFPFStatus": row["Just Consent FPF"],
-                "runTestID": run["runids"]["Test 3"],
+                "runTestID": run["assets"][assetID]["assettests"]["Test 3"],
             }
         )
