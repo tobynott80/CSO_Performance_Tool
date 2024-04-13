@@ -55,12 +55,12 @@ def sewage_be_spillin(spills_baseline, df, heavy_rain):
     # Add a column for the run in the rainfall database
     df[run_name] = None
     # Read the stats report
-    spill_counts = spills_baseline[0]
-    if spill_counts.filename.rsplit('.', 1)[-1] == "xlsx":
-        spills = pd.read_excel(spill_counts)
+    spills = spills_baseline[0]
+    # if spill_counts.filename.rsplit('.', 1)[-1] == "xlsx":
+    #     spills = pd.read_excel(spill_counts)
         
-    else:
-        spills = pd.read_csv(spill_counts)
+    # else:
+    #     spills = pd.read_csv(spill_counts)
     print(spills.columns)
     # Define the start and end as datetime format
     spills["Start of Spill (absolute)"] = pd.to_datetime(
