@@ -159,7 +159,6 @@ async def createRunStep2():
         A redirect response to the created run page.
 
     """
-    global runs_tracker
 
     if "loc" not in session:
         # If no loc found, invalid since no session data
@@ -173,8 +172,15 @@ async def createRunStep2():
         # Redirect to step 3 where they will select assets
         return redirect(url_for(f"createRun", locid=session["loc"], step=3))
 
+    form_data = await request.form
+
+    formula_a_value = safe_float_conversion(form_data.get("formula-a"), default=None)
+    consent_flow_value = safe_float_conversion(
+        form_data.get("consent-flow"), default=None
+    )
+
     # Create run since no multi assets
-    run = await createRuns(session)
+    run = await createRuns(session, formula_a_value, consent_flow_value)
 
     # Delete session data since not needed in client side
     session.pop("loc")
@@ -188,7 +194,9 @@ async def createRunStep2():
 async def saveTempFile(file):
     Path(TMP_FOLDER).mkdir(exist_ok=True)
     extension = file.filename.split(".")[-1]
-    path = os.path.join(TMP_FOLDER, datetime.today().strftime('%d-%m-%Y_%H-%M-%S') + "." + extension)
+    path = os.path.join(
+        TMP_FOLDER, datetime.today().strftime("%d-%m-%Y_%H-%M-%S") + "." + extension
+    )
     if extension == "xlsx":
         # NOT PERFORMANT, IF CAN DO BETTER PLS DO
         df = pd.read_excel(file)
@@ -217,138 +225,10 @@ async def createRunStep3():
     if "loc" not in session:
         # If no loc found, invalid since no session data
         return redirect("/")
-
-    run = {
-        "id": await getNextRunID(),
-        "locationID": int(session["loc"]),
-        "name": session["run_name"],
-        "description": session["run_desc"],
-        "tests": session["tests"],
-        "progress": {},
-        "runids": {},
-    }
-
-    files = await request.files
-
-    resp = await checkTestValidation(run, files)
-    print(resp)
-    # resp = {success: true, message: "If Error", hasMultiAsset: false}
-    if not resp:
-        await flash("Something went wrong with validation", "error")
-        return redirect(url_for(f"createRun", locid=session["loc"], step=1))
-
-    if not resp["success"] or resp["success"] == False:
-        await flash(resp["message"], "error")
-        return redirect(url_for(f"createRun", locid=session["loc"], step=2))
-
-    if resp["hasMultiAsset"]:
-        # Save files to session for step 3
-        return redirect(url_for(f"createRun", locid=session["loc"], step=3))
-    else:
-        # Run the tests in step 2
-        await createRuns()
-
-
-async def createRuns(session):
-    run = {
-        "id": await getNextRunID(),
-        "locationID": int(session["loc"]),
-        "name": session["run_name"],
-        "description": session["run_desc"],
-        "tests": session["tests"],
-        "progress": {},
-        "runids": {},
-    }
-
-    run["baselineStatsFile"] = (
-        session["baselineStats"]["filename"] if "baselineStats" in session else None
-    )
-    run["rainfallStatsFile"] = (
-        session["rainfallStats"]["filename"] if "rainfallStats" in session else None
-    )
-    run["spillStatsFile"] = (
-        session["spillStats"]["filename"] if "spillStats" in session else None
-    )
-
-    await db.runs.create(
-        data={
-            "id": run["id"],
-            "locationID": run["locationID"],
-            "name": run["name"],
-            "description": run["description"],
-            "baselineStatsFile": run["baselineStatsFile"],
-            "rainfallStatsFile": run["rainfallStatsFile"],
-            "spillStatsFile": run["spillStatsFile"],
-        }
-    )
-
-    form_data = await request.form
-
-    formula_a_value = safe_float_conversion(form_data.get("formula-a"), default=None)
-    consent_flow_value = safe_float_conversion(
-        form_data.get("consent-flow"), default=None
-    )
-
-    runs_tracker[str(run["id"])] = run
-
-    onlyOnce = False
-
-    for test in run["tests"]:
-        if test == "test-1" or test == "test-2":
-
-            # Connect Tests in DB to frontend tests
-            testid = await db.tests.find_first(
-                where={"name": "Test 1" if test == "test-1" else "Test 2"}
-            )
-
-            if not testid:
-                return redirect(url_for(f"createRun", locid=session["loc"], step=2))
-
-            runtest = await db.assettests.create(
-                data={"runID": run["id"], "testID": testid.id, "status": "PROGRESS"}
-            )
-
-            # Store RunTest ID for when running thread
-            run["runids"][testid.name] = runtest.id
-
-            # If both Test 1 & 2 selected, ensure thread is only ran once
-            if onlyOnce == True:
-                continue
-
-            onlyOnce = True
-
-            test12thread = Thread(
-                target=test1and2callback,
-                args=(
-                    session["rainfallStats"]["path"],
-                    (session["spillStats"]["path"], "None", run["name"]),
-                    run,
-                ),
-            )
-            test12thread.start()
-
-        if test == "test-3":
-
-            # Connect Tests in DB to frontend tests
-            testid = await db.tests.find_first(where={"name": "Test 3"})
-
-            runtest = await db.runtests.create(
-                data={"runID": run["id"], "testID": testid.id, "status": "PROGRESS"}
-            )
-
-            # Store RunTest ID for when running thread
-            run["runids"][testid.name] = runtest.id
-            test3thread = Thread(
-                target=test3callback,
-                args=(
-                    formula_a_value,
-                    consent_flow_value,
-                    session["baselineStats"]["path"],
-                    run,
-                ),
-            )
-            test3thread.start()
-    return run
+    
+    # Fetch the selected assets and fit them into the createRuns() common function (somehow)
+    
+    # await createRuns()
 
 
 # Only checks files validation
@@ -483,6 +363,105 @@ async def checkTestValidation(tests, files):
                 break
             resp["success"] = True
     return resp
+
+
+async def createRuns(session, formula_a_value=None, consent_flow_value=None):
+    global runs_tracker
+
+    run = {
+        "id": await getNextRunID(),
+        "locationID": int(session["loc"]),
+        "name": session["run_name"],
+        "description": session["run_desc"],
+        "tests": session["tests"],
+        "progress": {},
+        "runids": {},
+    }
+
+    run["baselineStatsFile"] = (
+        session["baselineStats"]["filename"] if "baselineStats" in session else None
+    )
+    run["rainfallStatsFile"] = (
+        session["rainfallStats"]["filename"] if "rainfallStats" in session else None
+    )
+    run["spillStatsFile"] = (
+        session["spillStats"]["filename"] if "spillStats" in session else None
+    )
+
+    await db.runs.create(
+        data={
+            "id": run["id"],
+            "locationID": run["locationID"],
+            "name": run["name"],
+            "description": run["description"],
+            "baselineStatsFile": run["baselineStatsFile"],
+            "rainfallStatsFile": run["rainfallStatsFile"],
+            "spillStatsFile": run["spillStatsFile"],
+        }
+    )
+
+    runs_tracker[str(run["id"])] = run
+
+    onlyOnce = False
+
+    for test in run["tests"]:
+        if test == "test-1" or test == "test-2":
+
+            # Connect Tests in DB to frontend tests
+            testid = await db.tests.find_first(
+                where={"name": "Test 1" if test == "test-1" else "Test 2"}
+            )
+
+            if not testid:
+                return redirect(url_for(f"createRun", locid=session["loc"], step=2))
+
+            runtest = await db.assettests.create(
+                data={"testID": run["id"], "testID": testid.id, "status": "PROGRESS"}
+            )
+
+            # For multiple assets, the same rainfall file is used to combine with the spills
+
+            # Store RunTest ID for when running thread
+            run["runids"][testid.name] = runtest.id
+
+            # If both Test 1 & 2 selected, ensure thread is only ran once
+            if onlyOnce == True:
+                continue
+
+            onlyOnce = True
+
+            test12thread = Thread(
+                target=test1and2callback,
+                args=(
+                    session["rainfallStats"]["path"],
+                    (session["spillStats"]["path"], "None", run["name"]),
+                    run,
+                ),
+            )
+            test12thread.start()
+
+        if test == "test-3":
+
+            # Connect Tests in DB to frontend tests
+            testid = await db.tests.find_first(where={"name": "Test 3"})
+
+            runtest = await db.runtests.create(
+                data={"runID": run["id"], "testID": testid.id, "status": "PROGRESS"}
+            )
+
+            # Store RunTest ID for when running thread
+            run["runids"][testid.name] = runtest.id
+            test3thread = Thread(
+                target=test3callback,
+                args=(
+                    formula_a_value,
+                    consent_flow_value,
+                    session["baselineStats"]["path"],
+                    run,
+                ),
+            )
+            test3thread.start()
+    return run
 
 
 @dataclass
