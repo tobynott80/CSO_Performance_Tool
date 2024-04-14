@@ -72,14 +72,14 @@
         const response = await fetch('/autocomplete?q=' + query);
         const data = await response.json();
         console.log("Data: ", data);
-        updateDropdown(data);
+        updateDropdown(data, query);
       } else {
         document.getElementById("search-dropdown").style.display = 'none';
       }
     }, 10); // Wait 300ms after the user stops typing to run getSuggestions
   }
 
-  function updateDropdown(data) {
+  function updateDropdown(data, query) {
     let dropdown = document.getElementById("search-dropdown");
     if (!dropdown) {
       dropdown = document.createElement('div');
@@ -92,8 +92,11 @@
     if (data.locations) {
       data.locations.forEach(location => {
         let item = document.createElement('div');
-        item.textContent = location.name; 
-        item.classList.add('dropdown-item'); 
+        //make user typed text bold
+        let regex = new RegExp(`(${query})`, 'gi');
+        item.innerHTML = location.name.replace(regex, '<strong>$1</strong>'); 
+        
+        item.classList.add('dropdown-item','hover:bg-gray-700','hover:text-white'); 
         
         // Add event listener
         item.addEventListener('click', () => {
@@ -107,9 +110,12 @@
     // Add run names
     if (data.runs) {
       data.runs.forEach(run => {
-        let item = document.createElement('div');
-        item.textContent = run.name;
-        item.classList.add('dropdown-item'); 
+        let item = document.createElement('div')
+        
+        let regex = new RegExp(`(${query})`, 'gi');
+        item.innerHTML = run.name.replace(regex, '<strong>$1</strong>');
+        
+        item.classList.add('dropdown-item','hover:bg-gray-700','hover:text-white'); 
         // Add event listener
         item.addEventListener('click', () => {
           window.location.href = '/' + run.locationID + '/' + run.id;

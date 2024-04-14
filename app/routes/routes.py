@@ -80,12 +80,12 @@ async def autocomplete():
     print("QUERY: ", query)
     locations_list = await db.location.find_many(
         where={"name": {"startsWith": query}}, 
-        take=5, 
+        take=10, 
     )
     # fetches a list of runs based on the search query
     runs = await db.runs.find_many(
         where={"name": {"startsWith": query}}, 
-        take=5, 
+        take=10, 
     )
     # print location and runs to the console
     print("----------Locations-------------")
