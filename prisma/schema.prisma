@@ -29,6 +29,7 @@ model Runs {
   Assets            Assets[]
   location          Location     @relation(fields: [locationID], references: [id], onDelete: Cascade)
   TimeSeries        TimeSeries[]
+  status            String?
 }
 
 // Tests Table
@@ -40,12 +41,11 @@ model Tests {
 }
 
 model Assets {
-  id               Int                @id @default(autoincrement())
-  name             String
-  runID            Int
-  run              Runs               @relation(fields: [runID], references: [id], onDelete: Cascade)
-  assetTests       AssetTests[]
-  TimeSeriesResult TimeSeriesResult[]
+  id         Int          @id @default(autoincrement())
+  name       String
+  runID      Int
+  run        Runs         @relation(fields: [runID], references: [id], onDelete: Cascade)
+  assetTests AssetTests[]
 }
 
 model AssetTests {
@@ -59,7 +59,6 @@ model AssetTests {
   spillEvent SpillEvent[] @relation("assetTestToSpillEvent")
   testThree  TestThree[]  @relation("assetTestToTestThree")
 }
-
 
 model Summary {
   id                   Int        @id @default(autoincrement())
@@ -76,26 +75,17 @@ model Summary {
 }
 
 model TimeSeries {
-  id               Int                @id @default(autoincrement())
-  dateTime         DateTime
-  intensity        Float
-  depth            Float
-  rollingDepth     Float
-  classification   String
-  spillAllowed     String?
-  dayType          String
-  runID            Int
-  run              Runs               @relation(fields: [runID], references: [id], onDelete: Cascade)
-  TimeSeriesResult TimeSeriesResult[]
-}
-
-model TimeSeriesResult {
-  id           Int        @id @default(autoincrement())
-  assetID      Int
-  asset        Assets     @relation(fields: [assetID], references: [id], onDelete: Cascade)
-  timeSeriesID Int
-  TimeSeries   TimeSeries @relation(fields: [timeSeriesID], references: [id], onDelete: Cascade)
-  result       String?
+  id             Int      @id @default(autoincrement())
+  dateTime       DateTime
+  intensity      Float
+  depth          Float
+  rollingDepth   Float
+  classification String
+  spillAllowed   String?
+  dayType        String
+  result         String
+  runID          Int
+  run            Runs     @relation(fields: [runID], references: [id], onDelete: Cascade)
 }
 
 model SpillEvent {
