@@ -76,8 +76,6 @@ async def autocomplete():
     """
     # fetches a list of locations
     query = request.args.get("q")
-    print("================================")
-    print("QUERY: ", query)
     locations_list = await db.location.find_many(
         where={"name": {"startsWith": query}}, 
         take=10, 
@@ -87,11 +85,14 @@ async def autocomplete():
         where={"name": {"startsWith": query}}, 
         take=10, 
     )
-    # print location and runs to the console
-    print("----------Locations-------------")
-    print(locations_list)
-    print("----------Runs-------------")
-    print(runs)
+    
+    # Console Tests
+    # print("================================")
+    # print("QUERY: ", query)
+    # print("----------Locations-------------")
+    # print(locations_list)
+    # print("----------Runs-------------")
+    # print(runs)
     
     return {"locations": [location.model_dump() for location in locations_list], "runs": [run.model_dump() for run in runs]}
 

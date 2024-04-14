@@ -76,7 +76,7 @@
       } else {
         document.getElementById("search-dropdown").style.display = 'none';
       }
-    }, 10); // Wait 300ms after the user stops typing to run getSuggestions
+    }, 10); // Wait 100ms after the user stops typing to run getSuggestions
   }
 
   function updateDropdown(data, query) {
@@ -133,8 +133,14 @@
         dropdown.appendChild(item);
       });
     }
-  
-    dropdown.style.display = 'block'; 
+    
+    if ((!data.locations || data.locations.length === 0) && (!data.runs || data.runs.length === 0)) {
+      let item = document.createElement('div');
+      item.textContent = 'No results found';
+      item.classList.add('dropdown-item', 'p-2', 'text-gray-500');
+      dropdown.appendChild(item);
+    }
+    dropdown.style.display = 'block';    
   }
 
 
