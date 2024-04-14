@@ -136,8 +136,8 @@
     <script>
       const evtSource = new EventSource("/api/run/status");
       const runId = {{ run.id }};
-      const test1Progress = "{{resp.status}}";
-      if (test1Progress === "COMPLETED" && test2Progress === "COMPLETED" && test3Progress === "COMPLETED") {
+      const runProgress = "{{resp.status}}";
+      if (runProgress === "COMPLETED") {
         evtSource.close();
       }
       evtSource.onmessage = function (event) {
