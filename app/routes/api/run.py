@@ -412,8 +412,6 @@ async def createRuns(session, formula_a_value, consent_flow_value, selectedAsset
         }
     )
 
-    runs_tracker[str(run["id"])] = run
-
     df = pd.read_excel(session["spillStats"]["path"])
 
     assetRuns = []
@@ -429,8 +427,11 @@ async def createRuns(session, formula_a_value, consent_flow_value, selectedAsset
         asset = await db.assets.create(data={"name": assetName, "runID": run["id"]})
         run["assets"][asset.id] = {"name": assetName, "assettests": {}}
 
+        onlyOnce = False
+
         for test in run["tests"]:
             if test == "test-1" or test == "test-2":
+
                 # Connect Tests in DB to frontend tests
                 testid = await db.tests.find_first(
                     where={"name": "Test 1" if test == "test-1" else "Test 2"}
@@ -453,7 +454,14 @@ async def createRuns(session, formula_a_value, consent_flow_value, selectedAsset
 
                 run["assets"][asset.id]["assettests"][testid.name] = assettest.id
 
-                assetRuns.append((assetData, "None", assetName))
+                if (onlyOnce):
+                    continue
+
+                runs_tracker[str(assetName)] = run
+                
+                assetRuns.append((assetData, "None", assetName, asset.id, assettest.id))
+
+                onlyOnce = True
             if test == "test-3":
 
                 # Connect Tests in DB to frontend tests
@@ -498,8 +506,7 @@ async def createRuns(session, formula_a_value, consent_flow_value, selectedAsset
             args=(
                 session["rainfallStats"]["path"],
                 assetRuns,
-                run,
-                asset.id,
+                run
             ),
         )
         test12thread.start()
@@ -588,7 +595,7 @@ async def getNextRunID():
     return nextID
 
 
-def test1and2callback(rainfall_file, spills_baseline, run, assetid):
+def test1and2callback(rainfall_file, spills_baseline, run):
     """
     Callback function to execute tests 1 and 2.
 
@@ -601,7 +608,7 @@ def test1and2callback(rainfall_file, spills_baseline, run, assetid):
     asyncio.set_event_loop(loop)
 
     loop.run_until_complete(
-        createTests1andor2(rainfall_file, spills_baseline, run, assetid)
+        createTests1andor2(rainfall_file, spills_baseline, run)
     )
     loop.close()
     return
@@ -630,7 +637,7 @@ def test3callback(
     loop.close()
 
 
-async def createTests1andor2(rainfall_file, runs, run, assetID):
+async def createTests1andor2(rainfall_file, runs, run):
     """
     Perform tests 1 and/or 2 on the given rainfall data and spills baseline.
 
@@ -646,62 +653,59 @@ async def createTests1andor2(rainfall_file, runs, run, assetID):
     await db.connect()
     heavy_rain = 4
 
-    runs_tracker[str(run["id"])]["progress"][
-        "test-1&2"
-    ] = "Importing files and reading data"
 
     # Read CSV and Reformat
+    update_test_1_2_progress(runs, "Importing files and reading data")
     df_rain_dtindex = csvReader.init(rainfall_file)
     csvReader.readCSV(df_rain_dtindex)
 
-    runs_tracker[str(run["id"])]["progress"][
-        "test-1&2"
-    ] = "Running Sewage Be Spilling Analysis"
-
+    # Run sewage be spilling analysis
+    update_test_1_2_progress(runs, "Running Sewage Be Spilling Analysis")   
     df, spills_df = analysis.sewage_be_spillin(runs, df_rain_dtindex, heavy_rain)
-    # runs_tracker[str(run["id"])]["progress"]["test-1&2"] = "Visualising Data"
-    # Does this need to be run?
-    # vis.timeline_visual(spills_baseline, df, vis.timeline_start, vis.timeline_end)
 
+    # Calculate Summary Stats
+    update_test_1_2_progress(runs, "Calculating Summary Stats")
     rainfall_summary = csvReader.aggregate_rainfall_directly(df_rain_dtindex)
-
-    runs_tracker[str(run["id"])]["progress"]["test-1&2"] = "Calculating Summary Stats"
-
     perc_data = timeStats.time_stats(df, runs)
 
-    runs_tracker[str(run["id"])]["progress"]["test-1&2"] = "Calculating Spill Stats"
-
+    # Calculate Spill Stats
+    update_test_1_2_progress(runs, "Calculating Spill Stats")
     all_spill_classification, spill_count_data = spillStats.spill_stats(
         spills_df, df, runs, [1, 2]
     )
-    runs_tracker[str(run["id"])]["progress"]["test-1&2"] = "Merging Dataframes"
 
+    # Merge all dataframes
+    update_test_1_2_progress(runs, "Merging Dataframes")
     summary = pd.merge(perc_data, spill_count_data, on="Year")
     summary = pd.merge(summary, rainfall_summary, on="Year", how="left")
 
     # Save all results to SQLite database
-    runs_tracker[str(run["id"])]["progress"]["test-1&2"] = "Saving summary to DB"
-    await saveSummaryToDB(db, run, assetID, summary)
-    runs_tracker[str(run["id"])]["progress"]["test-1&2"] = "Saving spills to DB"
-    await saveSpillToDB(db, run, assetID, all_spill_classification)
+    update_test_1_2_progress(runs, "Saving summary to DB")
+    await saveSummaryToDB(db, runs, summary)
 
-    runs_tracker[str(run["id"])]["progress"]["test-1&2"] = "Saving timeseries to DB..."
+    # Save all spills to SQLite database
+    update_test_1_2_progress(runs, "Saving spills to DB")
+    await saveSpillToDB(db, runs, all_spill_classification)
 
+    # Save timeseries to SQLite database - this takes a while...
+    update_test_1_2_progress(runs, "Saving timeseries to DB...")
     print(df.columns)
-
     # Saves 300k worth of rows
-    await saveTimeSeriesToDB(db, run, assetID, df)
+    await saveTimeSeriesToDB(db, run, runs, df)
 
-    runs_tracker[str(run["id"])]["progress"]["test-1&2"] = "Completed"
+    update_test_1_2_progress(runs, "Completed")
 
-    for test in run["assets"][assetID]["assettests"]:
-        if test == "Test 1" or test == "Test 2":
-            await db.assettests.update(
-                where={"id": run["assets"][assetID]["assettests"][test]},
-                data={"status": "COMPLETED"},
-            )
-    # csvWriter.writeCSV(df, summary, all_spill_classification)
+    # Update the status of the run to COMPLETED
+    for run in runs:
+        await db.assettests.update(
+            where={"id": run[4]},
+            data={"status": "COMPLETED"},
+        )
 
+def update_test_1_2_progress(runs, message):
+    global runs_tracker
+    for run in runs:
+        runs_tracker[str(run[2])]["progress"]["test-1&2"] = message
 
 async def createTest3(
     formula_a_value, consent_flow_value, baseline_stats_file, run, assetID
@@ -763,7 +767,7 @@ async def createTest3(
             )
 
 
-async def saveSummaryToDB(db, run, assetID, summary):
+async def saveSummaryToDB(db, runs, summary):
     """
     Helper function to save given summary data to the database.
 
@@ -772,42 +776,39 @@ async def saveSummaryToDB(db, run, assetID, summary):
         run: The run database information.
         summary: The summary data to be saved.
     """
-    assettestid = (
-        run["assets"][assetID]["assettests"]["Test 1"]
-        if "Test 1" in run["assets"][assetID]["assettests"]
-        else run["assets"][assetID]["assettests"]["Test 2"]
-    )
-    async with db.batch_() as batcher:
-        print("In Batch...")
-        for index, row in summary.iterrows():
-            batcher.summary.create(
-                data={
-                    "year": str(row["Year"]),
-                    "dryPerc": row["Percentage of dry days (%)"],
-                    "heavyPerc": row[
-                        "Percentage of year spills are allowed to start (%)"
-                    ],
-                    "spillPerc": row[
-                        f"{run['name']} - Percentage of year spilling (%)"
-                    ],
-                    "unsatisfactorySpills": row[
-                        f"{run['name']} - Unsatisfactory Spills"
-                    ],
-                    "substandardSpills": row[f"{run['name']} - Substandard Spills"],
-                    "satisfactorySpills": row[f"{run['name']} - Satisfactory Spills"],
-                    "totalIntensity": (
-                        row["Total Rainfall (mm)"]
-                        if math.isnan(row["Total Rainfall (mm)"]) == False
-                        else 0.0
-                    ),
-                    "assetTestID": assettestid,
-                }
-            )
-        print("Committing batch...")
-        await batcher.commit()
+
+    for run in runs:
+        async with db.batch_() as batcher:
+            print("In Batch...")
+            for index, row in summary.iterrows():
+                batcher.summary.create(
+                    data={
+                        "year": str(row["Year"]),
+                        "dryPerc": row["Percentage of dry days (%)"],
+                        "heavyPerc": row[
+                            "Percentage of year spills are allowed to start (%)"
+                        ],
+                        "spillPerc": row[
+                            f"{run[2]} - Percentage of year spilling (%)"
+                        ],
+                        "unsatisfactorySpills": row[
+                            f"{run[2]} - Unsatisfactory Spills"
+                        ],
+                        "substandardSpills": row[f"{run[2]} - Substandard Spills"],
+                        "satisfactorySpills": row[f"{run[2]} - Satisfactory Spills"],
+                        "totalIntensity": (
+                            row["Total Rainfall (mm)"]
+                            if math.isnan(row["Total Rainfall (mm)"]) == False
+                            else 0.0
+                        ),
+                        "assetTestID": run[4],
+                    }
+                )
+            print("Committing batch...")
+            await batcher.commit()
 
 
-async def saveTimeSeriesToDB(db, run, assetID, df):
+async def saveTimeSeriesToDB(db, run, runs, df):
     """
     Helper function to save a given time series DataFrame to the database.
 
@@ -818,67 +819,35 @@ async def saveTimeSeriesToDB(db, run, assetID, df):
     """
     global runs_tracker
 
-    # This should only be inserted once (unique to "run" not "asset")
-    alreadyInserting = await db.timeseries.find_first(where={"runID": run["id"]})
-    if not alreadyInserting:
-        batch_size = 10000
-        total_batches = (len(df) // batch_size) + 1
+    for i, (index, row) in enumerate(df.iterrows()):
+        update_test_1_2_progress(runs, f"Saving timeseries to DB... ({round((i/len(df))*100.0, 1)}%)")
 
-        for batch_index in range(total_batches):
-            start_index = batch_index * batch_size
-            end_index = min((batch_index + 1) * batch_size, len(df))
-            current_batch = df.iloc[start_index:end_index]
-            runs_tracker[str(run["id"])]["progress"][
-                "test-1&2"
-            ] = f"Saving timeseries to DB... ({round((start_index/len(df))*100.0, 1)}%)"
-
-            async with db.batch_() as batcher:
-                print("In Batch...")
-                for index, row in current_batch.iterrows():
-                    batcher.timeseries.create(
+        async with db.tx() as transaction:
+            resp = await transaction.timeseries.create(
+                data={
+                    "dateTime": index,
+                    "intensity": row["Intensity"],
+                    "depth": row["Depth_x"],
+                    "rollingDepth": row["Rolling 1hr depth"],
+                    "classification": row["Classification"],
+                    "spillAllowed": row["Spill_allowed?"],
+                    "dayType": row["Day Type"],
+                    # "result": row[run["name"]], Result has now been split into TimeSeriesResult for multiasset
+                    "runID": run["id"],
+                }
+            )
+            for asset in runs:
+                if (asset[2] in row and row[asset[2]] == "YES"):
+                    await transaction.timeseriesresult.create(
                         data={
-                            "dateTime": index,
-                            "intensity": row["Intensity"],
-                            "depth": row["Depth_x"],
-                            "rollingDepth": row["Rolling 1hr depth"],
-                            "classification": row["Classification"],
-                            "spillAllowed": row["Spill_allowed?"],
-                            "dayType": row["Day Type"],
-                            "result": row[run["name"]],
-                            "runID": run["id"],
+                            "assetID": asset[3],
+                            "timeSeriesID": resp.id,
+                            "result": row[asset[2]]
                         }
                     )
-                print("Committing batch...")
-                await batcher.commit()
-
-    # Insert time series result
-    # filtered = df[df["name"].str.contains("YES")]
-    # batch_size = 10000
-    # total_batches = (len(filtered) // batch_size) + 1
-
-    # for batch_index in range(total_batches):
-    #     start_index = batch_index * batch_size
-    #     end_index = min((batch_index + 1) * batch_size, len(filtered))
-    #     current_batch = filtered.iloc[start_index:end_index]
-    #     runs_tracker[str(run["id"])]["progress"][
-    #         "test-1&2"
-    #     ] = f"Saving timeseries to DB... ({round((start_index/len(filtered))*100.0, 1)}%)"
-
-    #     async with db.batch_() as batcher:
-    #         print("In Batch...")
-    #         for index, row in current_batch.iterrows():
-    #             batcher.timeseriesresult.create(
-    #                 data={
-    #                     "assetID": assetID,
-    #                     "timeSeriesID": ,
-    #                     "result": row[run["name"]],
-    #                 }
-    #             )
-    #         print("Committing batch...")
-    #         await batcher.commit()
 
 
-async def saveSpillToDB(db, run, assetID, all_spill_classification):
+async def saveSpillToDB(db, runs, all_spill_classification):
     """
     Helper function to save spill event data to the database.
 
@@ -887,45 +856,41 @@ async def saveSpillToDB(db, run, assetID, all_spill_classification):
         run (dict): The run database information.
         all_spill_classification (DataFrame): The DataFrame containing spill event data.
     """
-    assettestid = (
-        run["assets"][assetID]["assettests"]["Test 1"]
-        if "Test 1" in run["assets"][assetID]["assettests"]
-        else run["assets"][assetID]["assettests"]["Test 2"]
-    )
-    batch_size = 100
-    total_batches = (len(all_spill_classification) // batch_size) + 1
+    for run in runs:
+        batch_size = 100
+        total_batches = (len(all_spill_classification) // batch_size) + 1
 
-    for batch_index in range(total_batches):
-        start_index = batch_index * batch_size
-        end_index = min((batch_index + 1) * batch_size, len(all_spill_classification))
-        current_batch = all_spill_classification.iloc[start_index:end_index]
-        print(f"Currently batching {start_index} to {end_index} values")
+        for batch_index in range(total_batches):
+            start_index = batch_index * batch_size
+            end_index = min((batch_index + 1) * batch_size, len(all_spill_classification))
+            current_batch = all_spill_classification.iloc[start_index:end_index]
+            print(f"Currently batching {start_index} to {end_index} values")
 
-        async with db.batch_() as batcher:
-            print("In Batch...")
-            for index, row in current_batch.iterrows():
-                batcher.spillevent.create(
-                    data={
-                        "start": row["Start of Spill (absolute)"],
-                        "end": row["End of Spill (absolute)"],
-                        "volume": row["Spill Volume (m3)"],
-                        "maxIntensity": row[
-                            "Max intensity in 24hrs preceding spill start (mm/hr)"
-                        ],
-                        "maxDepthInHour": row[
-                            "Max depth in an hour in 24hrs preceding spill start (mm/hr)"
-                        ],
-                        "totalDepth": row[
-                            "Total depth in 24hrs preceding spill start (mm)"
-                        ],
-                        "test1": row["Test 1 Status"],
-                        "test2": row["Test 2 Status"],
-                        "classification": row["Classification"],
-                        "assetTestID": assettestid,
-                    }
-                )
-            print("Committing batch...")
-            await batcher.commit()
+            async with db.batch_() as batcher:
+                print("In Batch...")
+                for index, row in current_batch.iterrows():
+                    batcher.spillevent.create(
+                        data={
+                            "start": row["Start of Spill (absolute)"],
+                            "end": row["End of Spill (absolute)"],
+                            "volume": row["Spill Volume (m3)"],
+                            "maxIntensity": row[
+                                "Max intensity in 24hrs preceding spill start (mm/hr)"
+                            ],
+                            "maxDepthInHour": row[
+                                "Max depth in an hour in 24hrs preceding spill start (mm/hr)"
+                            ],
+                            "totalDepth": row[
+                                "Total depth in 24hrs preceding spill start (mm)"
+                            ],
+                            "test1": row["Test 1 Status"],
+                            "test2": row["Test 2 Status"],
+                            "classification": row["Classification"],
+                            "assetTestID": run[4],
+                        }
+                    )
+                print("Committing batch...")
+                await batcher.commit()
 
 
 async def saveTest3ToDB(db, run, assetID, df_pff, formula_a, consent_fpf):
