@@ -50,26 +50,23 @@ def spill_stats(spills_df, df, runs, run_tests=[1, 2]):
     print('Classification complete')
         
     years = []
-    spill_count = [[] for _ in range(len(runs)*3)]
+    groupedbyDate = spills_df.groupby(pd.Grouper(key="Start of Spill (absolute)", freq="Y"))
+    spill_count = [[0] * (len(groupedbyDate)+1) for _ in range(len(runs)*3)]
 
-    for yr,yr_grp in spills_df.groupby(pd.Grouper(key="Start of Spill (absolute)", freq='Y')):
+    for yrindex, (yr,yr_grp) in enumerate(groupedbyDate):
         years.append(yr.year)
-        if (yr_grp.empty):
-            spill_count[0].append(0)
-            spill_count[1].append(0)
-            spill_count[2].append(0)
         for i, (run, run_grp) in enumerate(yr_grp.groupby(['RUN'])):
-            spill_count[i*3].append(run_grp['Classification'].value_counts().get('Unsatisfactory',0))
-            spill_count[(i*3) + 1].append(run_grp['Classification'].value_counts().get('Substandard',0))
-            spill_count[(i*3) + 2].append(run_grp['Classification'].value_counts().get('Satisfactory',0))
+            spill_count[i*3][yrindex] = run_grp['Classification'].value_counts().get('Unsatisfactory',0)
+            spill_count[(i*3) + 1][yrindex] = run_grp['Classification'].value_counts().get('Substandard',0)
+            spill_count[(i*3) + 2][yrindex] = run_grp['Classification'].value_counts().get('Satisfactory',0)
 
     years.append("Whole Time Series")
     run_names =[]
     for i, (run, run_grp) in enumerate(spills_df.groupby(['RUN'])):
         run_names.append(run[0])
-        spill_count[i*3].append(run_grp['Classification'].value_counts().get('Unsatisfactory',0))
-        spill_count[(i*3) + 1].append(run_grp['Classification'].value_counts().get('Substandard',0))
-        spill_count[(i*3) + 2].append(run_grp['Classification'].value_counts().get('Satisfactory',0))
+        spill_count[i*3][-1] = run_grp['Classification'].value_counts().get('Unsatisfactory',0)
+        spill_count[(i*3) + 1][-1] = run_grp['Classification'].value_counts().get('Substandard',0)
+        spill_count[(i*3) + 2][-1] = run_grp['Classification'].value_counts().get('Satisfactory',0)
         
     annual_summary = pd.DataFrame({"Year": years})
     for i, run_name in enumerate(run_names):
