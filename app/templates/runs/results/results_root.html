@@ -59,7 +59,7 @@
                 <h2
                   class="text-l font-semibold text-gray-800 dark:text-gray-200"
                 >
-                  Progress
+                  Run Status
                 </h2>
               </div>
               {% endif %}
@@ -103,7 +103,7 @@
               <h2
                 class="text-l font-semibold text-gray-800 dark:text-gray-200"
               >
-                Progress
+                Run Status
               </h2>
             </div>
             {% endif %}
@@ -154,8 +154,10 @@
 
             for (test in runData[asset]["progress"]) {
               // test-1&2 and test-3
-              if (runData[asset]["progress"][test] == "Completed") {
-                window.location.reload()
+              if (runData[asset]["progress"][test] == "Refreshing...") {
+                setTimeout(() => {
+                  window.location.reload()
+                }, 2000)
               }
               createProgressHTML(asset, runData[asset]["progress"][test], asset) 
             }

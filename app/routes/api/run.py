@@ -430,7 +430,6 @@ async def createRuns(session, formula_a_value, consent_flow_value, selectedAsset
         }
     )
 
-    df = pd.read_excel(session["spillStats"]["path"])
 
     assetRuns = []
     runs_tracker[str(run["id"])] = {
@@ -438,91 +437,67 @@ async def createRuns(session, formula_a_value, consent_flow_value, selectedAsset
         "progress": "In Progress...",
     }
 
-    for assetName, assetData in df.groupby(pd.Grouper(key="ID")):
+    if "test-3" in run["tests"] and ("test-1" not in run["tests"] and "test-2" not in run["tests"]):
+        # Test 3 selected but nothing else
+        asset = await db.assets.create(data={"name": "Test 3 Asset", "runID": run["id"]})
+        run["assets"][asset.id] = {"name": asset.name, "assettests": {}}
+
+        runs_tracker[str(run["id"])][asset.name] = {"progress": {}}
+        runs_tracker[str(run["id"])]["progress"] = "Running FPF Calculations"
+        
+        await createTest3Run(run, formula_a_value, consent_flow_value, asset)
+    else:
+        df = pd.read_excel(session["spillStats"]["path"])
         # Loops over every asset
+        for assetName, assetData in df.groupby(pd.Grouper(key="ID")):
 
-        # Ignore unselected assets (as they do not want it)
-        if selectedAssets is not None:
-            if assetName not in selectedAssets:
-                continue
-
-        asset = await db.assets.create(data={"name": assetName, "runID": run["id"]})
-        run["assets"][asset.id] = {"name": assetName, "assettests": {}}
-
-        runs_tracker[str(run["id"])][assetName] = {"progress": {}}
-
-        onlyOnce = False
-
-        for test in run["tests"]:
-            if test == "test-1" or test == "test-2":
-
-                # Connect Tests in DB to frontend tests
-                testid = await db.tests.find_first(
-                    where={"name": "Test 1" if test == "test-1" else "Test 2"}
-                )
-                if not testid:
-                    # No tests in db, run setup script again
-                    await flash(
-                        "Server not setup properly, please run setup script again.",
-                        "error",
-                    )
-                    return redirect(url_for(f"createRun", locid=session["loc"], step=1))
-
-                assettest = await db.assettests.create(
-                    data={
-                        "assetID": asset.id,
-                        "testID": testid.id,
-                        "status": "PROGRESS",
-                    }
-                )
-
-                run["assets"][asset.id]["assettests"][testid.name] = assettest.id
-
-                if onlyOnce:
+            # Ignore unselected assets (as they do not want it)
+            if selectedAssets is not None:
+                if assetName not in selectedAssets:
                     continue
 
-                assetRuns.append((assetData, "None", assetName, asset.id, assettest.id))
+            asset = await db.assets.create(data={"name": assetName, "runID": run["id"]})
+            run["assets"][asset.id] = {"name": assetName, "assettests": {}}
 
-                onlyOnce = True
-            if test == "test-3":
+            runs_tracker[str(run["id"])][assetName] = {"progress": {}}
 
-                # Connect Tests in DB to frontend tests
-                testid = await db.tests.find_first(where={"name": "Test 3"})
-                if not testid:
-                    # No tests in db, run setup script again
-                    await flash(
-                        "Server not setup properly, please run setup script again.",
-                        "error",
+            onlyOnce = False
+
+            for test in run["tests"]:
+                if test == "test-1" or test == "test-2":
+
+                    # Connect Tests in DB to frontend tests
+                    testid = await db.tests.find_first(
+                        where={"name": "Test 1" if test == "test-1" else "Test 2"}
                     )
-                    return redirect(url_for(f"createRun", locid=session["loc"], step=1))
+                    if not testid:
+                        # No tests in db, run setup script again
+                        await flash(
+                            "Server not setup properly, please run setup script again.",
+                            "error",
+                        )
+                        return redirect(url_for(f"createRun", locid=session["loc"], step=1))
 
-                assettest = await db.assettests.create(
-                    data={
-                        "assetID": asset.id,
-                        "testID": testid.id,
-                        "status": "PROGRESS",
-                    }
-                )
+                    assettest = await db.assettests.create(
+                        data={
+                            "assetID": asset.id,
+                            "testID": testid.id,
+                            "status": "PROGRESS",
+                        }
+                    )
 
-                # Store RunTest ID for when running thread
-                run["assets"][asset.id]["assettests"][testid.name] = assettest.id
+                    run["assets"][asset.id]["assettests"][testid.name] = assettest.id
 
-                assetRuns.append((assetName, asset.id, assettest.id))
+                    if onlyOnce:
+                        continue
 
-                test3thread = Thread(
-                    target=test3callback,
-                    args=(
-                        formula_a_value,
-                        consent_flow_value,
-                        session["baselineStats"]["path"],
-                        run,
-                        assetRuns,
-                    ),
-                )
-                test3thread.start()
+                    assetRuns.append((assetData, "None", assetName, asset.id, assettest.id))
 
-    if len(assetRuns) < 1:
-        return print("oopsy")
+                    onlyOnce = True
+                if test == "test-3":
+                    await createTest3Run(run, formula_a_value, consent_flow_value, asset)
+        if len(assetRuns) < 1:
+            return print("oopsy")
 
     print(runs_tracker)
 
@@ -532,7 +507,42 @@ async def createRuns(session, formula_a_value, consent_flow_value, selectedAsset
             args=(session["rainfallStats"]["path"], assetRuns, run),
         )
         test12thread.start()
+
     return run
+
+async def createTest3Run(run, formula_a_value, consent_flow_value, asset):
+    testid = await db.tests.find_first(where={"name": "Test 3"})
+    if not testid:
+        # No tests in db, run setup script again
+        await flash(
+            "Server not setup properly, please run setup script again.",
+            "error",
+        )
+        return redirect(url_for(f"createRun", locid=session["loc"], step=1))
+
+    assettest = await db.assettests.create(
+        data={
+            "assetID": asset.id,
+            "testID": testid.id,
+            "status": "PROGRESS",
+        }
+    )
+
+    # Store RunTest ID for when running thread
+    run["assets"][asset.id]["assettests"][testid.name] = assettest.id
+
+    test3thread = Thread(
+        target=test3callback,
+        args=(
+            formula_a_value,
+            consent_flow_value,
+            session["baselineStats"]["path"],
+            run,
+            (asset.name, asset.id, assettest.id),
+        ),
+    )
+    test3thread.start()
+    return
 
 
 @dataclass
@@ -705,8 +715,10 @@ async def createTests1andor2(rainfall_file, runs, run):
     await saveSpillToDB(db, runs, all_spill_classification)
 
     # Update all asset messages
+    update_test_1_2_progress(run["id"], runs, "Refreshing...")
+    await asyncio.sleep(0.2)
+    # used to give SSE time to refresh 
     update_test_1_2_progress(run["id"], runs, "Completed")
-    update_test_1_2_progress(run["id"], runs, "Completed.")
 
     # Show progress for run
     runs_tracker[str(run["id"])]["progress"] = "Saving timeseries to DB..."
@@ -721,10 +733,13 @@ async def createTests1andor2(rainfall_file, runs, run):
     # Save timeseries to SQLite database - this takes a while...
     await saveTimeSeriesToDB(db, run, runs, df)
 
+    # for r in runs:
+    #     # used to check for if test 3 is also complete (which it will be, so maybe remove?)
+    #     checkDone = await db.assettests.count(where={"assetID": r[3], "status": "PROGRESS"})
+    #     if (checkDone < 1):
+
     await db.runs.update(where={"id": run["id"]}, data={"status": "COMPLETED"})
-
-    update_test_1_2_progress(run["id"], runs, "Completed.", True)
-
+    update_test_1_2_progress(run["id"], runs, "Completed", True)
 
 def update_test_1_2_progress(runid, runs, message, runstatus=False):
     global runs_tracker
@@ -735,8 +750,7 @@ def update_test_1_2_progress(runid, runs, message, runstatus=False):
 
 
 def update_test_3_progress(runid, runs, message):
-    for run in runs:
-        runs_tracker[str(runid)][run[0]]["progress"]["test-3"] = message
+    runs_tracker[str(runid)][runs[0]]["progress"]["test-3"] = message
 
 
 async def createTest3(
@@ -789,13 +803,20 @@ async def createTest3(
         else f"Run-{run['id']} - Test 3 Summary.xlsx"
     )
     df_pff.to_excel(config.test_three_outputs / filename, index=False)
-    update_test_3_progress(run["id"], runs, "Completed")
 
-    for run in runs:
-        await db.assettests.update(
-            where={"id": run[2]},
-            data={"status": "COMPLETED"},
-        )
+    await db.assettests.update(
+        where={"id": runs[2]},
+        data={"status": "COMPLETED"},
+    )
+
+    if (len(run["tests"]) == 1):
+        # Only test 3 so can set whole run as done
+        await db.runs.update(where={"id": run["id"]}, data={"status": "COMPLETED"})
+    
+    update_test_3_progress(run["id"], runs, "Refreshing...")
+    await asyncio.sleep(0.2)
+    # used to give SSE time to refresh 
+    update_test_3_progress(run["id"], runs, "Completed")
 
 
 async def saveSummaryToDB(db, runs, summary):
@@ -937,16 +958,15 @@ async def saveTest3ToDB(db, runs, df_pff, formula_a, consent_fpf):
     - consent_fpf: The consent FPF input.
     """
 
-    for run in runs:
-        for index, row in df_pff.iterrows():
-            await db.testthree.create(
-                data={
-                    "year": str(row["Year"]),
-                    "formulaAInput": (formula_a),
-                    "consentFPFInput": (consent_fpf),
-                    "complianceStatus": row["Compliance Status"],
-                    "formulaAStatus": row["Just Formula A"],
-                    "consentFPFStatus": row["Just Consent FPF"],
-                    "assetTestID": run[2],
-                }
-            )
+    for index, row in df_pff.iterrows():
+        await db.testthree.create(
+            data={
+                "year": str(row["Year"]),
+                "formulaAInput": (formula_a),
+                "consentFPFInput": (consent_fpf),
+                "complianceStatus": row["Compliance Status"],
+                "formulaAStatus": row["Just Formula A"],
+                "consentFPFStatus": row["Just Consent FPF"],
+                "assetTestID": runs[2],
+            }
+        )
