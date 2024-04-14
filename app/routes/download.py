@@ -340,7 +340,7 @@ async def download_dry_day_discharges(location_id, run_id, asset_id):
             filepath, attachment_filename=filename, as_attachment=True
         )
 
-    return "No data available for this run", 404
+    return "No summary data available for this run", 404
 
 
 @download_blueprint.route("/heavy_rainfall_spills/<int:location_id>/<int:run_id>/<int:asset_id>")

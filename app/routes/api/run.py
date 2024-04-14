@@ -15,6 +15,7 @@ import math
 import os
 from pathlib import Path
 from datetime import datetime
+import json
 
 import pandas as pd
 from app.gn066_tests.csvHandler import csvReader, csvWriter
@@ -188,6 +189,14 @@ async def createRunStep2():
     session.pop("run_name")
     session.pop("run_desc")
     session.pop("tests")
+    if "baselineStats" in session:
+        session.pop("baselineStats")
+    if "rainfallStats" in session:
+        session.pop("rainfallStats")
+    if "spillStats" in session:
+        session.pop("spillStats")
+    if "multiAsset" in session:
+        session.pop("multiAsset")
 
     return redirect(f"/{run['locationID']}/{run['id']}")
 
@@ -239,6 +248,14 @@ async def createRunStep3():
     session.pop("run_name")
     session.pop("run_desc")
     session.pop("tests")
+    if "baselineStats" in session:
+        session.pop("baselineStats")
+    if "rainfallStats" in session:
+        session.pop("rainfallStats")
+    if "spillStats" in session:
+        session.pop("spillStats")
+    if "multiAsset" in session:
+        session.pop("multiAsset")
 
     return redirect(f"/{run['locationID']}/{run['id']}")
 
@@ -409,12 +426,17 @@ async def createRuns(session, formula_a_value, consent_flow_value, selectedAsset
             "baselineStatsFile": run["baselineStatsFile"],
             "rainfallStatsFile": run["rainfallStatsFile"],
             "spillStatsFile": run["spillStatsFile"],
+            "status": "PROGRESS",
         }
     )
 
     df = pd.read_excel(session["spillStats"]["path"])
 
     assetRuns = []
+    runs_tracker[str(run["id"])] = {
+        "id": run["id"],
+        "progress": "In Progress...",
+    }
 
     for assetName, assetData in df.groupby(pd.Grouper(key="ID")):
         # Loops over every asset
@@ -426,6 +448,8 @@ async def createRuns(session, formula_a_value, consent_flow_value, selectedAsset
 
         asset = await db.assets.create(data={"name": assetName, "runID": run["id"]})
         run["assets"][asset.id] = {"name": assetName, "assettests": {}}
+
+        runs_tracker[str(run["id"])][assetName] = {"progress": {}}
 
         onlyOnce = False
 
@@ -454,11 +478,9 @@ async def createRuns(session, formula_a_value, consent_flow_value, selectedAsset
 
                 run["assets"][asset.id]["assettests"][testid.name] = assettest.id
 
-                if (onlyOnce):
+                if onlyOnce:
                     continue
 
-                runs_tracker[str(assetName)] = run
-                
                 assetRuns.append((assetData, "None", assetName, asset.id, assettest.id))
 
                 onlyOnce = True
@@ -485,6 +507,8 @@ async def createRuns(session, formula_a_value, consent_flow_value, selectedAsset
                 # Store RunTest ID for when running thread
                 run["assets"][asset.id]["assettests"][testid.name] = assettest.id
 
+                assetRuns.append((assetName, asset.id, assettest.id))
+
                 test3thread = Thread(
                     target=test3callback,
                     args=(
@@ -492,7 +516,7 @@ async def createRuns(session, formula_a_value, consent_flow_value, selectedAsset
                         consent_flow_value,
                         session["baselineStats"]["path"],
                         run,
-                        asset.id,
+                        assetRuns,
                     ),
                 )
                 test3thread.start()
@@ -500,14 +524,12 @@ async def createRuns(session, formula_a_value, consent_flow_value, selectedAsset
     if len(assetRuns) < 1:
         return print("oopsy")
 
+    print(runs_tracker)
+
     if "test-1" in run["tests"] or "test-2" in run["tests"]:
         test12thread = Thread(
             target=test1and2callback,
-            args=(
-                session["rainfallStats"]["path"],
-                assetRuns,
-                run
-            ),
+            args=(session["rainfallStats"]["path"], assetRuns, run),
         )
         test12thread.start()
     return run
@@ -607,16 +629,12 @@ def test1and2callback(rainfall_file, spills_baseline, run):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
 
-    loop.run_until_complete(
-        createTests1andor2(rainfall_file, spills_baseline, run)
-    )
+    loop.run_until_complete(createTests1andor2(rainfall_file, spills_baseline, run))
     loop.close()
     return
 
 
-def test3callback(
-    formula_a_value, consent_flow_value, baseline_stats_file, run, assetid
-):
+def test3callback(formula_a_value, consent_flow_value, baseline_stats_file, run, runs):
     """
     Callback function to execute test 3.
 
@@ -630,9 +648,7 @@ def test3callback(
     asyncio.set_event_loop(loop)
 
     loop.run_until_complete(
-        createTest3(
-            formula_a_value, consent_flow_value, baseline_stats_file, run, assetid
-        )
+        createTest3(formula_a_value, consent_flow_value, baseline_stats_file, run, runs)
     )
     loop.close()
 
@@ -653,62 +669,78 @@ async def createTests1andor2(rainfall_file, runs, run):
     await db.connect()
     heavy_rain = 4
 
-
     # Read CSV and Reformat
-    update_test_1_2_progress(runs, "Importing files and reading data")
+    update_test_1_2_progress(run["id"], runs, "Importing files and reading data", True)
     df_rain_dtindex = csvReader.init(rainfall_file)
     csvReader.readCSV(df_rain_dtindex)
 
     # Run sewage be spilling analysis
-    update_test_1_2_progress(runs, "Running Sewage Be Spilling Analysis")   
+    update_test_1_2_progress(
+        run["id"], runs, "Running Sewage Be Spilling Analysis", True
+    )
     df, spills_df = analysis.sewage_be_spillin(runs, df_rain_dtindex, heavy_rain)
 
     # Calculate Summary Stats
-    update_test_1_2_progress(runs, "Calculating Summary Stats")
+    update_test_1_2_progress(run["id"], runs, "Calculating Summary Stats", True)
     rainfall_summary = csvReader.aggregate_rainfall_directly(df_rain_dtindex)
     perc_data = timeStats.time_stats(df, runs)
 
     # Calculate Spill Stats
-    update_test_1_2_progress(runs, "Calculating Spill Stats")
+    update_test_1_2_progress(run["id"], runs, "Calculating Spill Stats", True)
     all_spill_classification, spill_count_data = spillStats.spill_stats(
         spills_df, df, runs, [1, 2]
     )
 
     # Merge all dataframes
-    update_test_1_2_progress(runs, "Merging Dataframes")
+    update_test_1_2_progress(run["id"], runs, "Merging Dataframes", True)
     summary = pd.merge(perc_data, spill_count_data, on="Year")
     summary = pd.merge(summary, rainfall_summary, on="Year", how="left")
 
     # Save all results to SQLite database
-    update_test_1_2_progress(runs, "Saving summary to DB")
+    update_test_1_2_progress(run["id"], runs, "Saving summary to DB", True)
     await saveSummaryToDB(db, runs, summary)
 
     # Save all spills to SQLite database
-    update_test_1_2_progress(runs, "Saving spills to DB")
+    update_test_1_2_progress(run["id"], runs, "Saving spills to DB", True)
     await saveSpillToDB(db, runs, all_spill_classification)
 
-    # Save timeseries to SQLite database - this takes a while...
-    update_test_1_2_progress(runs, "Saving timeseries to DB...")
-    print(df.columns)
+    # Update all asset messages
+    update_test_1_2_progress(run["id"], runs, "Completed")
+    update_test_1_2_progress(run["id"], runs, "Completed.")
+
+    # Show progress for run
+    runs_tracker[str(run["id"])]["progress"] = "Saving timeseries to DB..."
     # Saves 300k worth of rows
-    await saveTimeSeriesToDB(db, run, runs, df)
-
-    update_test_1_2_progress(runs, "Completed")
-
     # Update the status of the run to COMPLETED
-    for run in runs:
+    for r in runs:
         await db.assettests.update(
-            where={"id": run[4]},
+            where={"id": r[4]},
             data={"status": "COMPLETED"},
         )
 
-def update_test_1_2_progress(runs, message):
+    # Save timeseries to SQLite database - this takes a while...
+    await saveTimeSeriesToDB(db, run, runs, df)
+
+    await db.runs.update(where={"id": run["id"]}, data={"status": "COMPLETED"})
+
+    update_test_1_2_progress(run["id"], runs, "Completed.", True)
+
+
+def update_test_1_2_progress(runid, runs, message, runstatus=False):
     global runs_tracker
+    if runstatus:
+        runs_tracker[str(runid)]["progress"] = message
     for run in runs:
-        runs_tracker[str(run[2])]["progress"]["test-1&2"] = message
+        runs_tracker[str(runid)][run[2]]["progress"]["test-1&2"] = message
+
+
+def update_test_3_progress(runid, runs, message):
+    for run in runs:
+        runs_tracker[str(runid)][run[0]]["progress"]["test-3"] = message
+
 
 async def createTest3(
-    formula_a_value, consent_flow_value, baseline_stats_file, run, assetID
+    formula_a_value, consent_flow_value, baseline_stats_file, run, runs
 ):
     """
     Perform Test 3 analysis and save the results to the database and an Excel file.
@@ -719,11 +751,15 @@ async def createTest3(
         baseline_stats_file (FileStorage): The baseline statistics file.
         run (dict): The run database information.
     """
+    from prisma import Prisma
+
+    db = Prisma()
+    await db.connect()
     global runs_tracker
 
-    runs_tracker[str(run["id"])]["progress"]["test-3"] = "Running FPF Calculations"
+    update_test_3_progress(run["id"], runs, "Running FPF Calculations")
 
-    df_pff = pd.read_excel(baseline_stats_file.stream, sheet_name="Summary", header=1)
+    df_pff = pd.read_excel(baseline_stats_file, header=1)
 
     df_pff["Compliance Status"] = df_pff.apply(
         lambda row: test3.check_compliance(row, formula_a_value, consent_flow_value),
@@ -740,11 +776,7 @@ async def createTest3(
     print(df_pff[["Year", "Just Formula A"]])
     print(df_pff[["Year", "Just Consent FPF"]])
 
-    from prisma import Prisma
-
-    db = Prisma()
-    await db.connect()
-    await saveTest3ToDB(db, run, assetID, df_pff, formula_a_value, consent_flow_value)
+    await saveTest3ToDB(db, runs, df_pff, formula_a_value, consent_flow_value)
 
     df_pff["Formula A Value"] = formula_a_value
     df_pff["Consent FPF Value"] = consent_flow_value
@@ -757,14 +789,13 @@ async def createTest3(
         else f"Run-{run['id']} - Test 3 Summary.xlsx"
     )
     df_pff.to_excel(config.test_three_outputs / filename, index=False)
-    runs_tracker[str(run["id"])]["progress"]["test-3"] = "Completed!"
+    update_test_3_progress(run["id"], runs, "Completed")
 
-    for test in run["assets"][assetID]["assettests"]:
-        if test == "Test 3":
-            await db.assettests.update(
-                where={"id": run["assets"][assetID]["assettests"][test]},
-                data={"status": "COMPLETED"},
-            )
+    for run in runs:
+        await db.assettests.update(
+            where={"id": run[2]},
+            data={"status": "COMPLETED"},
+        )
 
 
 async def saveSummaryToDB(db, runs, summary):
@@ -788,9 +819,7 @@ async def saveSummaryToDB(db, runs, summary):
                         "heavyPerc": row[
                             "Percentage of year spills are allowed to start (%)"
                         ],
-                        "spillPerc": row[
-                            f"{run[2]} - Percentage of year spilling (%)"
-                        ],
+                        "spillPerc": row[f"{run[2]} - Percentage of year spilling (%)"],
                         "unsatisfactorySpills": row[
                             f"{run[2]} - Unsatisfactory Spills"
                         ],
@@ -818,33 +847,34 @@ async def saveTimeSeriesToDB(db, run, runs, df):
         df (DataFrame): The time series DataFrame to be saved.
     """
     global runs_tracker
+    batch_size = 10000
+    total_batches = (len(df) // batch_size) + 1
 
-    for i, (index, row) in enumerate(df.iterrows()):
-        update_test_1_2_progress(runs, f"Saving timeseries to DB... ({round((i/len(df))*100.0, 1)}%)")
+    for batch_index in range(total_batches):
+        start_index = batch_index * batch_size
+        end_index = min((batch_index + 1) * batch_size, len(df))
+        current_batch = df.iloc[start_index:end_index]
+        runs_tracker[str(run["id"])]["progress"] = f"Saving timeseries to DB... ({round((start_index/len(df))*100.0, 1)}%)"
 
-        async with db.tx() as transaction:
-            resp = await transaction.timeseries.create(
-                data={
-                    "dateTime": index,
-                    "intensity": row["Intensity"],
-                    "depth": row["Depth_x"],
-                    "rollingDepth": row["Rolling 1hr depth"],
-                    "classification": row["Classification"],
-                    "spillAllowed": row["Spill_allowed?"],
-                    "dayType": row["Day Type"],
-                    # "result": row[run["name"]], Result has now been split into TimeSeriesResult for multiasset
-                    "runID": run["id"],
-                }
-            )
-            for asset in runs:
-                if (asset[2] in row and row[asset[2]] == "YES"):
-                    await transaction.timeseriesresult.create(
-                        data={
-                            "assetID": asset[3],
-                            "timeSeriesID": resp.id,
-                            "result": row[asset[2]]
-                        }
-                    )
+        async with db.batch_() as batcher:
+            print("In Batch...")
+            for index, row in current_batch.iterrows():
+                result = []
+                batcher.timeseries.create(
+                    data={
+                        "dateTime": index,
+                        "intensity": row["Intensity"],
+                        "depth": row["Depth_x"],
+                        "rollingDepth": row["Rolling 1hr depth"],
+                        "classification": row["Classification"],
+                        "spillAllowed": row["Spill_allowed?"],
+                        "dayType": row["Day Type"],
+                        "result": json.dumps(row[[x[2] for x in runs]].to_json()),
+                        "runID": run["id"],
+                    }
+                )
+            print("Committing batch...")
+            await batcher.commit()
 
 
 async def saveSpillToDB(db, runs, all_spill_classification):
@@ -862,7 +892,9 @@ async def saveSpillToDB(db, runs, all_spill_classification):
 
         for batch_index in range(total_batches):
             start_index = batch_index * batch_size
-            end_index = min((batch_index + 1) * batch_size, len(all_spill_classification))
+            end_index = min(
+                (batch_index + 1) * batch_size, len(all_spill_classification)
+            )
             current_batch = all_spill_classification.iloc[start_index:end_index]
             print(f"Currently batching {start_index} to {end_index} values")
 
@@ -893,7 +925,7 @@ async def saveSpillToDB(db, runs, all_spill_classification):
                 await batcher.commit()
 
 
-async def saveTest3ToDB(db, run, assetID, df_pff, formula_a, consent_fpf):
+async def saveTest3ToDB(db, runs, df_pff, formula_a, consent_fpf):
     """
     Helper function to save test 3 data to the database.
 
@@ -904,15 +936,17 @@ async def saveTest3ToDB(db, run, assetID, df_pff, formula_a, consent_fpf):
     - formula_a: The formula A input.
     - consent_fpf: The consent FPF input.
     """
-    for index, row in df_pff.iterrows():
-        await db.testthree.create(
-            data={
-                "year": str(row["Year"]),
-                "formulaAInput": (formula_a),
-                "consentFPFInput": (consent_fpf),
-                "complianceStatus": row["Compliance Status"],
-                "formulaAStatus": row["Just Formula A"],
-                "consentFPFStatus": row["Just Consent FPF"],
-                "assetTestID": run["assets"][assetID]["assettests"]["Test 3"],
-            }
-        )
+
+    for run in runs:
+        for index, row in df_pff.iterrows():
+            await db.testthree.create(
+                data={
+                    "year": str(row["Year"]),
+                    "formulaAInput": (formula_a),
+                    "consentFPFInput": (consent_fpf),
+                    "complianceStatus": row["Compliance Status"],
+                    "formulaAStatus": row["Just Formula A"],
+                    "consentFPFStatus": row["Just Consent FPF"],
+                    "assetTestID": run[2],
+                }
+            )
