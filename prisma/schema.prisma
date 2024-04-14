@@ -92,9 +92,9 @@ model TimeSeries {
 model TimeSeriesResult {
   id           Int        @id @default(autoincrement())
   assetID      Int
-  asset        Assets     @relation(fields: [assetID], references: [id])
+  asset        Assets     @relation(fields: [assetID], references: [id], onDelete: Cascade)
   timeSeriesID Int
-  TimeSeries   TimeSeries @relation(fields: [timeSeriesID], references: [id])
+  TimeSeries   TimeSeries @relation(fields: [timeSeriesID], references: [id], onDelete: Cascade)
   result       String?
 }
 
