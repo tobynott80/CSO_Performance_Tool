@@ -114,6 +114,13 @@
                     </select>
                   </div>
                   <div class="flex flex-row">
+                    <label class="inline-flex items-center cursor-pointer mx-2">
+                      <span class="mr-3 text-sm font-medium text-gray-900 dark:text-gray-300">Interval: 15m</span>
+                      <input type="checkbox" id="intervalToggle" value="" class="sr-only peer">
+                      <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                      <span class="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">1hr</span>
+                    </label>
+
                     <button
                       id="refresh-btn"
                       class="px-2 py-1 mr-1 inline-flex items-center gap-x-1 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
@@ -184,6 +191,7 @@
                       </svg>
                     </button>
                   </div>
+
                 </div>
                 <div
                   class="bg-white grow border rounded-lg"
@@ -197,7 +205,7 @@
     </div>
     <script type="module">
         import * as Plot from "https://cdn.jsdelivr.net/npm/@observablehq/plot@0.6/+esm";
-        let assetTestID = {{ assetTest.id }};
+        let runID = {{ run.id }};
         let locationName = "{{ location.name }}";
         let dateButtonDiv = document.getElementById('accordion');
         let visContainer = document.getElementById('vis-container');
@@ -214,7 +222,7 @@
             return [earliest, latest];
           }
           try {
-            const response = await fetch(`/api/results/timeseries/range?assetTestID=${assetTestID}`);
+            const response = await fetch(`/api/results/timeseries/range?runID=${runID}`);
             const range = await response.json();
             // get earliest and latest date from range
             earliest = new Date(range.earliest_datetime);
@@ -269,16 +277,21 @@
             alert('Date range must be less than 1 year');
             return;
           }
-          let data = await fetch(`/api/results/timeseries?assetTestID=${assetTestID}&startTime=${startDate}&endTime=${endDate}`)
+          let intervalToggle = document.getElementById('intervalToggle');
+          let url;
+          if (intervalToggle.checked) {
+            url = (`/api/results/timeseries?runID=${runID}&startTime=${startDate}&endTime=${endDate}&reduce`)
+          } else {
+            url = (`/api/results/timeseries?runID=${runID}&startTime=${startDate}&endTime=${endDate}`)
+          }
+          let data = await fetch(url);
           data = await data.json();
           data.forEach(d => {
             d.dateTime = new Date(d.dateTime);
-            d.intensity = parseFloat(d.intensity)
+            d.intensity = parseFloat(d.intensity);
+            d.result = JSON.parse(JSON.parse(d.result));
           });
-          const plot = Plot.plot({
-            x: { type: "utc" },
-            y: { label: "Intensity(mm)" },
-            marks: [
+          let marks = [
               Plot.lineY(data, {
                 x: "dateTime",
                 y: "intensity",
@@ -286,7 +299,10 @@
                 channels: {
                   Classification: "classification",
                   dateTime: d => d.dateTime.toLocaleString(),
-                  Spill_Allowed: d => (d.spillAllowed === "YES" ? "Yes" : "No")
+                  Spill_Allowed: d => (d.spillAllowed === "YES" ? "Yes" : "No"),
+                  Assets: d => {
+                    return Object.entries(d.result).filter(([key, val]) => val === "YES").map(([key, val]) => `${key}\n`)
+                  }
                 },
                 tip: true
               }),
@@ -300,14 +316,44 @@
                 x: "dateTime",
                 y1: -1,
                 y2: -2,
-                stroke: d => (d.spillAllowed === "YES" ? "{{colors.purple}}" : "white")
+                stroke: (d) => (d.spillAllowed === "YES" ? "{{colors.purple}}" : "white"),
               }),
               Plot.ruleY([4], {stroke: "red"}),
               Plot.crosshair(data, {
                 x: d => d.dateTime,
                 y: d => d.intensity
-              }),
-            ],
+              })
+            ];
+            let count = -3;
+            for(const result in (data[0].result)){
+              console.log(result);
+              marks.push(
+                Plot.ruleX(data, {
+                  x: "dateTime",
+                  y1: count,
+                  y2: count - 1,
+                  stroke: d => (d.result[result] === "YES" ? count : "white"),
+                })
+              )
+              marks.push(
+                Plot.text([result],{
+                  y: count,
+                  frameAnchor: "left",
+                  dx: -130,
+                  dy: 10,
+                })
+              )
+              count--;
+              count--;
+            }
+            
+          console.log(marks);
+          const plot = Plot.plot({
+            x: { type: "utc" },
+            y: { label: "Intensity(mm)" },
+            color: {scheme: "BuRd"},
+            marks: marks,
+            marginLeft: 135,
           });
           const div = document.querySelector("#vis-container");
           div.innerHTML = '';
@@ -315,12 +361,13 @@
           div.appendChild(plot);
         }
         // Button event listeners
-        document.getElementById('refresh-btn').addEventListener('click', () => generatePlot())
+        document.getElementById('refresh-btn').addEventListener('click', () => generatePlot());
+        document.getElementById('intervalToggle').addEventListener('change', () => generatePlot());
         document.getElementById('clear-btn').addEventListener('click', () => {
           document.getElementById('start-selector').selectedIndex  = 0;
           document.getElementById('end-selector').selectedIndex  = 0;
           generatePlot();
-        })
+        });
         document.getElementById('download-btn').addEventListener('click', () => {
           const start_selector = document.getElementById('start-selector')
           const end_selector = document.getElementById('end-selector')
@@ -351,7 +398,7 @@
           document.body.appendChild(tempLink);
           tempLink.click();
           document.body.removeChild(tempLink);
-          })
+          });
         window.addEventListener("load", (event) => {
           getRange();
           populatePage();
