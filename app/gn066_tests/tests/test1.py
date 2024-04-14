@@ -6,8 +6,8 @@ def test_1(row, df):
     """
     Evaluates conditions for Test 1 on a given spill.
     """
-    spill_start = pd.to_datetime(row["Start of Spill (absolute)"])
-    spill_end = pd.to_datetime(row["End of Spill (absolute)"])
+    spill_start = row["Start of Spill (absolute)"]
+    spill_end = row["End of Spill (absolute)"]
     prev_24hr = spill_start - dt.timedelta(hours=24)
     
     cut = df.loc[(df.index >= spill_start) & (df.index <= spill_end)]

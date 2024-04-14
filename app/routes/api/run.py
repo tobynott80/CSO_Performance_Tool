@@ -180,8 +180,6 @@ async def createRunStep2():
         session["consent-val"] = consent_flow_value
         return redirect(url_for(f"createRun", locid=session["loc"], step=3))
 
-
-
     # Create run since no multi assets
     run = await createRuns(session, formula_a_value, consent_flow_value)
 
@@ -232,17 +230,17 @@ async def createRunStep3():
     # Fetch the selected assets and fit them into the createRuns() common function (somehow)
     form_data = await request.form
     selectedAssets = list(form_data.keys())
-    run = await createRuns(session, session["formulaA-val"], session["consent-val"], selectedAssets)
+    run = await createRuns(
+        session, session["formulaA-val"], session["consent-val"], selectedAssets
+    )
 
     # Delete session data since not needed in client side
     session.pop("loc")
     session.pop("run_name")
     session.pop("run_desc")
-    session.pop("tests")    
+    session.pop("tests")
 
     return redirect(f"/{run['locationID']}/{run['id']}")
-
-
 
 
 # Only checks files validation
@@ -416,9 +414,9 @@ async def createRuns(session, formula_a_value, consent_flow_value, selectedAsset
 
     runs_tracker[str(run["id"])] = run
 
-    onlyOnce = False
-
     df = pd.read_excel(session["spillStats"]["path"])
+
+    assetRuns = []
 
     for assetName, assetData in df.groupby(pd.Grouper(key="ID")):
         # Loops over every asset
@@ -455,21 +453,7 @@ async def createRuns(session, formula_a_value, consent_flow_value, selectedAsset
 
                 run["assets"][asset.id]["assettests"][testid.name] = assettest.id
 
-                # If both Test 1 & 2 selected, ensure thread is only ran once
-                if onlyOnce == True:
-                    continue
-
-                onlyOnce = True
-                test12thread = Thread(
-                    target=test1and2callback,
-                    args=(
-                        session["rainfallStats"]["path"],
-                        (assetData, "None", run["name"]),
-                        run,
-                        asset.id,
-                    ),
-                )
-                test12thread.start()
+                assetRuns.append((assetData, "None", assetName))
             if test == "test-3":
 
                 # Connect Tests in DB to frontend tests
@@ -505,6 +489,20 @@ async def createRuns(session, formula_a_value, consent_flow_value, selectedAsset
                 )
                 test3thread.start()
 
+    if len(assetRuns) < 1:
+        return print("oopsy")
+
+    if "test-1" in run["tests"] or "test-2" in run["tests"]:
+        test12thread = Thread(
+            target=test1and2callback,
+            args=(
+                session["rainfallStats"]["path"],
+                assetRuns,
+                run,
+                asset.id,
+            ),
+        )
+        test12thread.start()
     return run
 
 
@@ -602,12 +600,16 @@ def test1and2callback(rainfall_file, spills_baseline, run, assetid):
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
 
-    loop.run_until_complete(createTests1andor2(rainfall_file, spills_baseline, run, assetid))
+    loop.run_until_complete(
+        createTests1andor2(rainfall_file, spills_baseline, run, assetid)
+    )
     loop.close()
     return
 
 
-def test3callback(formula_a_value, consent_flow_value, baseline_stats_file, run, assetid):
+def test3callback(
+    formula_a_value, consent_flow_value, baseline_stats_file, run, assetid
+):
     """
     Callback function to execute test 3.
 
@@ -621,12 +623,14 @@ def test3callback(formula_a_value, consent_flow_value, baseline_stats_file, run,
     asyncio.set_event_loop(loop)
 
     loop.run_until_complete(
-        createTest3(formula_a_value, consent_flow_value, baseline_stats_file, run, assetid)
+        createTest3(
+            formula_a_value, consent_flow_value, baseline_stats_file, run, assetid
+        )
     )
     loop.close()
 
 
-async def createTests1andor2(rainfall_file, spills_baseline, run, assetID):
+async def createTests1andor2(rainfall_file, runs, run, assetID):
     """
     Perform tests 1 and/or 2 on the given rainfall data and spills baseline.
 
@@ -654,23 +658,21 @@ async def createTests1andor2(rainfall_file, spills_baseline, run, assetID):
         "test-1&2"
     ] = "Running Sewage Be Spilling Analysis"
 
-    df, spills_df = analysis.sewage_be_spillin(
-        spills_baseline, df_rain_dtindex, heavy_rain
-    )
+    df, spills_df = analysis.sewage_be_spillin(runs, df_rain_dtindex, heavy_rain)
     # runs_tracker[str(run["id"])]["progress"]["test-1&2"] = "Visualising Data"
     # Does this need to be run?
-    vis.timeline_visual(spills_baseline, df, vis.timeline_start, vis.timeline_end)
+    # vis.timeline_visual(spills_baseline, df, vis.timeline_start, vis.timeline_end)
 
     rainfall_summary = csvReader.aggregate_rainfall_directly(df_rain_dtindex)
 
     runs_tracker[str(run["id"])]["progress"]["test-1&2"] = "Calculating Summary Stats"
 
-    perc_data = timeStats.time_stats(df, spills_baseline)
+    perc_data = timeStats.time_stats(df, runs)
 
     runs_tracker[str(run["id"])]["progress"]["test-1&2"] = "Calculating Spill Stats"
 
     all_spill_classification, spill_count_data = spillStats.spill_stats(
-        spills_df, df, [1, 2]
+        spills_df, df, runs, [1, 2]
     )
     runs_tracker[str(run["id"])]["progress"]["test-1&2"] = "Merging Dataframes"
 
@@ -685,20 +687,25 @@ async def createTests1andor2(rainfall_file, spills_baseline, run, assetID):
 
     runs_tracker[str(run["id"])]["progress"]["test-1&2"] = "Saving timeseries to DB..."
 
+    print(df.columns)
+
     # Saves 300k worth of rows
     await saveTimeSeriesToDB(db, run, assetID, df)
 
     runs_tracker[str(run["id"])]["progress"]["test-1&2"] = "Completed"
-    
+
     for test in run["assets"][assetID]["assettests"]:
         if test == "Test 1" or test == "Test 2":
             await db.assettests.update(
-                where={"id": run["assets"][assetID]["assettests"][test]}, data={"status": "COMPLETED"}
+                where={"id": run["assets"][assetID]["assettests"][test]},
+                data={"status": "COMPLETED"},
             )
     # csvWriter.writeCSV(df, summary, all_spill_classification)
 
 
-async def createTest3(formula_a_value, consent_flow_value, baseline_stats_file, run, assetID):
+async def createTest3(
+    formula_a_value, consent_flow_value, baseline_stats_file, run, assetID
+):
     """
     Perform Test 3 analysis and save the results to the database and an Excel file.
 
@@ -751,7 +758,8 @@ async def createTest3(formula_a_value, consent_flow_value, baseline_stats_file, 
     for test in run["assets"][assetID]["assettests"]:
         if test == "Test 3":
             await db.assettests.update(
-                where={"id": run["assets"][assetID]["assettests"][test]}, data={"status": "COMPLETED"}
+                where={"id": run["assets"][assetID]["assettests"][test]},
+                data={"status": "COMPLETED"},
             )
 
 
@@ -810,40 +818,64 @@ async def saveTimeSeriesToDB(db, run, assetID, df):
     """
     global runs_tracker
 
-    assettestid = (
-        run["assets"][assetID]["assettests"]["Test 1"]
-        if "Test 1" in run["assets"][assetID]["assettests"]
-        else run["assets"][assetID]["assettests"]["Test 2"]
-    )
-    batch_size = 10000
-    total_batches = (len(df) // batch_size) + 1
+    # This should only be inserted once (unique to "run" not "asset")
+    alreadyInserting = await db.timeseries.find_first(where={"runID": run["id"]})
+    if not alreadyInserting:
+        batch_size = 10000
+        total_batches = (len(df) // batch_size) + 1
 
-    for batch_index in range(total_batches):
-        start_index = batch_index * batch_size
-        end_index = min((batch_index + 1) * batch_size, len(df))
-        current_batch = df.iloc[start_index:end_index]
-        runs_tracker[str(run["id"])]["progress"][
-            "test-1&2"
-        ] = f"Saving timeseries to DB... ({round((start_index/len(df))*100.0, 1)}%)"
+        for batch_index in range(total_batches):
+            start_index = batch_index * batch_size
+            end_index = min((batch_index + 1) * batch_size, len(df))
+            current_batch = df.iloc[start_index:end_index]
+            runs_tracker[str(run["id"])]["progress"][
+                "test-1&2"
+            ] = f"Saving timeseries to DB... ({round((start_index/len(df))*100.0, 1)}%)"
 
-        async with db.batch_() as batcher:
-            print("In Batch...")
-            for index, row in current_batch.iterrows():
-                batcher.timeseries.create(
-                    data={
-                        "dateTime": index,
-                        "intensity": row["Intensity"],
-                        "depth": row["Depth_x"],
-                        "rollingDepth": row["Rolling 1hr depth"],
-                        "classification": row["Classification"],
-                        "spillAllowed": row["Spill_allowed?"],
-                        "dayType": row["Day Type"],
-                        "result": row[run["name"]],
-                        "runTestID": assettestid,
-                    }
-                )
-            print("Committing batch...")
-            await batcher.commit()
+            async with db.batch_() as batcher:
+                print("In Batch...")
+                for index, row in current_batch.iterrows():
+                    batcher.timeseries.create(
+                        data={
+                            "dateTime": index,
+                            "intensity": row["Intensity"],
+                            "depth": row["Depth_x"],
+                            "rollingDepth": row["Rolling 1hr depth"],
+                            "classification": row["Classification"],
+                            "spillAllowed": row["Spill_allowed?"],
+                            "dayType": row["Day Type"],
+                            "result": row[run["name"]],
+                            "runID": run["id"],
+                        }
+                    )
+                print("Committing batch...")
+                await batcher.commit()
+
+    # Insert time series result
+    # filtered = df[df["name"].str.contains("YES")]
+    # batch_size = 10000
+    # total_batches = (len(filtered) // batch_size) + 1
+
+    # for batch_index in range(total_batches):
+    #     start_index = batch_index * batch_size
+    #     end_index = min((batch_index + 1) * batch_size, len(filtered))
+    #     current_batch = filtered.iloc[start_index:end_index]
+    #     runs_tracker[str(run["id"])]["progress"][
+    #         "test-1&2"
+    #     ] = f"Saving timeseries to DB... ({round((start_index/len(filtered))*100.0, 1)}%)"
+
+    #     async with db.batch_() as batcher:
+    #         print("In Batch...")
+    #         for index, row in current_batch.iterrows():
+    #             batcher.timeseriesresult.create(
+    #                 data={
+    #                     "assetID": assetID,
+    #                     "timeSeriesID": ,
+    #                     "result": row[run["name"]],
+    #                 }
+    #             )
+    #         print("Committing batch...")
+    #         await batcher.commit()
 
 
 async def saveSpillToDB(db, run, assetID, all_spill_classification):
@@ -889,7 +921,7 @@ async def saveSpillToDB(db, run, assetID, all_spill_classification):
                         "test1": row["Test 1 Status"],
                         "test2": row["Test 2 Status"],
                         "classification": row["Classification"],
-                        "runTestID": assettestid,
+                        "assetTestID": assettestid,
                     }
                 )
             print("Committing batch...")
@@ -916,6 +948,6 @@ async def saveTest3ToDB(db, run, assetID, df_pff, formula_a, consent_fpf):
                 "complianceStatus": row["Compliance Status"],
                 "formulaAStatus": row["Just Formula A"],
                 "consentFPFStatus": row["Just Consent FPF"],
-                "runTestID": run["assets"][assetID]["assettests"]["Test 3"],
+                "assetTestID": run["assets"][assetID]["assettests"]["Test 3"],
             }
         )

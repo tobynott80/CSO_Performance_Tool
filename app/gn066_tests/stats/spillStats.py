@@ -8,7 +8,7 @@ import app.gn066_tests.tests.test2 as test2
 test1
 test2
 
-def spill_stats(spills_df, df, run_tests=[1, 2]):
+def spill_stats(spills_df, df, runs, run_tests=[1, 2]):
     """
     Applies Test 1 and/or Test 2 to classify spills and summarizes the results.
     
@@ -50,7 +50,7 @@ def spill_stats(spills_df, df, run_tests=[1, 2]):
     print('Classification complete')
         
     years = []
-    spill_count = [[] for _ in range(3)]
+    spill_count = [[] for _ in range(len(runs)*3)]
 
     for yr,yr_grp in spills_df.groupby(pd.Grouper(key="Start of Spill (absolute)", freq='Y')):
         years.append(yr.year)
