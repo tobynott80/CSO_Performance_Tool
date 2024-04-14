@@ -76,16 +76,24 @@ async def autocomplete():
     """
     # fetches a list of locations
     query = request.args.get("q")
-    locations = await db.location.find_many(
-        where={"name": {"contains": query}}, 
+    locations_list = await db.location.find_many(
+        where={"name": {"startsWith": query}}, 
         take=5, 
     )
     # fetches a list of runs based on the search query
     runs = await db.runs.find_many(
-        where={"name": {"contains": query}}, 
+        where={"name": {"startsWith": query}}, 
         take=5, 
     )
-    return jsonify({"locations": locations, "runs": runs})
+    # print location and runs to the console
+    print("----------Locations-------------")
+    print(locations_list)
+    print("----------Runs-------------")
+    print(runs)
+    print("QUERY: ", query)
+    
+    return [location.model_dump() for location in locations_list], [run.model_dump() for run in runs]
+
 
 @app.route("/")
 async def index():

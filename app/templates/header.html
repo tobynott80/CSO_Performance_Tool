@@ -66,30 +66,13 @@
 
     // Set a new timeout
     timeout = setTimeout(async function() {
+      if (query !== '') {
         const response = await fetch('/autocomplete?q=' + query);
         const data = await response.json();
-
-        const suggestions = document.getElementById('suggestions');
-        suggestions.innerHTML = ''; // Clear any existing suggestions
-
-        // Add new suggestions
-        for (const location of data.locations) {
-            const div = document.createElement('div');
-            div.textContent = location.name;
-            div.onclick = function() {
-                window.location.href = '/location/' + location.name;
-            };
-            suggestions.appendChild(div);
-        }
+        console.log(data);
+      }
       
-        for (const run of data.runs) {
-            const div = document.createElement('div');
-            div.textContent = run.name;
-            div.onclick = function() {
-                window.location.href = '/run/' + run.name;
-            };
-            suggestions.appendChild(div);
-        }
-    }, 300); // Wait 300ms after the user stops typing to run getSuggestions
+      console.log(data);
+    }, 500); // Wait 300ms after the user stops typing to run getSuggestions
   }
 </script>
