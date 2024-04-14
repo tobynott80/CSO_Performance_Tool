@@ -246,6 +246,7 @@
                       <button
                         type="submit"
                         onclick="validate()"
+                        id="validatebtn"
                         class="py-2 px-3 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
                       >
                         {% if "doneValidation" not in session or
@@ -289,6 +290,8 @@
     document.querySelector("#date").innerHTML = formatted;
 
     function validate() {
+      const validatebtn = document.getElementById("validatebtn");
+      validatebtn.disabled = true;
       const form = document.forms["createrun"];
       const formulaA = document.getElementById("formula-a");
       const consentFlow = document.getElementById("consent-flow");
@@ -316,6 +319,7 @@
           alert(
             "Please upload both Spill Stats and Rainfall Stats, and input at least Formula A or Consent Flow."
           );
+          validatebtn.disabled = false;
           return;
         }
       } else {
@@ -323,6 +327,7 @@
         if (rainfallStats !== null && spillStats !== null) {
           if (!hasRainfallStats || !hasSpillStats) {
             alert("Please upload both Spill Stats and Rainfall Stats.");
+            validatebtn.disabled = false;
             return; // Prevent form submission
           }
         }
@@ -331,11 +336,13 @@
         if (formulaA !== null && consentFlow !== null) {
           if (!hasFormulaA && !hasConsentFlow) {
             alert("Please input at least Formula A or Consent Flow.");
+            validatebtn.disabled = false;
             return; // Prevent form submission
           }
         }
       }
       // No errors, submit the form
+      validatebtn.disabled = false;
       form.submit();
     }
   </script>

@@ -24,7 +24,7 @@
         >
         {% if assetTest.status == "COMPLETED" %}
         <span class="rounded-lg bg-green-700 text-white px-1">
-          {{'%.*g' | format(3, assetTest.summary.spillPerc)}}%
+          {{'%.*g' | format(3, summary.spillPerc)}}%
         </span>
         {% endif %}
       </a>
@@ -36,7 +36,7 @@
         >
         {% if assetTest.status == "COMPLETED" %}
         <span class="rounded-lg bg-green-700 text-white px-1">
-          {{'%.*g' | format(3, assetTest.summary.heavyPerc)}}%
+          {{'%.*g' | format(3, summary.heavyPerc)}}%
         </span>
         {% endif %}
       </a>
@@ -47,9 +47,6 @@
         href="/{{ location.id }}/{{ run.id }}/{{ asset.id }}/results_storm_overflow"
         >Storm Overflow Performance</a
       >
-      {% if run.rainfallStatsFile %}
-        <p class="text-sm text-gray-600 dark:text-gray-400">File: "{{ run.rainfallStatsFile }}"</p>
-      {% endif %}
       {% else %}
       <p class="text-sm text-gray-600 dark:text-gray-400">
         Run Both Dry Day Discharge and Heavy Rainfall Spills to view Storm

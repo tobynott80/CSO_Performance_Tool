@@ -25,7 +25,7 @@
         >
         {% if assetTest.status == "COMPLETED" %}
         <span class="rounded-lg bg-green-700 text-white px-1">
-          {{'%.*g' | format(3, assetTest.summary.dryPerc)}}%
+          {{'%.*g' | format(3, summary.dryPerc)}}%
         </span>
         {% endif %}
       </a>
@@ -37,12 +37,12 @@
         >
         {% if assetTest.status == "COMPLETED" %}
         <span
-          class="rounded-lg {{'bg-green-700' if assetTest.summary.unsatisfactorySpills  == 0 else 'bg-red-700'}} text-white px-1"
+          class="rounded-lg {{'bg-green-700' if summary.unsatisfactorySpills  == 0 else 'bg-red-700'}} text-white px-1"
         >
-          {% if assetTest.summary.unsatisfactorySpills > 0 %} 
-          {{ '%.*g' | format(3, assetTest.summary.unsatisfactorySpills/assetTest.summary.yearsCount)}} 
+          {% if summary.unsatisfactorySpills > 0 %} 
+          {{ '%.*g' | format(3, summary.unsatisfactorySpills/summary.yearsCount)}} 
           {% else %}
-          {{assetTest.summary.unsatisfactorySpills}} 
+          {{summary.unsatisfactorySpills}} 
           {% endif %}
         </span>
         {% endif %}
@@ -54,11 +54,11 @@
         >
         {% if assetTest.status == "COMPLETED" %}
         <span
-          class="rounded-lg {{'bg-green-700' if assetTest.summary.substandardSpills  == 0 else 'bg-orange-500'}} text-white px-1"
+          class="rounded-lg {{'bg-green-700' if summary.substandardSpills  == 0 else 'bg-orange-500'}} text-white px-1"
         >
-          {% if assetTest.summary.substandardSpills > 0 %} {{ '%.*g' | format(3,
-          assetTest.summary.substandardSpills/assetTest.summary.yearsCount)}} {%
-          else %} {{assetTest.summary.substandardSpills}} {% endif %}
+          {% if summary.substandardSpills > 0 %} {{ '%.*g' | format(3,
+          summary.substandardSpills/summary.yearsCount)}} {%
+          else %} {{summary.substandardSpills}} {% endif %}
         </span>
         {% endif %}
       </a>
@@ -68,9 +68,6 @@
         href="/{{ location.id }}/{{ run.id }}/{{ asset.id }}/results_storm_overflow"
         >Storm Overflow Performance</a
       >
-      {% if run.spillStatsFile %}
-        <p class="text-sm text-gray-600 dark:text-gray-400">File: "{{ run.spillStatsFile }}"</p>
-      {% endif %}
       {% else %}
       <p class="text-sm text-gray-600 dark:text-gray-400">
         Run Both Dry Day Discharge and Heavy Rainfall Spills to view Storm

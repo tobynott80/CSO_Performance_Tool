@@ -105,6 +105,7 @@ async def index():
         search=query,
     )
 
+
 @app.route("/docs")
 async def documentation_page():
     """
@@ -211,13 +212,11 @@ async def showRuns(locid):
     """
     page = int(request.args.get("page", 1))
     limit = int(request.args.get("limit", 10))
-    
+
     runs = await getPaginatedRuns(page, limit, locid)
-    
+
     # Fetch the location details from the database ----------------------------
-    location = await db.location.find_unique(
-        where={"id": locid}
-    )
+    location = await db.location.find_unique(where={"id": locid})
 
     if not location:
         return redirect("/")
@@ -236,11 +235,18 @@ async def showRuns(locid):
         ]
     session["visited_locations"].insert(0, {"id": locid, "name": location.name})
     session["visited_locations"] = session["visited_locations"][:5]
-    
-    total = await db.runs.count(where={"locationID": locid })
+
+    total = await db.runs.count(where={"locationID": locid})
     total_pages = ceil(total / limit)
     # Render the specific location page
-    return await render_template("locations_page.html", location=location, runs=runs, total_pages = total_pages, current_page=page,)
+    return await render_template(
+        "locations_page.html",
+        location=location,
+        runs=runs,
+        total_pages=total_pages,
+        current_page=page,
+    )
+
 
 async def getPaginatedRuns(page, limit, locid):
     """
@@ -255,8 +261,11 @@ async def getPaginatedRuns(page, limit, locid):
     """
     skip = (page - 1) * limit
 
-    runs = await db.runs.find_many(where={"locationID": locid }, include={"Assets": True}, skip=skip, take=limit)
+    runs = await db.runs.find_many(
+        where={"locationID": locid}, include={"Assets": True}, skip=skip, take=limit
+    )
     return runs
+
 
 @app.get("/<locid>/create")
 async def createRun(locid):
@@ -287,8 +296,8 @@ async def createRun(locid):
             session.pop("run_name")
             session.pop("run_desc")
             session.pop("tests")
-            session.pop("doneValidation") # used in move from step 2 validate 
-            session.pop("multiAsset") # used in checking for multiple assets
+            session.pop("doneValidation")  # used in move from step 2 validate
+            session.pop("multiAsset")  # used in checking for multiple assets
             step = 1
     elif "loc" not in session:
         # Set step to 1 if no session data found
@@ -302,7 +311,7 @@ async def createRun(locid):
         # Step 3 requires file validation precheck and multiple assets to be true
         else:
             print(session["spillStats"]["path"])
-            #OSError: [Errno 22] Invalid argument
+            # OSError: [Errno 22] Invalid argument
             spill_data = pd.read_excel(session["spillStats"]["path"])
 
             # Seperate the spill_Data excel file into individual assets based on the ID column
@@ -314,7 +323,7 @@ async def createRun(locid):
                 loc=loc,
                 step=step,
                 session=session,
-                assets=assets
+                assets=assets,
             )
 
     return await render_template(
@@ -354,37 +363,62 @@ async def view_run(location_id, run_id):
         where={
             "runID": run_id,
         },
-        include={"assetTests": {"where": {"runID": run_id}, "include": {"test": True, "summary": True, "testThree": True}}},
+        include={
+            "assetTests": {
+                "include": {"test": True, "summary": True, "testThree": True}
+            }
+        },
     )
     if not assets or len(assets) < 1:
         return redirect(f"/{location_id}")
-
+    
+    resp = {}
 
     for asset in assets:
-        asset.data = {}
-        data_asset = db.assettests.find_first(
-            where={"id": asset.id},
-            include={"test": True, "summary": True, "testThree": True},)
-        if asset.status == "COMPLETED":
-            if len(data_asset.summary) > 0:
-                val = {}
-                count = 0
-                for summary_record in data_asset.summary:
-                    if summary_record.year == "Whole Time Series":
-                        val = summary_record
-                    else:
-                        count += 1
-                summary_record.summary = dict(val)
-                summary_record.summary["yearsCount"] = count
-            asset.data[summary_record.test.name] = data_asset
-            if summary_record.test.name == "Test 2" and "Test 1" in asset.data:
-                # Avoiding repetition: Test 1 data has already been made, so set test 2 data to test 1
-                data_asset.summary = asset.data["Test 1"].summary
-        else:
-            # If asset test in progress
-            asset.data[summary_record.test.name] = summary_record
+        asset = dict(asset)
+        for assetTest in asset["assetTests"]:
 
+            if (assetTest.test.name != "Test 3"):
+                whole_time_series_summary = await db.summary.find_first(
+                    where={"assetTestID": assetTest.id, "year": "Whole Time Series"}
+                )
+                if (whole_time_series_summary is None):
+                    print("Summary not ready or not in assettest")
+                    if "Test 1" in resp:
+                        print("Test 1 exists")
+                        # In Test 2
+                        resp[assetTest.test.name] = dict(resp["Test 1"])
+                else:
+                    summarycount = await db.summary.count(
+                        where={"assetTestID": assetTest.id}
+                    )
+                    print(summarycount)
+                    resp[assetTest.test.name] = dict(whole_time_series_summary)
+                    resp[assetTest.test.name]["yearsCount"] = summarycount-1
+                    resp[assetTest.test.name]["assetTest"] = dict(assetTest)
+                    print(resp)
+                
+            else:
+                # Handle test 3
+                print("Test 3")
 
+        # whole_time_series_summary = {}
+        # if data_asset.status == "COMPLETED":
+        #     if len(data_asset.summary) > 0:
+        #         count = 0
+        #         for summary_record in data_asset.summary:
+        #             if summary_record.year == "Whole Time Series":
+        #                 whole_time_series_summary = dict(summary_record)
+        #             else:
+        #                 count += 1
+        #         whole_time_series_summary["summary"]["yearsCount"] = count
+        #     asset["data"][whole_time_series_summary.test.name] = dict(data_asset)
+        #     if whole_time_series_summary.test.name == "Test 2" and "Test 1" in asset["data"]:
+        #         # Avoiding repetition: Test 1 data has already been made, so set test 2 data to test 1
+        #         data_asset.summary = asset["data"]["Test 1"].summary
+        # elif data_asset.status == "PROGRESS":
+        #     # If asset test in progress
+        #     asset["data"][data_asset.test.name] = whole_time_series_summary
 
     if not assets or len(assets) < 1:
         return redirect(f"/{location_id}")
@@ -411,6 +445,7 @@ async def view_run(location_id, run_id):
         location=location,
         run=run,
         assets=assets,
+        resp=resp,
     )
 
 
@@ -510,7 +545,10 @@ async def test3_results(location_id, run_id, asset_id):
     tests = await db.tests.find_first(
         where={"name": "Test 3"},
         include={
-            "assetTests": {"where": {"assetID": asset_id}, "include": {"testThree": True}},
+            "assetTests": {
+                "where": {"assetID": asset_id},
+                "include": {"testThree": True},
+            },
         },
     )
 
@@ -548,7 +586,10 @@ async def dry_day_results(location_id, run_id, asset_id):
     tests = await db.tests.find_first(
         where={"name": "Test 1"},
         include={
-            "assetTests": {"where": {"assetID": asset_id}, "include": {"summary": True}},
+            "assetTests": {
+                "where": {"assetID": asset_id},
+                "include": {"summary": True},
+            },
         },
     )
 
@@ -586,7 +627,10 @@ async def unsatisfactory_spills_results(location_id, run_id, asset_id):
     tests = await db.tests.find_first(
         where={"name": "Test 1"},
         include={
-            "assetTests": {"where": {"assetID": asset_id}, "include": {"summary": True}},
+            "assetTests": {
+                "where": {"assetID": asset_id},
+                "include": {"summary": True},
+            },
         },
     )
 
@@ -624,7 +668,10 @@ async def substandard_spills_results(location_id, run_id, asset_id):
     tests = await db.tests.find_first(
         where={"name": "Test 1"},
         include={
-            "assetTests": {"where": {"assetID": asset_id}, "include": {"summary": True}},
+            "assetTests": {
+                "where": {"assetID": asset_id},
+                "include": {"summary": True},
+            },
         },
     )
 
@@ -662,7 +709,10 @@ async def heavy_perc_results(location_id, run_id, asset_id):
     test1 = await db.tests.find_first(
         where={"name": "Test 1"},
         include={
-            "assetTests": {"where": {"assetID": asset_id}, "include": {"summary": True}},
+            "assetTests": {
+                "where": {"assetID": asset_id},
+                "include": {"summary": True},
+            },
         },
     )
 
@@ -672,7 +722,10 @@ async def heavy_perc_results(location_id, run_id, asset_id):
         test1 = await db.tests.find_first(
             where={"name": "Test 2"},
             include={
-                "assetTests": {"where": {"assetID": run_id}, "include": {"summary": True}},
+                "assetTests": {
+                    "where": {"assetID": run_id},
+                    "include": {"summary": True},
+                },
             },
         )
 
@@ -698,7 +751,10 @@ async def spill_perc_results(location_id, run_id, asset_id):
     test1 = await db.tests.find_first(
         where={"name": "Test 1"},
         include={
-            "assetTests": {"where": {"assetID": asset_id}, "include": {"summary": True}},
+            "assetTests": {
+                "where": {"assetID": asset_id},
+                "include": {"summary": True},
+            },
         },
     )
 
@@ -708,7 +764,10 @@ async def spill_perc_results(location_id, run_id, asset_id):
         test1 = await db.tests.find_first(
             where={"name": "Test 2"},
             include={
-                "assetTests": {"where": {"assetID": asset_id}, "include": {"summary": True}},
+                "assetTests": {
+                    "where": {"assetID": asset_id},
+                    "include": {"summary": True},
+                },
             },
         )
 
@@ -734,7 +793,10 @@ async def storm_overflow_results(location_id, run_id, asset_id):
     test1 = await db.tests.find_first(
         where={"name": "Test 1"},
         include={
-            "assetTests": {"where": {"assetID": asset_id}, "include": {"summary": True}},
+            "assetTests": {
+                "where": {"assetID": asset_id},
+                "include": {"summary": True},
+            },
         },
     )
 
@@ -744,7 +806,10 @@ async def storm_overflow_results(location_id, run_id, asset_id):
         test1 = await db.tests.find_first(
             where={"name": "Test 2"},
             include={
-                "assetTests": {"where": {"assetID": asset_id}, "include": {"summary": True}},
+                "assetTests": {
+                    "where": {"assetID": asset_id},
+                    "include": {"summary": True},
+                },
             },
         )
 

@@ -7,7 +7,7 @@
     <div class="mx-auto max-w-[90rem] px-1 py-1 sm:px-6 lg:px-0 lg:ps-64">
       <div class="mx-auto max-w-[85rem] px-4 sm:px-6 lg:px-8 lg:py-10">
         <div class="-m-1.5 overflow-x-auto">
-          <div class="inline-block align-middle min-w-full">
+          <div class="inline-block align-middle min-w-full space-y-4">
             <div
               class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden px-6 py-4 dark:bg-slate-900 dark:border-gray-700"
             >
@@ -59,27 +59,70 @@
               </div>
               {% endif %}
 
-              {% for asset in assets %}
-                <h2>{{asset.name}}</h2>
-                {% if "Test 1" in asset.data %} 
-                {% with runTest=asset.data["Test 1"], show_so=True if "Test 1" in asset.data and "Test 2" in asset.data else False%}
-                {% include 'runs/results/components/test1_bubble.html' %} 
-                {% endwith %} 
-                {% endif %} 
-
-                {% if "Test 2" in asset.data %} 
-                {% with runTest=asset.data["Test 2"], show_so=True if "Test 1" in asset.data and "Test 2" in asset.data else False %} 
-                {% include 'runs/results/components/test2_bubble.html' %} 
-                {% endwith %} 
-                {% endif %} 
-
-                {% if "Test 3" in asset.data %} {% with runTest=asset.data["Test 3"] %} 
-                {% include 'runs/results/components/test3_bubble.html' %} 
-                {% endwith %} 
+              <div
+                class="text-sm text-gray-800 dark:text-gray-200 my-4"
+              >
+              {% if run.rainfallStatsFile %}
+                  <p class="text-sm text-gray-600 dark:text-gray-400">Rainfall Stats File: "{{ run.rainfallStatsFile }}"</p>
                 {% endif %}
-              {% endfor %}
+                {% if run.spillStatsFile %}
+                  <p class="text-sm text-gray-600 dark:text-gray-400">Spill Stats File: "{{ run.spillStatsFile }}"</p>
+                {% endif %}
+                {% if run.baselineStatsFile %}
+                  <p class="text-sm text-gray-600 dark:text-gray-400">Formula A and Consent File: "{{ run.baselineStatsFile }}"</p>
+                {% endif %}
+
+              </div>
+
 
             </div>
+
+            {% for asset in assets %}
+            <div
+            class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden px-6 py-4 dark:bg-slate-900 dark:border-gray-700"
+          >
+            <div class="pe-6 pt-4 flex justify-between items-center">
+              <div>
+                <h2
+                  class="text-xl font-semibold text-gray-800 dark:text-gray-200"
+                >
+                {{asset.name}}
+                </h2>
+              </div>
+            </div>
+            {% if ("Test 1" in data and data["Test 1"].status == "PROGRESS") or ("Test 2" in data and data["Test 2"].status == "PROGRESS") or ("Test 3" in data and data["Test 3"].status == "PROGRESS") %}
+            <div
+              id="progressDiv"
+              class="bg-grey-200 border border-gray-200 rounded-xl shadow-sm overflow-hidden px-4 py-4 my-4 dark:bg-gray-800 dark:border-gray-700 space-y-2"
+            >
+              <h2
+                class="text-l font-semibold text-gray-800 dark:text-gray-200"
+              >
+                Progress
+              </h2>
+            </div>
+            {% endif %}
+
+              {% if "Test 1" in resp %} 
+              {% with assetTest=resp["Test 1"]["assetTest"], summary=resp["Test 1"], show_so=True if "Test 1" in resp and "Test 2" in resp else False%}
+              {% include 'runs/results/components/test1_bubble.html' %} 
+              {% endwith %} 
+              {% endif %} 
+
+              {% if "Test 2" in resp %} 
+              {% with assetTest=resp["Test 2"]["assetTest"], summary=resp["Test 2"], show_so=True if "Test 1" in resp and "Test 2" in resp else False %} 
+              {% include 'runs/results/components/test2_bubble.html' %} 
+              {% endwith %} 
+              {% endif %} 
+
+              {% if "Test 3" in asset.assetTests %} 
+              {% with assetTest=asset.data["Test 3"] %} 
+              {% include 'runs/results/components/test3_bubble.html' %} 
+              {% endwith %} 
+              {% endif %}
+
+          </div>
+          {% endfor %}
           </div>
         </div>
       </div>
@@ -88,9 +131,9 @@
     <script>
       const evtSource = new EventSource("/api/run/status");
       const runId = {{ run.id }};
-      const test1Progress = "{{assets[0].data["Test 1"].status if "Test 1" in assets[0].data else "COMPLETED"}}";
-      const test2Progress = "{{assets[0].data["Test 2"].status if "Test 2" in assets[0].data else "COMPLETED"}}";
-      const test3Progress = "{{assets[0].data["Test 3"].status if "Test 3" in assets[0].data else "COMPLETED"}}";
+      const test1Progress = "{{resp["Test 1"]["assetTest"].status if "Test 1" in resp else "COMPLETED"}}";
+      const test2Progress = "{{resp["Test 2"]["assetTest"].status if "Test 2" in resp else "COMPLETED"}}";
+      const test3Progress = "{{resp["Test 3"]["assetTest"].status if "Test 3" in resp else "COMPLETED"}}";
       if (test1Progress === "COMPLETED" && test2Progress === "COMPLETED" && test3Progress === "COMPLETED") {
         evtSource.close();
       }
