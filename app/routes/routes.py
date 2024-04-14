@@ -363,63 +363,55 @@ async def view_run(location_id, run_id):
         where={
             "runID": run_id,
         },
-        include={
-            "assetTests": {
-                "include": {"test": True, "summary": True, "testThree": True}
-            }
-        },
+        include={"assetTests": {"include": {"test": True, "testThree": True}}},
     )
     if not assets or len(assets) < 1:
         return redirect(f"/{location_id}")
-    
-    resp = {}
+
+    resp = {
+        "status": run.status
+    }
 
     for asset in assets:
+        asset_name = asset.name
         asset = dict(asset)
+        resp[asset_name] = {}
         for assetTest in asset["assetTests"]:
-
-            if (assetTest.test.name != "Test 3"):
+            resp[asset_name][assetTest.test.name] = {}
+            resp[asset_name][assetTest.test.name]["summary"] = {
+                "dryPerc": 0,
+                "heavyPerc": 0,
+                "spillPerc": 0,
+                "unsatisfactorySpills": 0,
+                "substandardSpills": 0,
+                "satisfactorySpills": 0,
+                "totalIntensity": 0,
+            }
+            resp[asset_name][assetTest.test.name]["assetTest"] = dict(assetTest)
+            if assetTest.test.name != "Test 3":
+                # resp[asset_name][assetTest.test.name]["summary"] = {}
                 whole_time_series_summary = await db.summary.find_first(
                     where={"assetTestID": assetTest.id, "year": "Whole Time Series"}
                 )
-                if (whole_time_series_summary is None):
-                    print("Summary not ready or not in assettest")
-                    if "Test 1" in resp:
-                        print("Test 1 exists")
+                print(whole_time_series_summary)
+                if whole_time_series_summary is None:
+                    if "Test 1" in resp[asset_name]:
                         # In Test 2
-                        resp[assetTest.test.name] = dict(resp["Test 1"])
+                        resp[asset_name][assetTest.test.name] = resp[asset_name][
+                            "Test 1"
+                        ]
                 else:
                     summarycount = await db.summary.count(
                         where={"assetTestID": assetTest.id}
                     )
-                    print(summarycount)
-                    resp[assetTest.test.name] = dict(whole_time_series_summary)
-                    resp[assetTest.test.name]["yearsCount"] = summarycount-1
-                    resp[assetTest.test.name]["assetTest"] = dict(assetTest)
-                    print(resp)
-                
-            else:
-                # Handle test 3
-                print("Test 3")
-
-        # whole_time_series_summary = {}
-        # if data_asset.status == "COMPLETED":
-        #     if len(data_asset.summary) > 0:
-        #         count = 0
-        #         for summary_record in data_asset.summary:
-        #             if summary_record.year == "Whole Time Series":
-        #                 whole_time_series_summary = dict(summary_record)
-        #             else:
-        #                 count += 1
-        #         whole_time_series_summary["summary"]["yearsCount"] = count
-        #     asset["data"][whole_time_series_summary.test.name] = dict(data_asset)
-        #     if whole_time_series_summary.test.name == "Test 2" and "Test 1" in asset["data"]:
-        #         # Avoiding repetition: Test 1 data has already been made, so set test 2 data to test 1
-        #         data_asset.summary = asset["data"]["Test 1"].summary
-        # elif data_asset.status == "PROGRESS":
-        #     # If asset test in progress
-        #     asset["data"][data_asset.test.name] = whole_time_series_summary
-
+                    resp[asset_name][assetTest.test.name]["summary"] = dict(
+                        whole_time_series_summary
+                    )
+                    resp[asset_name][assetTest.test.name]["summary"]["yearsCount"] = (
+                        summarycount - 1
+                    )
+                    # resp[assetTest.test.name]["assetTest"] = dict(assetTest)
+    print(resp)
     if not assets or len(assets) < 1:
         return redirect(f"/{location_id}")
 
@@ -583,33 +575,32 @@ async def dry_day_results(location_id, run_id, asset_id):
     if not run:
         return redirect(f"/{location_id}")
 
-    tests = await db.tests.find_first(
-        where={"name": "Test 1"},
+    assettests = await db.assettests.find_many(
+        where={"assetID": asset_id},
         include={
-            "assetTests": {
-                "where": {"assetID": asset_id},
-                "include": {"summary": True},
-            },
+            "summary": True,
         },
     )
 
-    if not tests:
+    if not assettests:
         return redirect(f"/{location_id}/{run_id}")
 
-    if tests.assetTests[0].status != "COMPLETED":
-        return redirect(f"/{location_id}/{run_id}")
+    # Check if summary is available
+    summary_use = None
+    for test in assettests:
+        if test.summary and (test.summary == 1 or test.summary):
+            summary_use = test.summary
+            break
 
-    # Handling the case where there are no Test 1 results found for the run
-    if not tests.assetTests[0].summary:
-        message = "No Test 1 results found for this run."
-        return await render_template_string("Message: {{message}}", message=message)
+    if not summary_use:
+        return redirect(f"/{location_id}/{run_id}")
 
     # If Test 1 results are found, pass them to your template
     return await render_template(
         "/runs/results/results_dry_day.html",
         location=location,
         run=run,
-        dry_day_results=tests.assetTests[0].summary,
+        dry_day_results=summary_use,
     )
 
 
@@ -624,33 +615,32 @@ async def unsatisfactory_spills_results(location_id, run_id, asset_id):
     if not run:
         return redirect(f"/{location_id}")
 
-    tests = await db.tests.find_first(
-        where={"name": "Test 1"},
+    assettests = await db.assettests.find_many(
+        where={"assetID": asset_id},
         include={
-            "assetTests": {
-                "where": {"assetID": asset_id},
-                "include": {"summary": True},
-            },
+            "summary": True,
         },
     )
 
-    if not tests:
+    if not assettests:
         return redirect(f"/{location_id}/{run_id}")
 
-    if tests.assetTests[0].status != "COMPLETED":
-        return redirect(f"/{location_id}/{run_id}")
+    # Check if summary is available
+    summary_use = None
+    for test in assettests:
+        if test.summary and (test.summary == 1 or test.summary):
+            summary_use = test.summary
+            break
 
-    # Handling the case where there are no Test 1 results found for the run
-    if not tests.assetTests[0].summary:
-        message = "No Test 1 results found for this run."
-        return await render_template_string("Message: {{message}}", message=message)
+    if not summary_use:
+        return redirect(f"/{location_id}/{run_id}")
 
     # If Test 1 results are found, pass them to your template
     return await render_template(
         "/runs/results/results_unsatisfactory_spills.html",
         location=location,
         run=run,
-        unsatisfactory_spills_results=tests.assetTests[0].summary,
+        unsatisfactory_spills_results=summary_use,
     )
 
 
@@ -665,33 +655,32 @@ async def substandard_spills_results(location_id, run_id, asset_id):
     if not run:
         return redirect(f"/{location_id}")
 
-    tests = await db.tests.find_first(
-        where={"name": "Test 1"},
+    assettests = await db.assettests.find_many(
+        where={"assetID": asset_id},
         include={
-            "assetTests": {
-                "where": {"assetID": asset_id},
-                "include": {"summary": True},
-            },
+            "summary": True,
         },
     )
 
-    if not tests:
+    if not assettests:
         return redirect(f"/{location_id}/{run_id}")
 
-    if tests.assetTests[0].status != "COMPLETED":
-        return redirect(f"/{location_id}/{run_id}")
+    # Check if summary is available
+    summary_use = None
+    for test in assettests:
+        if test.summary and (test.summary == 1 or test.summary):
+            summary_use = test.summary
+            break
 
-    # Handling the case where there are no Test 1 results found for the run
-    if not tests.assetTests[0].summary:
-        message = "No Test 1 results found for this run."
-        return await render_template_string("Message: {{message}}", message=message)
+    if not summary_use:
+        return redirect(f"/{location_id}/{run_id}")
 
     # If Test 1 results are found, pass them to your template
     return await render_template(
         "/runs/results/results_substandard_spills.html",
         location=location,
         run=run,
-        substandard_spills_results=tests.assetTests[0].summary,
+        substandard_spills_results=summary_use,
     )
 
 

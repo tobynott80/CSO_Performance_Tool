@@ -22,11 +22,9 @@
           class="underline text-base text-blue-600 dark:text-blue-400 cursor-pointer"
           >Allowed Spill Start (WHT)</span
         >
-        {% if assetTest.status == "COMPLETED" %}
         <span class="rounded-lg bg-green-700 text-white px-1">
           {{'%.*g' | format(3, summary.spillPerc)}}%
         </span>
-        {% endif %}
       </a>
 
       <a href="/{{ location.id }}/{{ run.id }}/{{ asset.id }}/results_spill_perc">
@@ -34,11 +32,9 @@
           class="underline text-base text-blue-600 dark:text-blue-400 cursor-pointer"
           >Year Spilling (WHT)</span
         >
-        {% if assetTest.status == "COMPLETED" %}
         <span class="rounded-lg bg-green-700 text-white px-1">
           {{'%.*g' | format(3, summary.heavyPerc)}}%
         </span>
-        {% endif %}
       </a>
 
       {% if show_so %}

@@ -35,7 +35,6 @@
           class="underline text-base text-blue-600 dark:text-blue-400 cursor-pointer"
           >Unsatisfactory Spills (WHT/Y)</span
         >
-        {% if assetTest.status == "COMPLETED" %}
         <span
           class="rounded-lg {{'bg-green-700' if summary.unsatisfactorySpills  == 0 else 'bg-red-700'}} text-white px-1"
         >
@@ -45,14 +44,12 @@
           {{summary.unsatisfactorySpills}} 
           {% endif %}
         </span>
-        {% endif %}
       </a>
       <a href="/{{ location.id }}/{{ run.id }}/{{ asset.id }}/results_substandard_spills">
         <span
           class="underline text-base text-blue-600 dark:text-blue-400 cursor-pointer"
           >Substandard Spills (WHT/Y)</span
         >
-        {% if assetTest.status == "COMPLETED" %}
         <span
           class="rounded-lg {{'bg-green-700' if summary.substandardSpills  == 0 else 'bg-orange-500'}} text-white px-1"
         >
@@ -60,7 +57,6 @@
           summary.substandardSpills/summary.yearsCount)}} {%
           else %} {{summary.substandardSpills}} {% endif %}
         </span>
-        {% endif %}
       </a>
       {% if show_so %}
       <a
@@ -78,7 +74,7 @@
     </div>
     <div class="flex flex-col pl-4 pr-2 py-1">
       <a
-        href="/download/dry_day_discharges/{{ location.id }}/{{ run.id }}/{{ asset.id }}/"
+        href="/download/dry_day_discharges/{{ location.id }}/{{ run.id }}/{{ asset.id }}"
         class="py-1.5 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
       >
         <svg
