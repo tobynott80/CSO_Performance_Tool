@@ -365,8 +365,9 @@
 
       
 
-      entry = document.querySelector("tbody") 
-      entry.querySelectorAll('tr').forEach(row => {
+      entry = document.querySelector("tbody")
+      document.querySelectorAll('tr').forEach(row => {
+        if (row.hasAttribute("data-locid")) {
         row.addEventListener('click', (event) => {
             if (event.target.tagName === 'INPUT') {
                 return; // Stop redirection if clicking on the checkbox
@@ -375,6 +376,7 @@
             const locId = row.getAttribute('data-locid');
             window.location.href = `/${locId}`; 
         });
+      }
       });
 
     function deleteLocations() {

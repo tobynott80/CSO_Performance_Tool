@@ -306,16 +306,18 @@
 
   <!-- Preline UI Library Script -->
   <script>
-    entry = document.querySelector("tbody");
-    entry.querySelectorAll("tr").forEach((row) => {
-      row.addEventListener("click", (event) => {
-        if (event.target.tagName === "INPUT") {
-          return; // Stop redirection if clicking on the checkbox
-        }
+    document.querySelectorAll("tr").forEach((row) => {
+      console.log()
+      if (row.hasAttribute("data-runid")) {
+        row.addEventListener("click", (event) => {
+          if (event.target.tagName === "INPUT") {
+            return; // Stop redirection if clicking on the checkbox
+          }
 
-        const runId = row.getAttribute("data-runid");
-        window.location.href += `/${runId}`;
-      });
+          const runId = row.getAttribute("data-runid");
+          window.location.href += `/${runId}`;
+        });
+      }
     });
 
     function deleteRuns() {
