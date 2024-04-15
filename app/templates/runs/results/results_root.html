@@ -16,7 +16,7 @@
                   <h2
                     class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-2"
                   >
-                    Run {{run.id}} ({{location.name}}) {% if resp.status == "COMPLETED" %} 
+                    {{run.name}} ({{location.name}}) {% if resp.status == "COMPLETED" %} 
                     {% include 'runs/results/components/completed_icon.html' %} 
                     {% else %}
                     {% include 'runs/results/components/pending_icon.html' %} 
