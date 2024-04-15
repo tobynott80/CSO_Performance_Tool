@@ -152,27 +152,17 @@
                           <span
                             class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-gray-200"
                           >
+                            Number of Assets
+                          </span>
+                        </div>
+                      </th>
+
+                      <th scope="col" class="px-6 py-3 text-start">
+                        <div class="flex items-center gap-x-2 justify-center">
+                          <span
+                            class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-gray-200"
+                          >
                             Date
-                          </span>
-                        </div>
-                      </th>
-
-                      <th scope="col" class="px-6 py-3 text-start">
-                        <div class="flex items-center gap-x-2 justify-center">
-                          <span
-                            class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-gray-200"
-                          >
-                            Results
-                          </span>
-                        </div>
-                      </th>
-
-                      <th scope="col" class="px-6 py-3 text-start">
-                        <div class="flex items-center gap-x-2 justify-center">
-                          <span
-                            class="text-xs font-semibold uppercase tracking-wide text-gray-800 dark:text-gray-200"
-                          >
-                            Download
                           </span>
                         </div>
                       </th>
@@ -213,18 +203,27 @@
                       </td>
 
                       <td class="size-px whitespace-nowrap py-2 text-center">
-                        {% set ns = namespace(completed_count=0) %} {% set
-                        total_count = run.runsTests|length %} {% if
-                        run.runsTests %} {% for runTest in run.runsTests %} {%
-                        if runTest.status == "COMPLETED" %} {% set
-                        ns.completed_count = ns.completed_count + 1 %} {% endif
-                        %} {% endfor %} {% endif %} {% if total_count ==
-                        ns.completed_count %} {% include
+                        {% if run.status == "COMPLETED" %} {% include
                         'runs/results/components/completed_icon.html' %} {% else
                         %} {% include
                         'runs/results/components/pending_icon.html' %} {% endif
                         %}
-                        <!-- End Circular Progress -->
+                      </td>
+
+                      <td class="size-px whitespace-nowrap">
+                        <button
+                          type="button"
+                          class="block w-full"
+                          data-hs-overlay="#hs-ai-invoice-modal"
+                        >
+                          <span class="block px-6 py-2">
+                            <span
+                              class="text-bold text-gray-600 dark:text-gray-400"
+                            >
+                              {{run.Assets|length}}
+                            </span>
+                          </span>
+                        </button>
                       </td>
 
                       <td class="size-px whitespace-nowrap">
@@ -242,57 +241,6 @@
                           </span>
                         </button>
                       </td>
-
-                      <td class="size-px whitespace-nowrap">
-                        <button
-                          type="button"
-                          class="block w-full"
-                          data-hs-overlay="#hs-ai-invoice-modal"
-                        >
-                          <span class="block px-6 py-2">
-                            {% set ns = namespace(completed_count=0) %} {% set
-                            total_count = run.runsTests|length %} {% if
-                            run.runsTests %} {% for runTest in run.runsTests %}
-                            {% if runTest.status == "COMPLETED" %} {% set
-                            ns.completed_count = ns.completed_count + 1 %} {%
-                            endif %} {% endfor %} {% endif %}
-                            <span class="text-bold {% if ns.completed_count < total_count %} {{'text-yellow-600'}} {% else %} {{'text-green-600'}} {% endif %}">
-                              {{ ns.completed_count }}/{{ total_count }}
-                            </span>
-                          </span>
-                        </button>
-                      </td>
-
-                      <td class="size-px whitespace-nowrap">
-                        <button
-                          type="button"
-                          class="block w-full"
-                          data-hs-overlay="#hs-ai-invoice-modal"
-                        >
-                          <span
-                            class="block px-6 py-2 flex items-center justify-center"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="18"
-                              height="18"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              stroke-width="2"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                              class="lucide lucide-download text-gray-600 dark:text-gray-400"
-                            >
-                              <path
-                                d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"
-                              />
-                              <polyline points="7 10 12 15 17 10" />
-                              <line x1="12" x2="12" y1="15" y2="3" />
-                            </svg>
-                          </span>
-                        </button>
-                      </td>
                     </tr>
                   </tbody>
                   {% endfor %}
@@ -307,10 +255,12 @@
                 {% endif %}
                 <!-- End Table -->
                 <!--Pagination  -->
-                <div class="pagination flex items-center justify-center space-x-1 my-4">
+                <div
+                  class="pagination flex items-center justify-center space-x-1 my-4"
+                >
                   {% if current_page > 1 %}
                   <a
-                  href="/{{ location.id }}?page=1{{ '&search=' + search|urlencode if search }}"
+                    href="/{{ location.id }}?page=1{{ '&search=' + search|urlencode if search }}"
                     class="px-4 py-2 text-sm font-bold bg-white rounded-md border border-gray-300 hover:bg-blue-50 dark:text-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
                   >
                     <<
@@ -323,11 +273,13 @@
                   </a>
                   {% endif %}
 
-                  <span class="px-4 py-2 text-sm font-semibold bg-white rounded-md border border-gray-300 dark:text-gray-200 dark:bg-gray-700 dark:border-gray-600">
+                  <span
+                    class="px-4 py-2 text-sm font-semibold bg-white rounded-md border border-gray-300 dark:text-gray-200 dark:bg-gray-700 dark:border-gray-600"
+                  >
                     Page {{ current_page }} of {{ total_pages }}
                   </span>
 
-                  {% if current_page < total_pages %}  
+                  {% if current_page < total_pages %}
                   <a
                     href="{{ location.id }}?page={{ current_page + 1 }}{{ '&search=' + search|urlencode if search }}"
                     class="px-4 py-2 text-sm font-bold bg-white rounded-md border border-gray-300 hover:bg-blue-50 dark:text-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:hover:bg-gray-600"
@@ -342,7 +294,6 @@
                   </a>
                   {% endif %}
                 </div>
-
               </div>
             </div>
           </div>
@@ -355,7 +306,8 @@
 
   <!-- Preline UI Library Script -->
   <script>
-    document.querySelectorAll("tr").forEach((row) => {
+    entry = document.querySelector("tbody");
+    entry.querySelectorAll("tr").forEach((row) => {
       row.addEventListener("click", (event) => {
         if (event.target.tagName === "INPUT") {
           return; // Stop redirection if clicking on the checkbox
