@@ -169,3 +169,6 @@ cython_debug/
 /output/*
 # VS code IDE Workspace Settings
 .vscode
+
+# Tmp folder
+/tmp/

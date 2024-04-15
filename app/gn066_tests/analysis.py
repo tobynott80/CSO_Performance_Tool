@@ -4,7 +4,7 @@ import pandas as pd
 import app.gn066_tests.config as config
 
 
-def sewage_be_spillin(spills_baseline, df, heavy_rain):
+def sewage_be_spillin(runs, df, heavy_rain):
     """ 
     Read in spills from either an Excel sheet or CSV stats template output and define start and end of spill event. Compare to rainfall dataframe and add 'run_spill?' column to be filled with yes if 
     rainfall dataframe index falls in a spill event period
@@ -49,30 +49,36 @@ def sewage_be_spillin(spills_baseline, df, heavy_rain):
 
     spills_df = pd.DataFrame()
 
-    # Read in spills from either an Excel sheet or CSV stats template output
-    run_name = spills_baseline[2]
-    print(run_name)
-    # Add a column for the run in the rainfall database
-    df[run_name] = None
-    # Read the stats report
-    spill_counts = spills_baseline[0]
-    if spill_counts.filename.rsplit('.', 1)[-1] == "xlsx":
-        spills = pd.read_excel(spill_counts)
-        
-    else:
-        spills = pd.read_csv(spill_counts)
-    print(spills.columns)
-    # Define the start and end as datetime format
-    spills["Start of Spill (absolute)"] = pd.to_datetime(
-        spills["Start of Spill (absolute)"], format="%Y-%m-%d %H:%M:%S")
-    spills["End of Spill (absolute)"] = pd.to_datetime(
-        spills["End of Spill (absolute)"], format="%Y-%m-%d %H:%M:%S")
-    spills["RUN"] = run_name
-    spills_df = pd.concat([spills_df, spills], ignore_index=True)
-    # If index is time during spill event for run, add YES in that column
-    for spill_start, spill_end in spills[['Start of Spill (absolute)', 'End of Spill (absolute)']].itertuples(index=False):
-        df.loc[(df.index >= spill_start) & (
-            df.index <= spill_end), run_name] = "YES"
+    for run in runs:
+        #Read in spills from either an Excel sheet or CSV stats template output
+        run_name = run[2]
+        print(run_name)
+        # Add a column for the run in the rainfall database
+        df[run_name] = None
+
+        # Read the stats report
+        spills = run[0]
+        # if spill_counts.suffix == ".xlsx":
+        #     sheets = pd.read_excel(spill_counts,sheet_name = None)
+        #     if len(sheets)>1:
+        #         sheet_name = sheet_name
+        #         spills = pd.read_excel(spill_counts,sheet_name=sheet_name)
+        #     else:
+        #         spills = pd.read_excel(spill_counts)
+        # else:
+        #     spills = pd.read_csv(spill_counts)
+
+        #Define the start and end as datetime format
+        spills["Start of Spill (absolute)"] = pd.to_datetime(spills["Start of Spill (absolute)"],format="%Y-%m-%d %H:%M:%S")
+        spills["End of Spill (absolute)"] = pd.to_datetime(spills["End of Spill (absolute)"],format="%Y-%m-%d %H:%M:%S")
+
+        spills ["RUN"] = run_name
+
+        spills_df = pd.concat([spills_df,spills], ignore_index =True)
+
+        # If index is time during spill event for run, add YES in that column
+        for spill_start, spill_end in spills[['Start of Spill (absolute)', 'End of Spill (absolute)']].itertuples(index=False):
+            df.loc[(df.index >= spill_start) & (df.index <= spill_end), run_name] = "YES"
     print(spills_df.head(10))
     print(df.head(10))
 

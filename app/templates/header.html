@@ -40,7 +40,7 @@
               class="py-2 px-4 ps-11 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
               placeholder="Search (Alt+Shift+S)">
           </form>
-          <div id="search-dropdown" class="absolute top-full start-0 z-10 bg-white border border-gray-200 w-full max-h-60 overflow-y-auto shadow-md mt-1 rounded-md">
+          <div id="search-dropdown" class="absolute top-full start-0 z-10 bg-white dark:bg-gray-700 border border-gray-200 dark:border-none w-full max-h-60 overflow-y-auto shadow-md mt-1 rounded-md">
           </div>
         </div>
         
@@ -76,7 +76,7 @@
       } else {
         document.getElementById("search-dropdown").style.display = 'none';
       }
-    }, 20); // Wait 20ms after the user stops typing to run getSuggestions
+    }, 200); // Wait 20ms after the user stops typing to run getSuggestions
   }
 
   function updateDropdown(data, query) {
@@ -95,12 +95,12 @@
         //make user typed text bold
         let regex = new RegExp(`(${query})`, 'gi');
         item.innerHTML = location.name.replace(regex, '<strong>$1</strong>');  
-        item.classList.add('dropdown-item', 'hover:bg-gray-100', 'hover:text-black', 'p-2', 'transition-colors', 'duration-200', 'ease-in-out'); 
+        item.classList.add('dropdown-item', 'hover:bg-gray-100', 'hover:dark:bg-gray-600', 'hover:text-black', 'hover:dark:text-white', 'dark:text-white', 'p-2', 'transition-colors', 'duration-200', 'ease-in-out'); 
         
         //say if its location
         let type = document.createElement('span');
         type.textContent = ' (Location)';
-        type.classList.add('text-sm', 'text-gray-500'); // Adjust these classes as needed
+        type.classList.add('text-sm', 'text-gray-500', 'dark:text-white'); // Adjust these classes as needed
         item.appendChild(type);
 
         // Add event listener
@@ -118,12 +118,12 @@
         let item = document.createElement('div')        
         let regex = new RegExp(`(${query})`, 'gi');
         item.innerHTML = run.name.replace(regex, '<strong>$1</strong>');        
-        item.classList.add('dropdown-item', 'hover:bg-gray-100', 'hover:text-black', 'p-2', 'transition-colors', 'duration-200', 'ease-in-out'); 
+        item.classList.add('dropdown-item', 'hover:bg-gray-100', 'hover:dark:bg-gray-600', 'hover:text-black', 'hover:dark:text-white', 'dark:text-white', 'p-2', 'transition-colors', 'duration-200', 'ease-in-out'); 
 
         //say if its run
         let type = document.createElement('span');
         type.textContent = ' (Run)';
-        type.classList.add('text-sm', 'text-gray-500'); // Adjust these classes as needed
+        type.classList.add('text-sm', 'text-gray-500', 'dark:text-white'); // Adjust these classes as needed
         item.appendChild(type);
         // Add event listener
         item.addEventListener('click', () => {
@@ -137,7 +137,7 @@
     if ((!data.locations || data.locations.length === 0) && (!data.runs || data.runs.length === 0)) {
       let item = document.createElement('div');
       item.textContent = 'No results found';
-      item.classList.add('dropdown-item', 'p-2', 'text-gray-500');
+      item.classList.add('dropdown-item', 'p-2', 'text-gray-500', 'dark:text-white');
       dropdown.appendChild(item);
     }
     dropdown.style.display = 'block';    

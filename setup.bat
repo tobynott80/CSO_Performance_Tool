@@ -2,7 +2,7 @@
 REM This script checks python =>3.11 is installed and downloads, installs dependencies and sets up the database
 
 REM Check for Python version 3.11 or newer
-python --version 2>&1 | findstr /R "Python 3\.(?:1[1-9]|[2-9]\d)" > nul
+pipenv run python --version 2>&1 | findstr /R "Python 3\.(?:1[1-9]|[2-9]\d)" > nul
 if errorlevel 1 (
     echo Python 3.11 or newer is required.
     echo Please download and install Python 3.11 or newer from https://www.python.org/downloads/ and set it as the default python version.

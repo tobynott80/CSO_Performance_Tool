@@ -4,9 +4,11 @@
   <div class="flex flex-row">
     <h2 class="flex-grow text-l font-semibold text-gray-800 dark:text-gray-200">
       <div>
-        Heavy Rainfall Spills {% if runTest.status == "COMPLETED" %} {% include
-        'runs/results/components/completed_icon.html' %} {% else %} {% include
-        'runs/results/components/pending_icon.html' %} {% endif %}
+        Heavy Rainfall Spills {% if assetTest.status == "COMPLETED" %}
+        {% include 'runs/results/components/completed_icon.html' %} 
+        {% else %}
+        {% include 'runs/results/components/pending_icon.html' %} 
+        {% endif %}
       </div>
       <span class="text-gray-600 dark:text-gray-400 text-sm">
         GN066 Test 2: Analysing SO spills due to heavy rainfall
@@ -15,39 +17,32 @@
   </div>
   <div class="flex flex-row">
     <div class="flex flex-col flex-grow space-y-2">
-      <a href="/{{ location.id }}/{{ run.id }}/results_heavy_perc">
+      <a href="/{{ location.id }}/{{ run.id }}/{{ asset.id }}/results_heavy_perc">
         <span
           class="underline text-base text-blue-600 dark:text-blue-400 cursor-pointer"
           >Allowed Spill Start (WHT)</span
         >
-        {% if runTest.status == "COMPLETED" %}
         <span class="rounded-lg bg-green-700 text-white px-1">
-          {{'%.*g' | format(3, runTest.summary.spillPerc)}}%
+          {{'%.*g' | format(3, summary.spillPerc)}}%
         </span>
-        {% endif %}
       </a>
 
-      <a href="/{{ location.id }}/{{ run.id }}/results_spill_perc">
+      <a href="/{{ location.id }}/{{ run.id }}/{{ asset.id }}/results_spill_perc">
         <span
           class="underline text-base text-blue-600 dark:text-blue-400 cursor-pointer"
           >Year Spilling (WHT)</span
         >
-        {% if runTest.status == "COMPLETED" %}
         <span class="rounded-lg bg-green-700 text-white px-1">
-          {{'%.*g' | format(3, runTest.summary.heavyPerc)}}%
+          {{'%.*g' | format(3, summary.heavyPerc)}}%
         </span>
-        {% endif %}
       </a>
 
       {% if show_so %}
       <a
         class="underline text-base text-blue-600 dark:text-blue-400 cursor-pointer"
-        href="/{{ location.id }}/{{ run.id }}/results_storm_overflow"
+        href="/{{ location.id }}/{{ run.id }}/{{ asset.id }}/results_storm_overflow"
         >Storm Overflow Performance</a
       >
-      {% if run.rainfallStatsFile %}
-        <p class="text-sm text-gray-600 dark:text-gray-400">File: "{{ run.rainfallStatsFile }}"</p>
-      {% endif %}
       {% else %}
       <p class="text-sm text-gray-600 dark:text-gray-400">
         Run Both Dry Day Discharge and Heavy Rainfall Spills to view Storm
@@ -57,7 +52,7 @@
     </div>
     <div class="flex flex-col pl-4 pr-2 py-1">
       <a
-        href="/download/heavy_rainfall_spills/{{ location.id }}/{{ run.id }}"
+        href="/download/heavy_rainfall_spills/{{ location.id }}/{{ run.id }}/{{ asset.id }}"
         class="py-1.5 px-3 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
       >
         <svg
@@ -76,7 +71,7 @@
         Export
       </a>
       <a
-        href="/{{ location.id }}/{{ run.id }}/visualisation"
+        href="/{{ location.id }}/{{ run.id }}/{{ asset.id }}/visualisation"
         class="py-1.5 px-3 my-1 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
       >
         <svg

@@ -44,17 +44,17 @@ async def getTimeSeries():
     Retrieves time series data based on the provided parameters.
 
     Parameters:
-    - runTestID (int): The ID of the run test.
+    - assetTestID (int): The ID of the asset test.
     - startTime (int): The start time of the time series data (in epoch time).
     - endTime (int): The end time of the time series data (in epoch time).
 
     Returns:
-    - If no start or end time is provided, returns the entire time series data for the provided run test ID.
-    - If start and end time are provided, returns the time series data within that range for the provided run test ID.
+    - If no start or end time is provided, returns the entire time series data for the provided asset test ID.
+    - If start and end time are provided, returns the time series data within that range for the provided asset test ID.
     """
-    run_test_ID = request.args.get("runTestID")
-    if run_test_ID is None:
-        return {"error": "No run test ID provided"}, 400
+    run_id = request.args.get("runID")
+    if run_id is None:
+        return {"error": "No run ID provided"}, 400
 
     start_time = request.args.get("startTime")
     end_time = request.args.get("endTime")
@@ -62,11 +62,11 @@ async def getTimeSeries():
     # If no start or end time is provided, return the entire timeseries
     if start_time is None or end_time is None:
         timeseries_list = await db.timeseries.find_many(
-            where={"runTestID": int(run_test_ID)}
+            where={"runID": int(run_id)},
         )
         if not timeseries_list:
             return {
-                "error": "No timeseries data found for the provided run test ID"
+                "error": "No timeseries data found for the provided run ID"
             }, 404
         else:
             return [timeseries.dict() for timeseries in timeseries_list], 200
@@ -77,15 +77,16 @@ async def getTimeSeries():
     end_time = datetime.datetime.fromtimestamp(int(end_time))
     timeseries_list = await db.timeseries.find_many(
         where={
-            "runTestID": int(run_test_ID),
+            "runID": int(run_id),
             "dateTime": {"gte": start_time, "lte": end_time},
         },
         order={"dateTime": "asc"},
     )
     if not timeseries_list:
         return {
-            "error": "No timeseries data found for the provided run test ID or given time"
+            "error": "No timeseries data found for the provided run ID or given time"
         }, 404
+    
     # If reduce argument is not provided, return the timeseries data as is
     reduce_arg = request.args.get("reduce")
     if reduce_arg is None:
@@ -107,25 +108,25 @@ async def getTimeSeries():
 @results_blueprint.route("/timeseries/range", methods=["GET"])
 async def getTimesSeriesRange():
     """
-    Retrieves the earliest and latest datetime for a given run test ID.
+    Retrieves the earliest and latest datetime for a given asset test ID.
 
     Returns:
         A dictionary containing the earliest and latest datetime in ISO format if successful.
         Otherwise, returns an error message and status code.
     """
-    run_test_ID = request.args.get("runTestID")
-    if run_test_ID is None:
-        return {"error": "No run test ID provided"}, 400
+    run_ID = request.args.get("runID")
+    if run_ID is None:
+        return {"error": "No run ID provided"}, 400
 
     try:
-        run_test_ID = int(run_test_ID)
+        run_ID = int(run_ID)
     except ValueError:
-        return {"error": "Invalid run test ID provided"}, 400
+        return {"error": "Invalid run ID provided"}, 400
 
-    earliest_datetime, latest_datetime = await get_datetime_range(run_test_ID)
+    earliest_datetime, latest_datetime = await get_datetime_range(run_ID)
 
     if earliest_datetime is None or latest_datetime is None:
-        return {"error": "No timeseries data found for the provided run test ID"}, 404
+        return {"error": "No timeseries data found for the provided asset test ID"}, 404
 
     return {
         "earliest_datetime": earliest_datetime.isoformat(),
@@ -134,13 +135,13 @@ async def getTimesSeriesRange():
 
 
 async def get_datetime_range(
-    run_test_ID: int,
+    run_ID: int,
 ) -> Tuple[Optional[datetime.datetime], Optional[datetime.datetime]]:
     """
-    Helper function to retrieve the earliest and latest datetime values for a given run test ID.
+    Helper function to retrieve the earliest and latest datetime values for a given asset test ID.
 
     Args:
-        run_test_ID (int): The ID of the run test.
+        asset_test_ID (int): The ID of the asset test.
 
     Returns:
         tuple: A tuple containing the earliest and latest datetime values.
@@ -148,14 +149,14 @@ async def get_datetime_range(
 
     """
     earliest_datetime = await db.timeseries.find_first(
-        where={"runTestID": int(run_test_ID)},
+        where={"runID": int(run_ID)},
         order={"dateTime": "asc"},
     )
     if earliest_datetime:
         earliest_datetime = earliest_datetime.dateTime
 
     latest_datetime = await db.timeseries.find_first(
-        where={"runTestID": int(run_test_ID)},
+        where={"runID": int(run_ID)},
         order={"dateTime": "desc"},
     )
     if latest_datetime:

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+  {% include 'head.html' %}
+
+  <body class="bg-gray-50 dark:bg-slate-900">
+    <!-- ========== HEADER ========== -->
+    {% include 'header.html' %} {% include 'sidebar.html' %}
+    <!-- End Sidebar -->
+
+    <!-- Content -->
+    <div class="max-w-[90rem] px-4 py-4 sm:px-6 lg:px-8 lg:ps-64 mx-auto">
+      <!-- Table Section -->
+      <div class="max-w-[85rem] px-4 sm:px-6 lg:px-8 lg:py-14 mx-auto">
+        <!-- Card -->
+        <div class="flex flex-col">
+          <div class="-m-1.5 overflow-x-auto">
+            <div class="p-1.5 min-w-full inline-block align-middle">
+              <div
+                class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden dark:bg-slate-900 dark:border-gray-700"
+              >
+                <!-- Header -->
+                <div
+                  class="px-6 py-4 border-b border-gray-200 dark:border-gray-700"
+                >
+                  <h2
+                    class="text-xl font-semibold text-gray-800 dark:text-gray-200"
+                  >
+                    Create New Run (Step {{ step }}/3)
+                  </h2>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">
+                    Create a new run in
+                    <span class="font-bold">{{ loc.name }}</span>
+                  </p>
+                </div>
+                <!-- End Header -->
+
+                <!-- Body -->
+                <div class="w-full min-h-[400px] px-6 py-4">
+                  <div class="w-fit grid grid-rows-3 grid-cols-2">
+                    <div class="col-span-1 row-span-3">
+                      <div
+                        class="text-sm font-medium mb-2 dark:text-white row-span-1"
+                      >
+                        Run Name:
+                      </div>
+                      <div
+                        class="text-sm font-medium mb-2 dark:text-white row-span-1"
+                      >
+                        Run Description:
+                      </div>
+                      <div
+                        class="text-sm font-medium mb-2 dark:text-white row-span-1"
+                      >
+                        Date:
+                      </div>
+                    </div>
+                    <div class="col-span-1 row-span-3">
+                      <div class="text-sm mb-2 dark:text-white row-span-1">
+                        {{ session.run_name }}
+                      </div>
+                      <div class="text-sm mb-2 dark:text-white row-span-1">
+                        {{ session.run_desc }}
+                      </div>
+                      <div
+                        class="text-sm mb-2 dark:text-white row-span-1"
+                        id="date"
+                      ></div>
+                    </div>
+                  </div>
+
+                  <div class="flex justify-between items-center mt-8">
+                    <div
+                      class="text-xl font-semibold text-gray-800 dark:text-gray-200"
+                    >
+                      Select Assets
+                    </div>
+
+                    <!-- Flash Messages -->
+                    <div class="flex-1 text-center px-10">
+                      {% with messages = get_flashed_messages() %} {% if
+                      messages %}
+                      <div
+                        class="bg-red-950 border border-red-500 text-white font-semibold py-3 rounded relative"
+                      >
+                        {% for message in messages %}
+                        <p>{{ message }}</p>
+                        {% endfor %}
+                      </div>
+                      {% endif %} {% endwith %}
+                    </div>
+                  </div>
+
+                  <hr
+                    class="h-px mt-2 mb-6 bg-gray-200 border-0 dark:bg-gray-700"
+                  />
+
+                  <form
+                    id="createrun"
+                    enctype="multipart/form-data"
+                    action="/api/run/create/step3"
+                    method="post"
+                  >
+                    <div class="grid grid-cols-3 gap-4 items-center">
+                      {% for asset in assets %}
+                      <div class="items-center ps-3">
+                        <input
+                          id="{{asset}}"
+                          type="checkbox"
+                          value="{{asset}}"
+                          name="{{asset}}"
+                          class="shrink-0 mt-0.5 border-gray-200 rounded text-blue-600 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:checked:bg-blue-500 dark:checked:border-blue-500 dark:focus:ring-offset-gray-800"
+                        />
+                        <label
+                          for="{{asset}}"
+                          class="w-full py-3 ms-2 text-sm font-medium text-gray-900 dark:text-gray-300 cursor-pointer select-none"
+                        >
+                          {{ asset }}
+                        </label>
+                      </div>
+                      {% endfor %}
+                    </div>
+
+                    <div class="mt-6 flex justify-center space-x-4">
+                      <a
+                        href="{{ url_for('createRun', locid=loc.id, step=2) }}"
+                        class="py-2 px-3 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke-width="1.5"
+                          stroke="currentColor"
+                          class="flex-shrink-0 size-4"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M15.75 19.5 8.25 12l7.5-7.5"
+                          />
+                        </svg>
+                        Back
+                      </a>
+                      <button
+                        type="submit"
+                        onclick="submitForm()"
+                        class="py-2 px-3 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+                      >
+                        <svg
+                          class="flex-shrink-0 size-4"
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="24"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                        >
+                          <path d="M5 12h14" />
+                          <path d="M12 5v14" />
+                        </svg>
+                        Create a new run
+                      </button>
+                    </div>
+                  </form>
+                </div>
+                <!-- End Body -->
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- End Card -->
+      </div>
+      <!-- End Table Section -->
+    </div>
+    <!-- ========== END MAIN CONTENT ========== -->
+  </body>
+
+  <script>
+    const now = new Date();
+    const formatted = now.toLocaleString();
+    document.querySelector("#date").innerHTML = formatted;
+
+    function submitForm(event) {
+      const form = document.forms("createrun");
+      const checkboxes = form.querySelectorAll("input[type=checkbox]:checked");
+      if (checkboxes.length < 1) {
+        return alert("Select at least one asset to create a run.");
+        // Stop the function if no checkboxes are selected
+      }
+
+      form.submit();
+    }
+  </script>
+</html>

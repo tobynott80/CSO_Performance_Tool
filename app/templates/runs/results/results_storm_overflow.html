@@ -123,16 +123,14 @@
                       <td
                         class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400"
                       >
-                        {% if result.substandardSpills > 0 %} {{ '%.*g' |
-                        format(3, result.substandardSpills)}} {% else %}
-                        {{result.substandardSpills}} {% endif %}
+                      {{ result.substandardSpills }}
+
                       </td>
                       <td
                         class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400"
                       >
-                        {% if result.satisfactorySpills > 0 %} {{ '%.*g' |
-                        format(3, result.satisfactorySpills)}} {% else %}
-                        {{result.satisfactorySpills}} {% endif %}
+                      {{ result.satisfactorySpills }}
+
                       </td>
                     </tr>
                     {% endfor %}

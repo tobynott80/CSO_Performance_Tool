@@ -7,16 +7,20 @@
     <div class="mx-auto max-w-[90rem] px-1 py-1 sm:px-6 lg:px-0 lg:ps-64">
       <div class="mx-auto max-w-[85rem] px-4 sm:px-6 lg:px-8 lg:py-10">
         <div class="-m-1.5 overflow-x-auto">
-          <div class="inline-block align-middle min-w-full">
+          <div class="inline-block align-middle min-w-full space-y-4">
             <div
               class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden px-6 py-4 dark:bg-slate-900 dark:border-gray-700"
             >
               <div class="pe-6 pt-4 flex justify-between items-center">
                 <div>
                   <h2
-                    class="text-xl font-semibold text-gray-800 dark:text-gray-200"
+                    class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-2"
                   >
-                    Run {{run.id}} ({{location.name}})
+                    Run {{run.id}} ({{location.name}}) {% if resp.status == "COMPLETED" %} 
+                    {% include 'runs/results/components/completed_icon.html' %} 
+                    {% else %}
+                    {% include 'runs/results/components/pending_icon.html' %} 
+                    {% endif %}
                   </h2>
                   <p class="text-sm text-gray-600 dark:text-gray-400">
                     {{run.description}} | (WHT/Y = Whole Time Series per Year)
@@ -46,7 +50,8 @@
                   Back
                 </a>
               </div>
-              {% if ("Test 1" in data and data["Test 1"].status == "PROGRESS") or ("Test 2" in data and data["Test 2"].status == "PROGRESS") or ("Test 3" in data and data["Test 3"].status == "PROGRESS") %}
+            
+              {% if (resp.status == "PROGRESS") %}
               <div
                 id="progressDiv"
                 class="bg-grey-200 border border-gray-200 rounded-xl shadow-sm overflow-hidden px-4 py-4 my-4 dark:bg-gray-800 dark:border-gray-700 space-y-2"
@@ -54,21 +59,75 @@
                 <h2
                   class="text-l font-semibold text-gray-800 dark:text-gray-200"
                 >
-                  Progress
+                  Run Status
                 </h2>
               </div>
               {% endif %}
-              {% if "Test 1" in data %} {% with runTest=data["Test 1"],
-              show_so=True if "Test 1" in data and "Test 2" in data else False
-              %} {% include 'runs/results/components/test1_bubble.html' %} {%
-              endwith %} {% endif %} {% if "Test 2" in data %} {% with
-              runTest=data["Test 2"], show_so=True if "Test 1" in data and 
-              "Test 2" in data else False %} 
-              {% include 'runs/results/components/test2_bubble.html' %} {% endwith %} 
-              {% endif %} {% if "Test 3" in data %} {% with runTest=data["Test 3"]
-              %} {% include 'runs/results/components/test3_bubble.html' %} {%
-              endwith %} {% endif %}
+
+              <div
+                class="text-sm text-gray-800 dark:text-gray-200 my-4"
+              >
+              {% if run.rainfallStatsFile %}
+                  <p class="text-sm text-gray-600 dark:text-gray-400">Rainfall Stats File: "{{ run.rainfallStatsFile }}"</p>
+                {% endif %}
+                {% if run.spillStatsFile %}
+                  <p class="text-sm text-gray-600 dark:text-gray-400">Spill Stats File: "{{ run.spillStatsFile }}"</p>
+                {% endif %}
+                {% if run.baselineStatsFile %}
+                  <p class="text-sm text-gray-600 dark:text-gray-400">Formula A and Consent File: "{{ run.baselineStatsFile }}"</p>
+                {% endif %}
+
+              </div>
+
+
             </div>
+
+            {% for asset in assets %}
+            <div
+            class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden px-6 py-4 dark:bg-slate-900 dark:border-gray-700"
+          >
+            <div class="pe-6 pt-4 flex justify-between items-center">
+              <div>
+                <h2
+                  class="text-xl font-semibold text-gray-800 dark:text-gray-200"
+                >
+                {{asset.name}}
+                </h2>
+              </div>
+            </div>
+            {% if ("Test 1" in resp[asset.name] and resp[asset.name]["Test 1"]["assetTest"].status == "PROGRESS") or ("Test 3" in resp and resp[asset.name]["Test 3"]["assetTest"].status == "PROGRESS") %}
+            <div
+              id="{{asset.name}}"
+              class="bg-grey-200 border border-gray-200 rounded-xl shadow-sm overflow-hidden px-4 py-4 my-4 dark:bg-gray-800 dark:border-gray-700 space-y-2"
+            >
+              <h2
+                class="text-l font-semibold text-gray-800 dark:text-gray-200"
+              >
+                Run Status
+              </h2>
+            </div>
+            {% endif %}
+
+              {% if "Test 1" in resp[asset.name] %} 
+              {% with assetTest=resp[asset.name]["Test 1"]["assetTest"], summary=resp[asset.name]["Test 1"]["summary"], show_so=True if "Test 1" in resp[asset.name] and "Test 2" in resp[asset.name] else False%}
+              {% include 'runs/results/components/test1_bubble.html' %} 
+              {% endwith %} 
+              {% endif %} 
+
+              {% if "Test 2" in resp[asset.name] %} 
+              {% with assetTest=resp[asset.name]["Test 2"]["assetTest"], summary=resp[asset.name]["Test 2"]["summary"], show_so=True if "Test 1" in resp[asset.name] and "Test 2" in resp[asset.name] else False %} 
+              {% include 'runs/results/components/test2_bubble.html' %} 
+              {% endwith %} 
+              {% endif %} 
+
+              {% if "Test 3" in resp[asset.name] %} 
+              {% with assetTest=resp[asset.name]["Test 3"]["assetTest"] %} 
+              {% include 'runs/results/components/test3_bubble.html' %} 
+              {% endwith %} 
+              {% endif %}
+
+          </div>
+          {% endfor %}
           </div>
         </div>
       </div>
@@ -76,55 +135,55 @@
 
     <script>
       const evtSource = new EventSource("/api/run/status");
-      const runTestId = {{ run.id }};
-      const test1Progress = "{{data["Test 1"].status if "Test 1" in data else "COMPLETED"}}";
-      const test2Progress = "{{data["Test 2"].status if "Test 2" in data else "COMPLETED"}}";
-      const test3Progress = "{{data["Test 3"].status if "Test 3" in data else "COMPLETED"}}";
-      if (test1Progress === "COMPLETED" && test2Progress === "COMPLETED" && test3Progress === "COMPLETED") {
+      const runId = {{ run.id }};
+      const runProgress = "{{resp.status}}";
+      if (runProgress === "COMPLETED") {
         evtSource.close();
       }
       evtSource.onmessage = function (event) {
-        console.log(event.data);
-        getProgressData(JSON.parse(event.data), runTestId)
+        getProgressData(runId,JSON.parse(event.data))
       };
-      function getProgressData(data, runTestId) {
-        if (data.hasOwnProperty(runTestId.toString())) {
-          const runTestProgress = data[runTestId]["progress"];
-          console.log(runTestProgress);
-          const progressDiv = document.getElementById("progressDiv");
-          progressDiv.innerHTML = '';
-          if ('test-1&2' in runTestProgress){
-            const test1_2Progress = runTestProgress['test-1&2'];
-            const test1_2ProgressDiv = document.createElement('div');
-            test1_2ProgressDiv.classList.add('flex', 'justify-between', 'items-center');
-            const test1_2ProgressTitle = document.createElement('h3');
-            test1_2ProgressTitle.classList.add('text-sm', 'font-semibold', 'text-gray-800', 'dark:text-gray-200');
-            test1_2ProgressTitle.textContent = 'Test 1 & 2';
-            const test1_2ProgressValue = document.createElement('span');
-            test1_2ProgressValue.classList.add('text-sm', 'font-semibold', 'text-gray-800', 'dark:text-gray-200');
-            test1_2ProgressValue.textContent = `${test1_2Progress}`;
-            test1_2ProgressDiv.appendChild(test1_2ProgressTitle);
-            test1_2ProgressDiv.appendChild(test1_2ProgressValue);
-            progressDiv.appendChild(test1_2ProgressDiv);
+      function getProgressData(runId, data) {
+        const runData = data[runId];
+        console.log(runData);
+
+        createProgressHTML("progressDiv", data[runId]["progress"], "Run Status")
+        
+        for (asset in runData) {
+          if (asset != "id" && asset != "progress") {
+
+            for (test in runData[asset]["progress"]) {
+              // test-1&2 and test-3
+              if (runData[asset]["progress"][test] == "Refreshing...") {
+                setTimeout(() => {
+                  window.location.reload()
+                }, 2000)
+              }
+              createProgressHTML(asset, runData[asset]["progress"][test], asset) 
+            }
           }
-          if ('test-3' in runTestProgress){
-            const test3Progress = runTestProgress['test-3'];
-            const test3ProgressDiv = document.createElement('div');
-            test3ProgressDiv.classList.add('flex', 'justify-between', 'items-center');
-            const test3ProgressTitle = document.createElement('h3');
-            test3ProgressTitle.classList.add('text-sm', 'font-semibold', 'text-gray-800', 'dark:text-gray-200');
-            test3ProgressTitle.textContent = 'Test 3';
-            const test3ProgressValue = document.createElement('span');
-            test3ProgressValue.classList.add('text-sm', 'font-semibold', 'text-gray-800', 'dark:text-gray-200');
-            test3ProgressValue.textContent = `${test3Progress}`;
-            test3ProgressDiv.appendChild(test3ProgressTitle);
-            test3ProgressDiv.appendChild(test3ProgressValue);
-            progressDiv.appendChild(test3ProgressDiv);
-          }
-        } else {
-          throw new Error(`RunTestID ${runTestId} not found in the data.`);
         }
       }
+
+      function createProgressHTML(id, progress, content) {
+        console.log(id)
+        let progressDiv = document.getElementById(id);
+        if (!progressDiv) return;
+        progressDiv.innerHTML = '';
+        const assetProgress = progress;
+        const assetProgressDiv = document.createElement('div');
+        assetProgressDiv.classList.add('flex', 'justify-between', 'items-center');
+        const assetProgressTitle = document.createElement('h3');
+        assetProgressTitle.classList.add('text-sm', 'font-semibold', 'text-gray-800', 'dark:text-gray-200');
+        assetProgressTitle.textContent = content;
+        const assetProgressValue = document.createElement('span');
+        assetProgressValue.classList.add('text-sm', 'font-semibold', 'text-gray-800', 'dark:text-gray-200');
+        assetProgressValue.textContent = `${assetProgress}`;
+        assetProgressDiv.appendChild(assetProgressTitle);
+        assetProgressDiv.appendChild(assetProgressValue);
+        progressDiv.appendChild(assetProgressDiv);  
+      }
+
     </script>
   </body>
 </html>

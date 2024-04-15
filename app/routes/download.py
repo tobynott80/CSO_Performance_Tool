@@ -62,22 +62,22 @@ async def download_test3(filename):
     return await send_file(file_path, attachment_filename=filename)
 
 
-@download_blueprint.route("/dry_day/<int:location_id>/<int:run_id>")
-async def download_dry_day(location_id, run_id):
+@download_blueprint.route("/dry_day/<int:location_id>/<int:run_id>/<int:asset_id>")
+async def download_dry_day(location_id, run_id,asset_id):
     # Fetch the Dry Day results from the database
     location = await db.location.find_first(where={"id": location_id})
     tests = await db.tests.find_first(
         where={"name": "Test 1"},
         include={
-            "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+            "assetTests": {"where": {"assetID": asset_id}, "include": {"summary": True}},
         },
     )
 
     # Convert the data to a DataFrame
-    if tests and tests.runsTests[0].summary:
+    if tests and tests.assetTests[0].summary:
         data = [
             {"Year": summary.year, "Percentage": summary.dryPerc}
-            for summary in tests.runsTests[0].summary
+            for summary in tests.assetTests[0].summary
         ]
         df = pd.DataFrame(data)
 
@@ -96,25 +96,25 @@ async def download_dry_day(location_id, run_id):
     return "No data available for this run", 404
 
 
-@download_blueprint.route("/unsatisfactory_spills/<int:location_id>/<int:run_id>")
-async def download_unsatisfactory_spills(location_id, run_id):
+@download_blueprint.route("/unsatisfactory_spills/<int:location_id>/<int:run_id>/<int:asset_id>")
+async def download_unsatisfactory_spills(location_id, run_id,asset_id):
     # Fetch the Unsatisfactory Spills results from the database
     location = await db.location.find_first(where={"id": location_id})
     tests = await db.tests.find_first(
         where={"name": "Test 1"},
         include={
-            "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+            "assetTests": {"where": {"assetID": asset_id}, "include": {"summary": True}},
         },
     )
 
     # Convert the data to a DataFrame
-    if tests and tests.runsTests[0].summary:
+    if tests and tests.assetTests[0].summary:
         data = [
             {
                 "Year": summary.year,
                 "Unsatisfactory Spills": summary.unsatisfactorySpills,
             }
-            for summary in tests.runsTests[0].summary
+            for summary in tests.assetTests[0].summary
         ]
         df = pd.DataFrame(data)
 
@@ -133,22 +133,22 @@ async def download_unsatisfactory_spills(location_id, run_id):
     return "No data available for this run", 404
 
 
-@download_blueprint.route("/substandard_spills/<int:location_id>/<int:run_id>")
-async def download_substandard_spills(location_id, run_id):
+@download_blueprint.route("/substandard_spills/<int:location_id>/<int:run_id>/<int:asset_id>")
+async def download_substandard_spills(location_id, run_id, asset_id):
     # Fetch the Substandard Spills results from the database
     location = await db.location.find_first(where={"id": location_id})
     tests = await db.tests.find_first(
         where={"name": "Test 1"},
         include={
-            "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+            "assetTests": {"where": {"assetID": asset_id}, "include": {"summary": True}},
         },
     )
 
     # Convert the data to a DataFrame
-    if tests and tests.runsTests[0].summary:
+    if tests and tests.assetTests[0].summary:
         data = [
             {"Year": summary.year, "Substandard Spills": summary.substandardSpills}
-            for summary in tests.runsTests[0].summary
+            for summary in tests.assetTests[0].summary
         ]
         df = pd.DataFrame(data)
 
@@ -167,34 +167,34 @@ async def download_substandard_spills(location_id, run_id):
     return "No data available for this run", 404
 
 
-@download_blueprint.route("/heavy_perc/<int:location_id>/<int:run_id>")
-async def download_heavy_perc(location_id, run_id):
+@download_blueprint.route("/heavy_perc/<int:location_id>/<int:run_id>/<int:asset_id>")
+async def download_heavy_perc(location_id, run_id, asset_id):
     # Fetch the Heavy Perc results from the database
     location = await db.location.find_first(where={"id": location_id})
     tests = await db.tests.find_first(
         where={"name": "Test 1"},
         include={
-            "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+            "assetTests": {"where": {"assetID": asset_id}, "include": {"summary": True}},
         },
     )
 
-    if not tests.runsTests:
+    if not tests.assetTests:
 
         tests = await db.tests.find_first(
             where={"name": "Test 2"},
             include={
-                "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+                "assetTests": {"where": {"assetID": asset_id}, "include": {"summary": True}},
             },
         )
 
     # Convert the data to a DataFrame
-    if tests and tests.runsTests[0].summary:
+    if tests and tests.assetTests[0].summary:
         data = [
             {
                 "Year": summary.year,
                 "Percentage of year spills are allowed to start (%)": summary.heavyPerc,
             }
-            for summary in tests.runsTests[0].summary
+            for summary in tests.assetTests[0].summary
         ]
         df = pd.DataFrame(data)
 
@@ -213,31 +213,31 @@ async def download_heavy_perc(location_id, run_id):
     return "No data available for this run", 404
 
 
-@download_blueprint.route("/spill_perc/<int:location_id>/<int:run_id>")
-async def download_spill_perc(location_id, run_id):
+@download_blueprint.route("/spill_perc/<int:location_id>/<int:run_id>/<int:asset_id>")
+async def download_spill_perc(location_id, run_id, asset_id):
     # Fetch the Spill Perc results from the database
     location = await db.location.find_first(where={"id": location_id})
     tests = await db.tests.find_first(
         where={"name": "Test 1"},
         include={
-            "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+            "assetTests": {"where": {"assetID": asset_id}, "include": {"summary": True}},
         },
     )
 
-    if not tests.runsTests:
+    if not tests.assetTests:
 
         tests = await db.tests.find_first(
             where={"name": "Test 2"},
             include={
-                "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+                "assetTests": {"where": {"assetID": asset_id}, "include": {"summary": True}},
             },
         )
 
     # Convert the data to a DataFrame
-    if tests and tests.runsTests[0].summary:
+    if tests and tests.assetTests[0].summary:
         data = [
             {"Year": summary.year, "Percentage of year spilling (%)": summary.spillPerc}
-            for summary in tests.runsTests[0].summary
+            for summary in tests.assetTests[0].summary
         ]
         df = pd.DataFrame(data)
 
@@ -256,35 +256,35 @@ async def download_spill_perc(location_id, run_id):
     return "No data available for this run", 404
 
 
-@download_blueprint.route("/storm_overflow/<int:location_id>/<int:run_id>")
-async def download_storm_overflow(location_id, run_id):
+@download_blueprint.route("/storm_overflow/<int:location_id>/<int:run_id>/<int:asset_id>")
+async def download_storm_overflow(location_id, run_id, asset_id):
     # Fetch the Storm Overflow results from the database
     location = await db.location.find_first(where={"id": location_id})
     tests = await db.tests.find_first(
         where={"name": "Test 1"},
         include={
-            "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+            "assetTests": {"where": {"assetID": asset_id}, "include": {"summary": True}},
         },
     )
 
-    if not tests.runsTests:
+    if not tests.assetTests:
 
         tests = await db.tests.find_first(
             where={"name": "Test 2"},
             include={
-                "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+                "assetTests": {"where": {"assetID": asset_id}, "include": {"summary": True}},
             },
         )
 
     # Convert the data to a DataFrame
-    if tests and tests.runsTests[0].summary:
+    if tests and tests.assetTests[0].summary:
         data = [
             {
                 "Year": summary.year,
                 "Substandard Spills": summary.substandardSpills,
                 "Satisfactory Spills": summary.satisfactorySpills,
             }
-            for summary in tests.runsTests[0].summary
+            for summary in tests.assetTests[0].summary
         ]
         df = pd.DataFrame(data)
 
@@ -303,19 +303,19 @@ async def download_storm_overflow(location_id, run_id):
     return "No data available for this run", 404
 
 
-@download_blueprint.route("/dry_day_discharges/<int:location_id>/<int:run_id>")
-async def download_dry_day_discharges(location_id, run_id):
+@download_blueprint.route("/dry_day_discharges/<int:location_id>/<int:run_id>/<int:asset_id>")
+async def download_dry_day_discharges(location_id, run_id, asset_id):
     # Fetch the Dry Day Discharges(test 1) results from the database
     location = await db.location.find_first(where={"id": location_id})
     tests = await db.tests.find_first(
         where={"name": "Test 1"},
         include={
-            "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+            "assetTests": {"where": {"assetID": asset_id}, "include": {"summary": True}},
         },
     )
 
     # Convert the data to a DataFrame
-    if tests and tests.runsTests[0].summary:
+    if tests and tests.assetTests[0].summary:
         data = [
             {
                 "Year": summary.year,
@@ -324,7 +324,7 @@ async def download_dry_day_discharges(location_id, run_id):
                 "Substandard Spills": summary.substandardSpills,
                 "Satisfactory Spills": summary.satisfactorySpills,
             }
-            for summary in tests.runsTests[0].summary
+            for summary in tests.assetTests[0].summary
         ]
         df = pd.DataFrame(data)
 
@@ -340,11 +340,11 @@ async def download_dry_day_discharges(location_id, run_id):
             filepath, attachment_filename=filename, as_attachment=True
         )
 
-    return "No data available for this run", 404
+    return "No summary data available for this run", 404
 
 
-@download_blueprint.route("/heavy_rainfall_spills/<int:location_id>/<int:run_id>")
-async def download_heavy_rainfall_spills(location_id, run_id):
+@download_blueprint.route("/heavy_rainfall_spills/<int:location_id>/<int:run_id>/<int:asset_id>")
+async def download_heavy_rainfall_spills(location_id, run_id, asset_id):
     # Fetch the location
     location = await db.location.find_first(where={"id": location_id})
     if not location:
@@ -355,24 +355,24 @@ async def download_heavy_rainfall_spills(location_id, run_id):
     tests = await db.tests.find_first(
         where={"name": "Test 1"},
         include={
-            "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+            "assetTests": {"where": {"assetID": asset_id}, "include": {"summary": True}},
         },
     )
 
     # If no Test 1 data, fetch Test 2 data
-    if not tests or not tests.runsTests:
+    if not tests or not tests.assetTests:
         tests = await db.tests.find_first(
             where={"name": "Test 2"},
             include={
-                "runsTests": {"where": {"runID": run_id}, "include": {"summary": True}},
+                "assetTests": {"where": {"assetID": asset_id}, "include": {"summary": True}},
             },
         )
 
     # Prepare data for DataFrame
-    if tests and tests.runsTests and tests.runsTests[0].summary:
+    if tests and tests.assetTests and tests.assetTests[0].summary:
         test_name = tests.name  # This will be either "Test 1" or "Test 2"
         data = []
-        for summary in tests.runsTests[0].summary:
+        for summary in tests.assetTests[0].summary:
             row = {
                 "Year": summary.year,
                 "Percentage of year spills are allowed to start (%)": summary.heavyPerc,
