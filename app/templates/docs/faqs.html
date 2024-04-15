@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <!-- Head Section -->
+  {% include 'head.html' %}
+
+  <body class="bg-gray-50 dark:bg-slate-900">
+    <!-- Header -->
+    {% include 'header.html' %}
+
+    <!-- Sidebar -->
+    {% include 'sidebar.html' %}
+
+    <!-- Main Content -->
+    <main class="min-h-screen lg:pl-64">
+      <div class="max-w-4xl mx-auto px-4 py-8 text-justify">
+        <!-- Getting Started -->
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-slate-100" style="margin-bottom: 2rem;">
+          Facts and Questions
+        </h1>
+
+        <hr>
+        <br>
+
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-slate-100">
+            FAQ: I've run a test and it's not completed or run into an error. What should I do?        </h2>
+        <p class="mt-4 text-gray-600 dark:text-slate-400 mx-5">
+            Most likely, the error is due to incorrect input data. Please check your input data thoroughly to ensure it is in the correct format. A common error we've observed involves the "Spill Volume (m³)" column, where the values are mistakenly entered as datetime values instead of volume values. Please double-check your input data for such discrepancies and correct them to prevent similar issues in future tests.
+          </p>
+          
+
+        <br>
+        <hr>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-slate-100" style="margin-top: 2rem;">
+          FAQ: If you close the application while a test is running, what happens?        </h2>
+        </h2>
+
+        <p class="mt-4 text-gray-600 dark:text-slate-400 mx-5">
+            If the application is closed midway through a run, say because your computer crashes or you accidentally close the application, the test will not be saved. You also may have to run ./setup.bat in order reconnect the database and then ./run.bat in order to get the application running properly again        </p>
+        </p>
+
+        <br>
+        <hr>
+        <hr>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-slate-100" style="margin-top: 2rem;">
+          FAQ: My visualisation is running slowly, what can I do?        </h2>
+        </h2>
+
+        <p class="mt-4 text-gray-600 dark:text-slate-400 mx-5">
+            As the visualisation has to handle a lot of data points, it can sometimes run slowly. If you are experiencing this issue, try changing the interval button from 15m to 1hr. This means the visualisation has less data to load and so should run faster.        </p>
+        </p>
+
+        <br>
+        <hr>
+        <hr>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-slate-100" style="margin-top: 2rem;">
+          FAQ: I'm trying to delete a run or a test but its not deleting, what should I do?        </h2>
+        </h2>
+
+        <p class="mt-4 text-gray-600 dark:text-slate-400 mx-5">
+        If theres an issue with deleting a run or a test, try running ./setup.bat again in order to reconnect the database. Most issues can be solved by running this command and then re running the application with ./run.bat </p>      
+        </p>
+
+        <br>
+        <hr>
+
+       
+      </div>
+    </main>
+  </body>
+</html>
+
