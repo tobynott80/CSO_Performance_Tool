@@ -167,6 +167,10 @@ async def docs_two():
 async def docs_three():
     return await render_template("/docs/test_2_rainfall_discharge.html")
 
+@app.route("/docs/faqs")
+async def docs_four():
+    return await render_template("/docs/faqs.html")
+
 
 @app.route("/settings")
 async def setting_page():
