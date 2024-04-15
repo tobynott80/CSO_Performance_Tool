@@ -547,14 +547,11 @@ async def test3_results(location_id, run_id, asset_id):
     if not tests:
         return redirect(f"/{location_id}/{run_id}")
 
-    if tests.assetTests[0].status != "COMPLETED":
-        return redirect(f"/{location_id}/{run_id}")
-
     # Handling the case where there are no Test 3 results found for the run
     if not tests.assetTests[0].testThree:
         message = "No Test 3 results found for this run."
-        return await render_template_string("Message: {{message}}", message=message)
-
+        return await render_template_string("Message: {{message}}", message=message)    
+    
     # If Test 3 results are found, pass them to your template
     return await render_template(
         "/runs/results/results_test3.html",
