@@ -307,7 +307,6 @@
   <!-- Preline UI Library Script -->
   <script>
     document.querySelectorAll("tr").forEach((row) => {
-      console.log()
       if (row.hasAttribute("data-runid")) {
         row.addEventListener("click", (event) => {
           if (event.target.tagName === "INPUT") {
