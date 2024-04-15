@@ -1,4 +1,4 @@
-from quart import render_template, render_template_string, request, redirect, session
+from quart import render_template, render_template_string, request, redirect, session, jsonify
 from app import app
 from app.helper.database import initDB
 from math import ceil
@@ -64,6 +64,40 @@ async def getPaginatedLocations(page, limit, include_runs=False):
         locations = await db.location.find_many(skip=skip, take=limit)
     return locations
 
+@app.route("/autocomplete", methods=["GET"])
+async def autocomplete():
+    """
+    Autocomplete the location search query.
+
+    Args:
+        None
+
+    Returns:
+        A list of locations based on the search query.
+        A list of runs based on the search query.
+    """
+    # fetches a list of locations
+    query = request.args.get("q")
+    locations_list = await db.location.find_many(
+        where={"name": {"startsWith": query}}, 
+        take=10, 
+    )
+    # fetches a list of runs based on the search query
+    runs = await db.runs.find_many(
+        where={"name": {"startsWith": query}}, 
+        take=10, 
+    )
+    
+    # Console Tests
+    # print("================================")
+    # print("QUERY: ", query)
+    # print("----------Locations-------------")
+    # print(locations_list)
+    # print("----------Runs-------------")
+    # print(runs)
+    
+    return {"locations": [location.model_dump() for location in locations_list], "runs": [run.model_dump() for run in runs]}
+
 
 @app.route("/")
 async def index():
@@ -76,6 +110,7 @@ async def index():
     Returns:
         The rendered index.html template with the following variables:
         - locations: A list of locations based on the search query or all locations if no query is provided.
+        - runs: A list of runs based on the search query or all runs if no query is provided.
         - total_pages: The total number of pages based on the number of locations and the limit per page.
         - current_page: The current page number.
         - search: The search query.
@@ -92,6 +127,7 @@ async def index():
             take=limit,
             include={"runs": True},
         )
+
     else:
         total = await db.location.count()
         locations = await getPaginatedLocations(page, limit, include_runs=True)
