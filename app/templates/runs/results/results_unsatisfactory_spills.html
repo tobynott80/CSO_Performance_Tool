@@ -117,9 +117,7 @@
                       <td
                         class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400"
                       >
-                        {% if result.unsatisfactorySpills > 0 %} {{ '%.*g' |
-                        format(3, result.unsatisfactorySpills)}} {% else %}
-                        {{result.unsatisfactorySpills}} {% endif %}
+                        {{ result.unsatisfactorySpills }}
                       </td>
                     </tr>
                     {% endfor %}
