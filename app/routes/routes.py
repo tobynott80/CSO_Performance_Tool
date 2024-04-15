@@ -332,8 +332,20 @@ async def createRun(locid):
             session.pop("run_name")
             session.pop("run_desc")
             session.pop("tests")
-            session.pop("doneValidation")  # used in move from step 2 validate
-            session.pop("multiAsset")  # used in checking for multiple assets
+            if "baselineStats" in session:
+                session.pop("baselineStats")
+            if "rainfallStats" in session:
+                session.pop("rainfallStats")
+            if "spillStats" in session:
+                session.pop("spillStats")
+            if "multiAsset" in session:
+                session.pop("multiAsset")
+            if "doneValidation" in session:
+                session.pop("doneValidation")
+            if "formulaA-val" in session:
+                session.pop("formulaA-val")
+            if "consent-val" in session:
+                session.pop("consent-val")
             step = 1
     elif "loc" not in session:
         # Set step to 1 if no session data found
