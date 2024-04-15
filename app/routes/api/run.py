@@ -148,6 +148,15 @@ async def createRunStep2Validation():
         # Add session value for multi asset
     else:
         session["multiAsset"] = False
+
+    form_data = await request.form
+    formula_a_value = safe_float_conversion(form_data.get("formula-a"), default=None)
+    consent_flow_value = safe_float_conversion(
+        form_data.get("consent-flow"), default=None
+    )
+    session["formulaA-val"] = formula_a_value
+    session["consent-val"] = consent_flow_value
+    
     return redirect(url_for(f"createRun", locid=session["loc"], step=2))
 
 
@@ -169,20 +178,12 @@ async def createRunStep2():
         # If not completed validation precheck, redirect back
         return redirect(url_for(f"createRun", locid=session["loc"], step=2))
 
-    form_data = await request.form
-    formula_a_value = safe_float_conversion(form_data.get("formula-a"), default=None)
-    consent_flow_value = safe_float_conversion(
-        form_data.get("consent-flow"), default=None
-    )
-
     if "multiAsset" in session and session["multiAsset"] == True:
         # Redirect to step 3 where they will select assets
-        session["formulaA-val"] = formula_a_value
-        session["consent-val"] = consent_flow_value
         return redirect(url_for(f"createRun", locid=session["loc"], step=3))
 
     # Create run since no multi assets
-    run = await createRuns(session, formula_a_value, consent_flow_value)
+    run = await createRuns(session)
 
     # Delete session data since not needed in client side
     session.pop("loc")
@@ -197,6 +198,10 @@ async def createRunStep2():
         session.pop("spillStats")
     if "multiAsset" in session:
         session.pop("multiAsset")
+    if "formulaA-val" in session:
+        session.pop("formulaA-val")
+    if "consent-val" in session:
+        session.pop("consent-val")
 
     return redirect(f"/{run['locationID']}/{run['id']}")
 
@@ -240,7 +245,7 @@ async def createRunStep3():
     form_data = await request.form
     selectedAssets = list(form_data.keys())
     run = await createRuns(
-        session, session["formulaA-val"], session["consent-val"], selectedAssets
+        session, selectedAssets
     )
 
     # Delete session data since not needed in client side
@@ -256,6 +261,10 @@ async def createRunStep3():
         session.pop("spillStats")
     if "multiAsset" in session:
         session.pop("multiAsset")
+    if "formulaA-val" in session:
+        session.pop("formulaA-val")
+    if "consent-val" in session:
+        session.pop("consent-val")
 
     return redirect(f"/{run['locationID']}/{run['id']}")
 
@@ -394,7 +403,7 @@ async def checkTestValidation(tests, files):
     return resp
 
 
-async def createRuns(session, formula_a_value, consent_flow_value, selectedAssets=None):
+async def createRuns(session, selectedAssets=None):
     global runs_tracker
 
     run = {
@@ -445,7 +454,7 @@ async def createRuns(session, formula_a_value, consent_flow_value, selectedAsset
         runs_tracker[str(run["id"])][asset.name] = {"progress": {}}
         runs_tracker[str(run["id"])]["progress"] = "Running FPF Calculations"
         
-        await createTest3Run(run, formula_a_value, consent_flow_value, asset)
+        await createTest3Run(run, session["formulaA-val"], session["consent-val"], asset)
     else:
         df = pd.read_excel(session["spillStats"]["path"])
         # Loops over every asset
@@ -495,7 +504,7 @@ async def createRuns(session, formula_a_value, consent_flow_value, selectedAsset
 
                     onlyOnce = True
                 if test == "test-3":
-                    await createTest3Run(run, formula_a_value, consent_flow_value, asset)
+                    await createTest3Run(run, session["formulaA-val"], session["consent-val"], asset)
         if len(assetRuns) < 1:
             return print("oopsy")
 
