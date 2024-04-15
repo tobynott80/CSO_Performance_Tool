@@ -11,7 +11,7 @@ if errorlevel 1 (
 )
 
 REM Automatically opening the app in the default web browser
-start http://127.0.0.1:8080
+start ./app/templates/loading.html
 
 REM Run the application using Hypercorn
 pipenv run hypercorn --bind=127.0.0.1:8080 app:app
