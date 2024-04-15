@@ -105,11 +105,16 @@
                       session.tests %}
                       <div class="flex-1 space-y-4">
                         <div>
-                          <label
-                            for="rainfall-stats"
-                            class="block text-sm font-medium mb-2 dark:text-white"
-                            >Rainfall Stats Report</label
-                          >
+                          <div class="flex">
+                            <label
+                              for="rainfall-stats"
+                              class="block text-sm font-medium mb-2 dark:text-white"
+                              >Rainfall Stats Report
+                              </label>
+                              <a href="/docs/faqs" class="pl-1 cursor-pointer dark:text-white align-super text-xs hover:underline">
+                                (?)
+                              </a>
+                          </div>
                           {% if "doneValidation" not in session or
                           session["doneValidation"] == False %}
                           <input
@@ -129,11 +134,16 @@
                           {% endif %}
                         </div>
                         <div>
-                          <label
-                            for="spill-stats"
-                            class="block text-sm font-medium mb-2 dark:text-white"
-                            >Spill Stats Report</label
-                          >
+                          <div class="flex">
+                            <label
+                              for="spill-stats"
+                              class="block text-sm font-medium mb-2 dark:text-white"
+                              >Spill Stats Report
+                              </label>
+                              <a href="/docs/faqs" class="pl-1 cursor-pointer dark:text-white align-super text-xs hover:underline">
+                                (?)
+                              </a>
+                          </div>
                           {% if "doneValidation" not in session or
                           session["doneValidation"] == False %}
                           <input
@@ -156,11 +166,17 @@
                       {% endif %} {% if 'test-3' in session.tests %}
                       <div class="flex-1 space-y-4">
                         <div>
-                          <label
-                            for="spill-stats"
-                            class="block text-sm font-medium mb-2 dark:text-white"
-                            >Formula A and Consent CSV</label
-                          >
+                          <div class="flex">
+                            <label
+                              for="Baseline Stats Report"
+                              class="block text-sm font-medium mb-2 dark:text-white"
+                              >Formula A and Consent CSV
+                              </label
+                              >
+                              <a href="/docs/faqs" class="pl-1 cursor-pointer dark:text-white align-super text-xs hover:underline">
+                                (?)
+                              </a>
+                          </div>
                           {% if "doneValidation" not in session or
                           session["doneValidation"] == False %}
                           <input
