@@ -12,6 +12,7 @@ pandas = "*"
 matplotlib = "*"
 openpyxl = "*"
 xlsxwriter = "*"
+numpy = "*"
 
 [dev-packages]
 
