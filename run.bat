@@ -14,4 +14,4 @@ REM Automatically opening the app in the default web browser
 start ./app/templates/loading.html
 
 REM Run the application using Hypercorn
-pipenv run hypercorn --bind=127.0.0.1:8080 app:app
+pipenv run hypercorn --bind=127.0.0.1:8080 app:app --debug
