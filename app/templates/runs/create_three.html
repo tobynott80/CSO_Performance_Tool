@@ -142,7 +142,7 @@
                         Back
                       </a>
                       <button
-                        type="submit"
+                        type="button"
                         onclick="submitForm()"
                         class="py-2 px-3 inline-flex justify-center items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
                       >
@@ -184,7 +184,7 @@
     document.querySelector("#date").innerHTML = formatted;
 
     function submitForm(event) {
-      const form = document.forms("createrun");
+      const form = document.forms["createrun"];
       const checkboxes = form.querySelectorAll("input[type=checkbox]:checked");
       if (checkboxes.length < 1) {
         return alert("Select at least one asset to create a run.");
