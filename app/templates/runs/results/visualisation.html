@@ -303,7 +303,7 @@
                   dateTime: d => d.dateTime.toLocaleString(),
                   Spill_Allowed: d => (d.spillAllowed === "YES" ? "Yes" : "No"),
                   Assets: d => {
-                    return Object.entries(d.result).filter(([key, val]) => val === "YES").map(([key, val]) => `${key}\n`)
+                    return Object.entries(d.result).filter(([key, val]) => val === "YES").map(([key, val]) => `${key}`)
                   }
                 },
                 tip: true
@@ -353,7 +353,7 @@
           const plot = Plot.plot({
             x: { type: "utc" },
             y: { label: "Intensity(mm)" },
-            color: {scheme: "BuRd"},
+            color: {scheme: "BuGn"},
             marks: marks,
             marginLeft: 135,
           });
