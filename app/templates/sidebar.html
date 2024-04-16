@@ -140,7 +140,7 @@
               id="recent-location-dropdown"
               class="hs-accordion-content hidden"
             >
-              <ul>
+              <ul class="space-y-1">
                 {% for location in session.get('visited_locations', []) %}
                 <li>
                   <a
@@ -227,7 +227,7 @@
               </button>
             </div>
             <div id="recent-runs-dropdown" class="hs-accordion-content hidden">
-              <ul>
+              <ul class="space-y-1">
                 {% for run in session.get('recent_runs', [],) %}
                 <li>
                   <a
@@ -291,7 +291,7 @@
               id="documentation-dropdown"
               class="hs-accordion-content hidden"
             >
-              <ul>
+              <ul class="space-y-1">
                 <li>
                   <a
                     href="/docs/getting_started"
@@ -327,7 +327,6 @@
                     >FAQs</a
                   >
                 </li>
-               
               </ul>
             </div>
           </li>
