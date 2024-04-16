@@ -662,6 +662,7 @@ async def dry_day_results(location_id, run_id, asset_id):
         location=location,
         run=run,
         dry_day_results=summary_use,
+        asset_id=asset_id,
     )
 
 
@@ -702,6 +703,7 @@ async def unsatisfactory_spills_results(location_id, run_id, asset_id):
         location=location,
         run=run,
         unsatisfactory_spills_results=summary_use,
+        asset_id=asset_id,
     )
 
 
@@ -742,6 +744,7 @@ async def substandard_spills_results(location_id, run_id, asset_id):
         location=location,
         run=run,
         substandard_spills_results=summary_use,
+        asset_id=asset_id,
     )
 
 
@@ -784,6 +787,7 @@ async def heavy_perc_results(location_id, run_id, asset_id):
         location=location,
         run=run,
         heavy_perc_results=test1.assetTests[0].summary,
+        asset_id=asset_id,
     )
 
 
@@ -826,6 +830,7 @@ async def spill_perc_results(location_id, run_id, asset_id):
         location=location,
         run=run,
         spill_perc_results=test1.assetTests[0].summary,
+        asset_id=asset_id,
     )
 
 
@@ -868,6 +873,7 @@ async def storm_overflow_results(location_id, run_id, asset_id):
         location=location,
         run=run,
         storm_overflow_results=test1.assetTests[0].summary,
+        asset_id=asset_id,
     )
 
 @app.delete("/deletecookies")
