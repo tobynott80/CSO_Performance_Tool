@@ -4,7 +4,7 @@ import datetime as dt
 
 def writeCSV(df, summary, all_spill_classification):
     ### Save Stats and Spills database to same excel workbook - can take 5min
-    writer = pd.ExcelWriter(c.outfolder/"GN066 analyses - Castle Meadows.xlsx", engine='xlsxwriter')
+    writer = pd.ExcelWriter(c.outfolder/"GN066 analyses.xlsx", engine='xlsxwriter')
     summary.to_excel(writer, sheet_name = 'Summary', startrow=1, index= False)
     worksheet = writer.sheets['Summary']
     # worksheet.write(0, 0)

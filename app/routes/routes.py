@@ -865,3 +865,8 @@ async def storm_overflow_results(location_id, run_id, asset_id):
         run=run,
         storm_overflow_results=test1.assetTests[0].summary,
     )
+
+@app.delete("/deletecookies")
+async def deleteCookies():
+    session.clear()
+    return {"success": True}
