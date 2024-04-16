@@ -1,4 +1,5 @@
-from quart import render_template, render_template_string, request, redirect, session, jsonify
+from quart import render_template, render_template_string, request, redirect, session
+from quart.wrappers import Response
 from app import app
 from app.helper.database import initDB
 from math import ceil
@@ -98,6 +99,13 @@ async def autocomplete():
     
     return {"locations": [location.model_dump() for location in locations_list], "runs": [run.model_dump() for run in runs]}
 
+@app.after_request
+async def add_cors_headers(response: Response) -> Response:
+    if request.path == '/':  # Check if it's the specific route
+        response.headers['Access-Control-Allow-Origin'] = '*'  # Allow requests from any origin
+        response.headers['Access-Control-Allow-Methods'] = 'GET'  # Allowed HTTP methods
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type'  # Allowed headers
+    return response
 
 @app.route("/")
 async def index():

@@ -44,8 +44,39 @@
     </div>
   </body>
   <script>
-    setTimeout(() => {
-      window.location.replace("http://127.0.0.1:8080");
-    }, 3500);
+
+    function checkServerStatus() {
+      const maxAttempts = 30; // Maximum number of attempts (1 minute with 1 second intervals)
+      let attempts = 0;
+      let url = "http://127.0.0.1:8080"
+    
+      const intervalId = setInterval(() => {
+        fetch(url)
+          .then(response => {
+            if (response.ok) {
+              clearInterval(intervalId); // Server is alive, clear the interval
+              window.location.replace(url);
+            } else {
+              console.error('Server is down...');
+              attempts++;
+              if (attempts >= maxAttempts) {
+                clearInterval(intervalId); // Clear the interval if exceeded maximum attempts
+                alert('Something went wrong. Run setup script and try again');
+              }
+            }
+          })
+          .catch(error => {
+            console.error('Server is down...', error);
+            attempts++;
+            if (attempts >= maxAttempts) {
+              clearInterval(intervalId); // Clear the interval if exceeded maximum attempts
+              alert('Something went wrong. Run setup script and try again');
+            }
+          });
+      }, 1000); // Check server status every second
+    }
+    
+    checkServerStatus();
+    
   </script>
 </html>
