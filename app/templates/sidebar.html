@@ -140,7 +140,7 @@
               id="recent-location-dropdown"
               class="hs-accordion-content hidden"
             >
-              <ul>
+              <ul class="space-y-1">
                 {% for location in session.get('visited_locations', []) %}
                 <li>
                   <a
@@ -227,7 +227,7 @@
               </button>
             </div>
             <div id="recent-runs-dropdown" class="hs-accordion-content hidden">
-              <ul>
+              <ul class="space-y-1">
                 {% for run in session.get('recent_runs', [],) %}
                 <li>
                   <a
@@ -291,19 +291,12 @@
               id="documentation-dropdown"
               class="hs-accordion-content hidden"
             >
-              <ul>
+              <ul class="space-y-1">
                 <li>
                   <a
                     href="/docs/getting_started"
                     class="flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-slate-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900 dark:text-slate-400 dark:hover:text-slate-300 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600 mx-8 {{ 'bg-gray-100 dark:bg-gray-700' if request.path == '/docs/getting_started' }}"
                     >Getting Started</a
-                  >
-                </li>
-                <li>
-                  <a
-                    href="/docs/faqs"
-                    class="flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-slate-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900 dark:text-slate-400 dark:hover:text-slate-300 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600 mx-8 {{ 'bg-gray-100 dark:bg-gray-700' if request.path == '/docs/faqs' }}"
-                    >FAQs</a
                   >
                 </li>
                 <li>
@@ -320,7 +313,20 @@
                     >Moderate Rainfall Discharges</a
                   >
                 </li>
-               
+                <li>
+                  <a
+                    href="/docs/test_3_formula_a_and_consent"
+                    class="flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-slate-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900 dark:text-slate-400 dark:hover:text-slate-300 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600 mx-8 {{ 'bg-gray-100 dark:bg-gray-700' if request.path == '/docs/test_3_formula_a_and_consent' }}"
+                    >Formula A and Consent</a
+                  >
+                </li>
+                <li>
+                  <a
+                    href="/docs/faqs"
+                    class="flex items-center gap-x-3.5 py-2 px-2.5 text-sm text-slate-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900 dark:text-slate-400 dark:hover:text-slate-300 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600 mx-8 {{ 'bg-gray-100 dark:bg-gray-700' if request.path == '/docs/faqs' }}"
+                    >FAQs</a
+                  >
+                </li>
               </ul>
             </div>
           </li>

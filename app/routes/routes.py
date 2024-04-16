@@ -179,6 +179,10 @@ async def docs_three():
 async def docs_four():
     return await render_template("/docs/faqs.html")
 
+@app.route("/docs/test_3_formula_a_and_consent")
+async def docs_five():
+    return await render_template("/docs/test_3_formula_a_and_consent.html")
+
 
 @app.route("/settings")
 async def setting_page():

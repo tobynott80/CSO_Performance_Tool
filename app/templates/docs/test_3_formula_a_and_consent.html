@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {% include 'head.html' %}
+  </head>
+  <body class="bg-gray-50 dark:bg-slate-900">
+    {% include 'header.html' %} {% include 'sidebar.html' %}
+
+    <main class="min-h-screen lg:pl-64">
+      <div class="max-w-4xl mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-slate-100 mb-8">
+          Test 3 - Formula A and Consent
+        </h1>
+        <hr class="mb-4" />
+
+        <section>
+          <h2 class="text-xl font-bold text-gray-900 dark:text-slate-100 mb-4">
+            What is Consent Pass Forward Flow?
+          </h2>
+          <ul>
+            <li class="text-gray-600 dark:text-slate-400 ml-10">
+              This is the flow the storm overflow is required to pass forward
+              onto treatment before it is allowed to spill. It effectively
+              controls how dilute the spill flow is.
+            </li>
+          </ul>
+        </section>
+
+        <hr class="my-4" />
+
+        <section>
+          <h2 class="text-xl font-bold text-gray-900 dark:text-slate-100 mb-4">
+            What is Formula A:
+          </h2>
+          <ul>
+            <li class="text-gray-600 dark:text-slate-400 ml-10">
+              Formula A is calculated from various model parameters (population,
+              trade flow, per capita consumption, baseflow infiltration).
+            </li>
+          </ul>
+        </section>
+
+        <hr class="my-4" />
+
+        <section>
+          <h2 class="text-xl font-bold text-gray-900 dark:text-slate-100 mb-4">
+            How does the application calculate the results of the Formula A and
+            Consent Test?
+          </h2>
+          <ul>
+            <li class="text-gray-600 dark:text-slate-400 ml-10">
+              If the value is lower than the consent FPF, then the asset is
+              ‘Unsatisfactory’.
+            </li>
+            <li class="text-gray-600 dark:text-slate-400 ml-10">
+              If the value is only lower than Formula A, then the asset is
+              ‘Substandard’.
+            </li>
+            <li class="text-gray-600 dark:text-slate-400 ml-10">
+              If the value is greater than both, then it is ‘Satisfactory’.
+            </li>
+          </ul>
+        </section>
+
+        <hr class="my-4" />
+
+        <section>
+          <h2 class="text-xl font-bold text-gray-900 dark:text-slate-100 mb-4">
+            How does the application calculate individual results?
+          </h2>
+          <h3 class="font-bold text-gray-900 dark:text-slate-100 mb-2">
+            Formula A Compliance:
+          </h3>
+          <ul>
+            <li class="text-gray-600 dark:text-slate-400 ml-10">
+              Unsatisfactory: If either the peak or average initial performance
+              falls below formula A.
+            </li>
+            <li class="text-gray-600 dark:text-slate-400 ml-10">
+              Satisfactory: If both the peak and average initial performance
+              meet or exceed formula A.
+            </li>
+            <li class="text-gray-600 dark:text-slate-400 ml-10">
+              None: If formula A is not provided, implying no specific standard
+              to check against.
+            </li>
+          </ul>
+          <br />
+          <h3 class="font-bold text-gray-900 dark:text-slate-100 mb-2">
+            Consent FPF Compliance:
+          </h3>
+          <ul>
+            <li class="text-gray-600 dark:text-slate-400 ml-10">
+              Unsatisfactory: If either the peak or average initial performance
+              falls below consent FPF.
+            </li>
+            <li class="text-gray-600 dark:text-slate-400 ml-10">
+              Satisfactory: If both the peak and average initial performance
+              meet or exceed consent FPF.
+            </li>
+            <li class="text-gray-600 dark:text-slate-400 ml-10">
+              None: If consent FPF is not provided, implying no specific consent
+              threshold to evaluate against.
+            </li>
+          </ul>
+        </section>
+
+        <hr class="my-4" />
+      </div>
+    </main>
+  </body>
+</html>

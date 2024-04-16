@@ -27,10 +27,10 @@
         </h2>
         <br>
           <ul-a>
-            <li class="text-gray-600 dark:text-slate-400 mx-10">Navigate to the <a href="/" style="color: red; text-decoration: none;" onmouseover="this.style.color='#FAA0A0'" onmouseout="this.style.color='red'">Dashboard</a> - You will see the "Location Tests" tab.</li>
-            <li class="text-gray-600 dark:text-slate-400 mx-10">Add New Location - Click on the "New" button. You will be prompted to enter details for the new location.</li>
-            <li class="text-gray-600 dark:text-slate-400 mx-10">Enter Location Details -  Provide a name for the location and any other relevant details as required. </li>
-            <li class="text-gray-600 dark:text-slate-400 mx-10">Save the Location - After entering all necessary information, click "Save" to create the new location.</li>
+            <li class="text-gray-600 dark:text-slate-400 mx-10">Navigate to the <a href="/" style="color: red; text-decoration: none;" onmouseover="this.style.color='#FAA0A0'" onmouseout="this.style.color='red'">Dashboard</a> - You will see the "Location" table.</li>
+            <li class="text-gray-600 dark:text-slate-400 mx-10">Add New Location - Click on the "New" button..</li>
+            <li class="text-gray-600 dark:text-slate-400 mx-10">Enter Location Details -  Provide a name for the location. </li>
+            <li class="text-gray-600 dark:text-slate-400 mx-10">Save the Location - Click "Save" to create the new location.</li>
           </ul-a>
           
 
@@ -42,13 +42,14 @@
         </h2>
 
         <p class="mt-4 text-gray-600 dark:text-slate-400 mx-5">
-          Once you have defined a location, the next step is to create a run. A run is a specific assessment session that allows you to evaluate storm overflows within the selected location using various tests.
+          Once you have defined a location, the next step is to create a run. A run is where you will choose which tests to perform on your data. 
           <br>
           <br> 
           <ul-a>
-            <li class="text-gray-600 dark:text-slate-400 mx-10">Access the Runs Section: After clicking a location you'll be in the "Runs" tab.</li>
+            <li class="text-gray-600 dark:text-slate-400 mx-10">Access the Runs Section: After clicking a location you will see the "Runs" table.</li>
             <li class="text-gray-600 dark:text-slate-400 mx-10">Initiate a New Run: Click on the "New" button.</li>
-            <li class="text-gray-600 dark:text-slate-400 mx-10">Provide Run Details: Give your run a descriptive name and optionally add a description to detail the purpose or focus of this particular run.</li>
+            <li class="text-gray-600 dark:text-slate-400 mx-10">Provide Run Details: Give your run a name and optionally add a description to detail the purpose or focus of this particular run.</li>
+            <li class="text-gray-600 dark:text-slate-400 mx-10">Choose Tests: Pick which test you will run by selecting the checkboxes. You have the choice between 1. Dry Dry Day Discharges 2. Rainfall Discharges 3. Formula A and Consent </li>
           </ul>
         </p>
 
@@ -57,16 +58,18 @@
 
         <!-- Step 3: Pick Tests and Set Parameters -->
         <h2 class="text-xl font-bold text-gray-900 dark:text-slate-100" style="margin-top: 2rem;">
-          Step 3: Pick Tests and Set Parameters
+          Step 3: Upload files and Set Parameters
         </h2>
         <p class="mt-4 text-gray-600 dark:text-slate-400 mx-5">
-          With a run created, you can now choose which tests to include in your assessment.
+          With your tests now chosen, its time to choose the input files and set the parameters.
           <br>
           <br>
           <ul-a>
-            <li class="text-gray-600 dark:text-slate-400 mx-10">Select Tests: You'll see a list of available tests, each with a checkbox next to it. Check the boxes for the tests you want to include in your run.</li>
-            <li class="text-gray-600 dark:text-slate-400 mx-10">Configure Test Parameters: Some tests require you to set specific parameters. Click on a test to expand its settings, where you can input the necessary parameters and add a description for clarity.</li>
-            <li class="text-gray-600 dark:text-slate-400 mx-10">Finalize Tests: Once you've selected your tests and configured the required parameters, save your selections to include them in the run.</li>
+            <li class="text-gray-600 dark:text-slate-400 mx-10">Upload Files: Based on which tests you've chosen, you'll then see which files are required to be uploaded.</li>
+            <li class="text-gray-600 dark:text-slate-400 mx-10">Configure Test Parameters: This will only be required for test 3.</li>
+            <li class="text-gray-600 dark:text-slate-400 mx-10">Validate: Once all the tests and parameters are uploaded, press the validate button to check the files are correctly formatted.</li>
+            <li class="text-gray-600 dark:text-slate-400 mx-10">Validation Failed?: If you've ran in to an error please check the error message and act accordingly. The majority of the errors will be down to incorrect format of the input files but it could also potentially require you to restart the application and rerun ./setup.bat if all else fails.</li>
+
           </ul>
         </p>
 
@@ -75,16 +78,16 @@
 
         <!-- Step 4: Execute the Run and View Results -->
         <h2 class="text-xl font-bold text-gray-900 dark:text-slate-100" style="margin-top: 2rem;">
-          Step 4: Execute the Run and View Results
+          Step 4: Create a Run or choose assets if required
         </h2>
         <p class="mt-4 text-gray-600 dark:text-slate-400 mx-5">
           
-          After configuration and pressing "Create", the tool will execute the run and begin running the tests.
+          If the validation has passed you will then see either 'Create Run' or have the option to select assets.
           <br>
           <br>
           <ul-a>
-            <li class="text-gray-600 dark:text-slate-400 mx-10">Start the Run: Click the "Start Run" button to initiate the testing process. The tool will now perform the selected tests based on the provided parameters.</li>
-            <li class="text-gray-600 dark:text-slate-400 mx-10">Monitor Progress: You can view the status of the run in real-time. Once all tests are completed, the run status will change to "Complete"</li>
+            <li class="text-gray-600 dark:text-slate-400 mx-10">No Extra Assets: If this is the case you can simply create a run and it will take you to the results page. </li>
+            <li class="text-gray-600 dark:text-slate-400 mx-10">Extra Assets: If the application does detect multiple assets then please tick the checkboxes of the assets you'd like to run and then create the run.</li>
           </ul>
         </p>
 
@@ -101,8 +104,8 @@
           <br>
           <ul-a>
             <li class="text-gray-600 dark:text-slate-400 mx-10">Access the Results Table: Navigate to the completed run and click on it to view a summary table of the results.</li>
-            <li class="text-gray-600 dark:text-slate-400 mx-10">Detailed View: For more detailed information on a specific test result, click on the corresponding row in the table.</li>
-            <li class="text-gray-600 dark:text-slate-400 mx-10">Visualizations: The tool provides visualization options for better understanding the data. Access these by selecting the "Visualizations" tab within the run.</li>
+            <li class="text-gray-600 dark:text-slate-400 mx-10">Detailed View: For more detailed information on a specific test result, click on the specific result you would like to see.</li>
+            <li class="text-gray-600 dark:text-slate-400 mx-10">Visualizations: The tool provides visualization options for better understanding the data. Access these by selecting the "Visualizations" button within the run.</li>
             <li class="text-gray-600 dark:text-slate-400 mx-10">Download and Export: You have the option to download or export the results for further analysis or reporting.</li>
           </ul>
         </p>
